@@ -1,16 +1,23 @@
 package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
+import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryExtractionCallback;
+import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryItem;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ReasoningContentStore;
+import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatData;
+import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMSite;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.Role;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.response.Message;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.response.ToolCall;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import org.apache.commons.lang3.StringUtils;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -19,13 +26,22 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
- * LLMCallback Mixin：reasoningContent 支持 + 记忆提取计数。
+ * LLMCallback Mixin：reasoningContent 支持 + 记忆提取。
  */
 @Mixin(value = LLMCallback.class, remap = false)
 public abstract class LLMCallbackMixin {
+
+    @Shadow
+    @Final
+    private MaidAIChatManager chatManager;
+
+    @Shadow
+    private List<LLMMessage> messages;
 
     @Shadow
     public abstract EntityMaid getMaid();
@@ -95,6 +111,9 @@ public abstract class LLMCallbackMixin {
     )
     private void enhanced$extractMemoriesOnSuccess(ResponseChat responseChat, CallbackInfo ci) {
         try {
+            // 防递归：MemoryExtractionCallback 自身触发不做提取
+            if ((Object) this instanceof MemoryExtractionCallback) return;
+
             EntityMaid maid = getMaid();
             if (maid == null || maid.isRemoved()) return;
 
@@ -105,9 +124,77 @@ public abstract class LLMCallbackMixin {
             if (!palace.shouldExtractMemories(gameTime)) return;
             palace.markExtractionDone(gameTime);
 
-            // TODO: 异步 LLM 记忆提取 — Phase 2 后续迭代
+            if (TouhouLittleMaid.DEBUG) {
+                TouhouLittleMaid.LOGGER.info(
+                        "EnhancedLittleMaidAI: Triggering memory extraction for maid {}",
+                        maid.getUUID());
+            }
+
+            enhanced$triggerAsyncMemoryExtraction(maid, palace, gameTime);
         } catch (Exception e) {
-            // 静默失败，不影响正常对话
+            TouhouLittleMaid.LOGGER.warn(
+                    "EnhancedLittleMaidAI: Memory extraction trigger failed for maid {}",
+                    getMaid().getUUID(), e);
         }
+    }
+
+    @Unique
+    private void enhanced$triggerAsyncMemoryExtraction(EntityMaid maid, MindPalace palace, long gameTime) {
+        LLMSite site = chatManager.getLLMSite();
+        if (site == null || !site.enabled()) {
+            if (TouhouLittleMaid.DEBUG) {
+                TouhouLittleMaid.LOGGER.info(
+                        "EnhancedLittleMaidAI: LLM site not available for maid {}, skipping extraction",
+                        maid.getUUID());
+            }
+            return;
+        }
+
+        LLMClient client = site.client();
+        if (client == null) return;
+
+        List<String> recentTexts = enhanced$extractRecentMessages();
+        if (recentTexts.isEmpty()) return;
+
+        String prompt = MemoryExtractionCallback.buildPrompt(recentTexts);
+        LLMMessage systemMsg = LLMMessage.systemChat(maid, prompt);
+        List<LLMMessage> extractionMessages = List.of(systemMsg);
+
+        CompletableFuture<List<MemoryItem>> future = new CompletableFuture<>();
+        MemoryExtractionCallback exCallback = new MemoryExtractionCallback(
+                chatManager, extractionMessages, future);
+
+        client.chat(exCallback);
+
+        future.whenComplete((items, ex) -> {
+            if (ex != null) {
+                TouhouLittleMaid.LOGGER.warn(
+                        "EnhancedLittleMaidAI: Memory extraction failed for maid {}",
+                        maid.getUUID(), ex);
+                return;
+            }
+            if (items != null && !items.isEmpty()) {
+                palace.addMemories(items, gameTime);
+                if (TouhouLittleMaid.DEBUG) {
+                    TouhouLittleMaid.LOGGER.info(
+                            "EnhancedLittleMaidAI: Memory extraction completed for maid {}: {} memories",
+                            maid.getUUID(), items.size());
+                }
+            }
+        });
+    }
+
+    @Unique
+    private List<String> enhanced$extractRecentMessages() {
+        List<String> texts = new ArrayList<>();
+        int count = Math.min(messages.size(), 20);
+        int start = messages.size() - count;
+        for (int i = start; i < messages.size(); i++) {
+            LLMMessage msg = messages.get(i);
+            if (msg.role() == Role.USER || msg.role() == Role.ASSISTANT) {
+                texts.add(msg.role().name() + ": " + msg.message());
+            }
+        }
+        return texts;
     }
 }

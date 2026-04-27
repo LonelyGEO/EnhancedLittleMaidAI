@@ -153,7 +153,7 @@ Before editing:
 After editing:
 1. Run targeted verification first (filtered `test --tests ...` when applicable).
 2. Run `./gradlew.bat build` before handoff.
-3. Run `./gradlew.bat runClient` to smoke-test.
+3. **`runClient` 需要用户确认**：执行 `runClient` 前必须向用户提出确认，不得自行启动。
 4. Check the runtime log for `Discarding @Unique` warnings — they indicate method conflicts.
 5. Ensure diff does not contain unrelated formatting churn.
 

@@ -2,6 +2,7 @@ package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ReasoningContentStore;
+import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatData;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.response.ToolCall;
@@ -24,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 
 /**
- * 为 MaidAIChatData 添加 reasoningContent + MindPalace 持久化 + 重载的 addAssistantHistory 方法。
+ * reasoningContent + MindPalace NBT 持久化 + 重载 addAssistantHistory。
  */
 @Mixin(value = MaidAIChatData.class, remap = false)
 public abstract class MaidAIChatDataMixin {
@@ -57,7 +58,6 @@ public abstract class MaidAIChatDataMixin {
 
     @Inject(method = "readFromTag", at = @At("TAIL"), remap = false)
     private void enhanced$readReasoningContent(CompoundTag tag, CallbackInfoReturnable<CompoundTag> cir) {
-        // reasoningContent 持久化
         if (tag.contains(MAID_HISTORY_REASONING_TAG, Tag.TAG_LIST)) {
             ListTag reasoningList = tag.getList(MAID_HISTORY_REASONING_TAG, Tag.TAG_STRING);
             if (!reasoningList.isEmpty()) {
@@ -72,17 +72,20 @@ public abstract class MaidAIChatDataMixin {
             }
         }
 
-        // MindPalace 持久化
         EntityMaid maid = getMaid();
         if (maid != null) {
             MindPalace palace = MindPalace.getOrCreate(maid.getUUID());
             palace.readFromTag(cir.getReturnValue());
+            if (TouhouLittleMaid.DEBUG && palace.size() > 0) {
+                TouhouLittleMaid.LOGGER.debug(
+                        "EnhancedLittleMaidAI: Loaded {} MindPalace memories for maid {}",
+                        palace.size(), maid.getUUID());
+            }
         }
     }
 
     @Inject(method = "writeToTag", at = @At("TAIL"), remap = false)
     private void enhanced$writeReasoningContent(CompoundTag tag, CallbackInfoReturnable<CompoundTag> cir) {
-        // reasoningContent 持久化
         List<LLMMessage> messages = Lists.newArrayList(getHistory().getDeque());
         if (!messages.isEmpty()) {
             ListTag reasoningList = new ListTag();
@@ -93,12 +96,16 @@ public abstract class MaidAIChatDataMixin {
             tag.put(MAID_HISTORY_REASONING_TAG, reasoningList);
         }
 
-        // MindPalace 持久化
         EntityMaid maid = getMaid();
         if (maid != null) {
             MindPalace palace = MindPalace.get(maid.getUUID());
             if (palace != null && palace.size() > 0) {
                 palace.writeToTag(cir.getReturnValue());
+                if (TouhouLittleMaid.DEBUG) {
+                    TouhouLittleMaid.LOGGER.debug(
+                            "EnhancedLittleMaidAI: Saved {} MindPalace memories for maid {}",
+                            palace.size(), maid.getUUID());
+                }
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
+import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
@@ -15,7 +16,6 @@ import java.util.List;
 
 /**
  * 在 LLM 请求构建阶段，将思维宫殿记忆注入为 SYSTEM 消息。
- * 注入位置：buildMessage() 返回的消息列表 index=2（紧跟角色设定 + 压缩摘要之后）。
  */
 @Mixin(value = MaidAIChatManager.class, remap = false)
 public abstract class MaidAIChatManagerMixin {
@@ -43,9 +43,15 @@ public abstract class MaidAIChatManagerMixin {
                 List<LLMMessage> messages = cir.getReturnValue();
                 int insertPos = Math.min(2, messages.size());
                 messages.add(insertPos, memoryMessage);
+
+                if (TouhouLittleMaid.DEBUG) {
+                    TouhouLittleMaid.LOGGER.debug(
+                            "EnhancedLittleMaidAI: Injected memory context for maid {} ({} items)",
+                            maid.getUUID(), palace.size());
+                }
             }
         } catch (Exception e) {
-            // 记忆注入失败不应中断正常聊天流程
+            // 记忆注入失败不中断正常聊天
         }
     }
 }
