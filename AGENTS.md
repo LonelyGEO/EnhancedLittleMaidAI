@@ -183,4 +183,18 @@ For changes under `network.message`:
 - Run client: `./gradlew.bat runClient`
 - Run data gen: `./gradlew.bat runData`
 
+## 11) Git commit workflow
+
+- 仓库地址：`https://github.com/LonelyGEO/EnhancedLittleMaidAI.git`
+- **Agent 主动负责提交**：每次代码改动完成后，Agent 应主动执行 `git add` + `git commit`，不等待用户提醒。提交信息用中文，简洁描述改动目的。
+- **SSH / 连接报错先诊断再提问**：遇到 SSH 权限、认证失败、远程连接等问题时，先自行排查（检查 remote、分支状态等），无法解决再向用户提问协助。
+- **不可逆操作必须征得用户同意**：以下操作**绝对禁止**不经用户明确同意就执行：
+  - `git push --force` / `--force-with-lease`
+  - `git reset --hard`
+  - `git rebase`（含 `--interactive`）
+  - `git branch -D` 删除分支
+  - `git commit --amend`（已推送的 commit）
+  - 以及其他会修改已推送历史或破坏工作区的操作
+- 每次提交前检查 `git status` 和 `git diff`，确保不包含敏感信息（密钥、token 等）。
+
 Keep this file updated when tooling/rules/project conventions change.
