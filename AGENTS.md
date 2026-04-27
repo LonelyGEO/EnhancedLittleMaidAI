@@ -207,6 +207,7 @@ For Mixin changes under `mixin.*`:
   - `git commit --amend`（已推送的 commit）
   - 以及其他会修改已推送历史或破坏工作区的操作
 - 每次提交前检查 `git status` 和 `git diff`，确保不包含敏感信息（密钥、token 等）。
+- **提交前主动提出版本变更建议**：每次完成代码改动后，Agent 应主动根据 §13 的版本位规则，判断本次改动应触发哪个版本位变更，向用户提出确认。用户同意后本次 commit 可包含版本号变更。
 
 ## 13) Versioning
 
