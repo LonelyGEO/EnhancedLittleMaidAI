@@ -10,7 +10,8 @@
         "MessageMixin",
         "LLMOpenAIClientMixin",
         "LLMCallbackMixin",
-        "MaidAIChatDataMixin"
+        "MaidAIChatDataMixin",
+        "MaidAIChatManagerMixin"
     ],
     "injectors": {
         "defaultRequire": 1

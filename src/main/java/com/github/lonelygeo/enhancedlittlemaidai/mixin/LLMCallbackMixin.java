@@ -1,8 +1,10 @@
 package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
+import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ReasoningContentStore;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatData;
+import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.response.Message;
@@ -10,18 +12,23 @@ import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.response.T
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import org.apache.commons.lang3.StringUtils;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
 /**
- * 修改 onFunctionCall：Redirect 替换 addAssistantHistory 和 LLMMessage.assistantChat 调用，
- * 使其携带 reasoningContent。
+ * LLMCallback Mixin：reasoningContent 支持 + 记忆提取计数。
  */
 @Mixin(value = LLMCallback.class, remap = false)
 public abstract class LLMCallbackMixin {
+
+    @Shadow
+    public abstract EntityMaid getMaid();
 
     @Redirect(
             method = "onFunctionCall",
@@ -76,6 +83,31 @@ public abstract class LLMCallbackMixin {
                 }
             } catch (Exception ignored) {
             }
+        }
+    }
+
+    // ==================== 记忆提取 ====================
+
+    @Inject(
+            method = "onSuccess",
+            at = @At("TAIL"),
+            remap = false
+    )
+    private void enhanced$extractMemoriesOnSuccess(ResponseChat responseChat, CallbackInfo ci) {
+        try {
+            EntityMaid maid = getMaid();
+            if (maid == null || maid.isRemoved()) return;
+
+            MindPalace palace = MindPalace.getOrCreate(maid.getUUID());
+            palace.incrementRoundCounter();
+
+            long gameTime = maid.level().getGameTime();
+            if (!palace.shouldExtractMemories(gameTime)) return;
+            palace.markExtractionDone(gameTime);
+
+            // TODO: 异步 LLM 记忆提取 — Phase 2 后续迭代
+        } catch (Exception e) {
+            // 静默失败，不影响正常对话
         }
     }
 }

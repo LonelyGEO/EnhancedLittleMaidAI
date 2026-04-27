@@ -1,5 +1,6 @@
 package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
+import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ReasoningContentStore;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatData;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
@@ -23,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 
 /**
- * 为 MaidAIChatData 添加 reasoningContent 持久化 + 重载的 addAssistantHistory 方法。
+ * 为 MaidAIChatData 添加 reasoningContent + MindPalace 持久化 + 重载的 addAssistantHistory 方法。
  */
 @Mixin(value = MaidAIChatData.class, remap = false)
 public abstract class MaidAIChatDataMixin {
@@ -56,36 +57,49 @@ public abstract class MaidAIChatDataMixin {
 
     @Inject(method = "readFromTag", at = @At("TAIL"), remap = false)
     private void enhanced$readReasoningContent(CompoundTag tag, CallbackInfoReturnable<CompoundTag> cir) {
-        if (!tag.contains(MAID_HISTORY_REASONING_TAG, Tag.TAG_LIST)) {
-            return;
-        }
-        ListTag reasoningList = tag.getList(MAID_HISTORY_REASONING_TAG, Tag.TAG_STRING);
-        if (reasoningList.isEmpty()) {
-            return;
+        // reasoningContent 持久化
+        if (tag.contains(MAID_HISTORY_REASONING_TAG, Tag.TAG_LIST)) {
+            ListTag reasoningList = tag.getList(MAID_HISTORY_REASONING_TAG, Tag.TAG_STRING);
+            if (!reasoningList.isEmpty()) {
+                List<LLMMessage> messages = Lists.newArrayList(getHistory().getDeque());
+                int count = Math.min(reasoningList.size(), messages.size());
+                for (int i = 0; i < count; i++) {
+                    String rc = reasoningList.getString(i);
+                    if (StringUtils.isNotBlank(rc)) {
+                        ReasoningContentStore.put(messages.get(i), rc);
+                    }
+                }
+            }
         }
 
-        List<LLMMessage> messages = Lists.newArrayList(getHistory().getDeque());
-        int count = Math.min(reasoningList.size(), messages.size());
-        for (int i = 0; i < count; i++) {
-            String rc = reasoningList.getString(i);
-            if (StringUtils.isNotBlank(rc)) {
-                ReasoningContentStore.put(messages.get(i), rc);
-            }
+        // MindPalace 持久化
+        EntityMaid maid = getMaid();
+        if (maid != null) {
+            MindPalace palace = MindPalace.getOrCreate(maid.getUUID());
+            palace.readFromTag(cir.getReturnValue());
         }
     }
 
     @Inject(method = "writeToTag", at = @At("TAIL"), remap = false)
     private void enhanced$writeReasoningContent(CompoundTag tag, CallbackInfoReturnable<CompoundTag> cir) {
+        // reasoningContent 持久化
         List<LLMMessage> messages = Lists.newArrayList(getHistory().getDeque());
-        if (messages.isEmpty()) {
-            return;
+        if (!messages.isEmpty()) {
+            ListTag reasoningList = new ListTag();
+            for (LLMMessage msg : messages) {
+                String rc = ReasoningContentStore.get(msg);
+                reasoningList.add(StringTag.valueOf(rc != null ? rc : ""));
+            }
+            tag.put(MAID_HISTORY_REASONING_TAG, reasoningList);
         }
 
-        ListTag reasoningList = new ListTag();
-        for (LLMMessage msg : messages) {
-            String rc = ReasoningContentStore.get(msg);
-            reasoningList.add(StringTag.valueOf(rc != null ? rc : ""));
+        // MindPalace 持久化
+        EntityMaid maid = getMaid();
+        if (maid != null) {
+            MindPalace palace = MindPalace.get(maid.getUUID());
+            if (palace != null && palace.size() > 0) {
+                palace.writeToTag(cir.getReturnValue());
+            }
         }
-        tag.put(MAID_HISTORY_REASONING_TAG, reasoningList);
     }
 }
