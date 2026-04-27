@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.context;
 
 import com.github.lonelygeo.enhancedlittlemaidai.compat.MiningCompat;
+import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.ai.agent.context.IMaidContext;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
@@ -65,7 +66,12 @@ public final class MiningContextProvider {
                         .forEach(e -> sb.append(e.getKey().getDescriptionId())
                                 .append(" x").append(e.getValue()).append("; "));
                 sb.append("| sniff_radius=").append(sniffRadius);
-                return sb.toString();
+                String result = sb.toString();
+                if (TouhouLittleMaid.DEBUG) {
+                    TouhouLittleMaid.LOGGER.debug("EnhancedLittleMaidAI: mining_nearby_ores radius={}, ores={}",
+                            sniffRadius, oreCounts.size());
+                }
+                return result;
             }
         };
     }
@@ -96,8 +102,12 @@ public final class MiningContextProvider {
                             && "mining".equals(uid.getPath());
                 }
 
-                return String.format("active=%b, favor_level=%d, sniff_radius=%d",
+                String result = String.format("active=%b, favor_level=%d, sniff_radius=%d",
                         isActive, favorLevel, sniffRadius);
+                if (TouhouLittleMaid.DEBUG) {
+                    TouhouLittleMaid.LOGGER.debug("EnhancedLittleMaidAI: mining_status active={}", isActive);
+                }
+                return result;
             }
         };
     }

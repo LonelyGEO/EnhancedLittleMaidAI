@@ -1,5 +1,6 @@
 package com.github.lonelygeo.enhancedlittlemaidai.context;
 
+import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.ai.agent.context.GameContextRegister;
 import com.github.tartaricacid.touhoulittlemaid.ai.agent.context.IMaidContext;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
@@ -72,7 +73,11 @@ public final class BlockAwareContexts {
                     .limit(15)
                     .forEach(e -> sb.append(e.getKey().getDescriptionId())
                             .append(" x").append(e.getValue()).append("; "));
-            return sb.isEmpty() ? "none" : sb.toString();
+            String result = sb.isEmpty() ? "none" : sb.toString();
+            if (TouhouLittleMaid.DEBUG) {
+                TouhouLittleMaid.LOGGER.debug("EnhancedLittleMaidAI: nearby_blocks BFS result len={}", result.length());
+            }
+            return result;
         }
 
         private static BlockPos[] sampleDirections(BlockPos center) {
@@ -104,8 +109,12 @@ public final class BlockAwareContexts {
             boolean hasCeiling = level.getBlockState(pos.above(3)).isSolid();
             int redstone = level.getBestNeighborSignal(pos);
 
-            return String.format("light=%d, indoors=%b, sky_visible=%b, redstone_power=%d",
+            String result = String.format("light=%d, indoors=%b, sky_visible=%b, redstone_power=%d",
                     light, indoors || hasCeiling, skyVisible, redstone);
+            if (TouhouLittleMaid.DEBUG) {
+                TouhouLittleMaid.LOGGER.debug("EnhancedLittleMaidAI: environment_detail result={}", result);
+            }
+            return result;
         }
     }
 
@@ -150,7 +159,11 @@ public final class BlockAwareContexts {
                 }
                 sb.append("; ");
             }
-            return sb.isEmpty() ? "none" : sb.toString();
+            String result = sb.isEmpty() ? "none" : sb.toString();
+            if (TouhouLittleMaid.DEBUG) {
+                TouhouLittleMaid.LOGGER.debug("EnhancedLittleMaidAI: entity_detail entities={}", entities.size());
+            }
+            return result;
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.memory;
 
 import com.github.lonelygeo.enhancedlittlemaidai.util.bm25.Bm25Index;
+import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
 import net.minecraft.core.BlockPos;
 
 import java.util.*;
@@ -29,6 +30,10 @@ public class MemoryStore {
 
         memories.add(memory);
         index.add(memory.id().toString(), memory.content());
+
+        if (TouhouLittleMaid.DEBUG) {
+            TouhouLittleMaid.LOGGER.debug("EnhancedLittleMaidAI: Memory added, total={}", memories.size());
+        }
 
         if (memories.size() > MAX_MEMORIES) {
             evict(0);
@@ -75,11 +80,16 @@ public class MemoryStore {
     public void evict(long currentGameTime) {
         if (memories.size() <= MAX_MEMORIES) return;
 
+        int before = memories.size();
         memories.sort(Comparator.comparingDouble(m ->
                 -m.evictionScore(currentGameTime, MAX_AGE_TICKS)));
         while (memories.size() > MAX_MEMORIES) {
             MemoryItem removed = memories.removeLast();
             index.remove(removed.id().toString());
+        }
+        if (TouhouLittleMaid.DEBUG) {
+            TouhouLittleMaid.LOGGER.debug("EnhancedLittleMaidAI: Memory evicted {} items, remaining={}",
+                    before - memories.size(), memories.size());
         }
     }
 
