@@ -1,5 +1,6 @@
 package com.github.tartaricacid.enhancedlittlemaidai.mixin;
 
+import com.github.tartaricacid.enhancedlittlemaidai.util.ReasoningContentStore;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatData;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.response.ToolCall;
@@ -22,11 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 
 /**
- * 为 MaidAIChatData 添加：
- * <ul>
- *   <li>支持 reasoningContent 的 addAssistantHistory 重载方法</li>
- *   <li>NBT 持久化：将 reasoningContent 存入独立的 MaidHistoryReasoningContent 列表</li>
- * </ul>
+ * 为 MaidAIChatData 添加 reasoningContent 持久化 + 重载的 addAssistantHistory 方法。
  */
 @Mixin(value = MaidAIChatData.class, remap = false)
 public abstract class MaidAIChatDataMixin {
@@ -41,31 +38,22 @@ public abstract class MaidAIChatDataMixin {
     @Shadow
     protected abstract void onHistoryUpdated();
 
-    /**
-     * 添加 assistant 历史记录，附带 reasoningContent。
-     */
     @Unique
     public void addAssistantHistory(String message, @Nullable String reasoningContent) {
         LLMMessage llmMsg = LLMMessage.assistantChat(getMaid(), message);
-        ((LLMMessageMixin) (Object) llmMsg).enhancedSetReasoningContent(reasoningContent);
+        ReasoningContentStore.put(llmMsg, reasoningContent);
         getHistory().add(llmMsg);
         onHistoryUpdated();
     }
 
-    /**
-     * 添加 assistant 历史记录（含 toolCalls 和 reasoningContent）。
-     */
     @Unique
     public void addAssistantHistory(String message, List<ToolCall> toolCalls, @Nullable String reasoningContent) {
         LLMMessage llmMsg = LLMMessage.assistantChat(getMaid(), message, toolCalls);
-        ((LLMMessageMixin) (Object) llmMsg).enhancedSetReasoningContent(reasoningContent);
+        ReasoningContentStore.put(llmMsg, reasoningContent);
         getHistory().add(llmMsg);
         onHistoryUpdated();
     }
 
-    /**
-     * 读档后，将 reasoningContent 回填到历史消息中。
-     */
     @Inject(method = "readFromTag", at = @At("TAIL"), remap = false)
     private void enhanced$readReasoningContent(CompoundTag tag, CallbackInfoReturnable<CompoundTag> cir) {
         if (!tag.contains(MAID_HISTORY_REASONING_TAG, Tag.TAG_LIST)) {
@@ -81,14 +69,11 @@ public abstract class MaidAIChatDataMixin {
         for (int i = 0; i < count; i++) {
             String rc = reasoningList.getString(i);
             if (StringUtils.isNotBlank(rc)) {
-                ((LLMMessageMixin) (Object) messages.get(i)).enhancedSetReasoningContent(rc);
+                ReasoningContentStore.put(messages.get(i), rc);
             }
         }
     }
 
-    /**
-     * 存盘前，将 reasoningContent 序列化到独立 tag 中。
-     */
     @Inject(method = "writeToTag", at = @At("TAIL"), remap = false)
     private void enhanced$writeReasoningContent(CompoundTag tag, CallbackInfoReturnable<CompoundTag> cir) {
         List<LLMMessage> messages = Lists.newArrayList(getHistory().getDeque());
@@ -98,7 +83,7 @@ public abstract class MaidAIChatDataMixin {
 
         ListTag reasoningList = new ListTag();
         for (LLMMessage msg : messages) {
-            String rc = ((LLMMessageMixin) (Object) msg).reasoningContent();
+            String rc = ReasoningContentStore.get(msg);
             reasoningList.add(StringTag.valueOf(rc != null ? rc : ""));
         }
         tag.put(MAID_HISTORY_REASONING_TAG, reasoningList);

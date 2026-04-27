@@ -74,8 +74,8 @@ configurations {
 }
 
 dependencies {
-    // 依赖原版 TouhouLittleMaid 模组
-    compileOnly files("libs/touhoulittlemaid-1.5.2-neoforge+mc1.21.1.jar")
+    // 依赖原版 TouhouLittleMaid 模组（编译 + 运行时）
+    implementation files("libs/touhoulittlemaid-1.5.2-neoforge+mc1.21.1.jar")
 
     // 单元测试
     testImplementation 'junit:junit:4.13.2'
@@ -91,3 +91,25 @@ sourceSets {
 
 // 本附属模组不需要 shadowJar（无外部依赖需要打包）
 // shadowJar 已禁用，直接使用普通 jar 即可
+
+// 用于 neoforge.mods.toml 里替换 ${xxxx} 变量
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}

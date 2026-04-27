@@ -1,17 +1,19 @@
 package com.github.tartaricacid.enhancedlittlemaidai.mixin;
 
+import com.github.tartaricacid.enhancedlittlemaidai.util.ReasoningContentStore;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.ResponseCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.Role;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.LLMOpenAIClient;
-import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.request.ChatCompletion;
-import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.request.ChatMessage;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.response.Message;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,45 +21,31 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
- * 核心 Mixin：为 LLMOpenAIClient 注入 reasoningContent 支持。
- * <p>
- * 修改点：
- * <ul>
- *   <li>chat() — 在 ChatCompletion 序列化前，将 LLMMessage 中的 reasoningContent 注入 ChatMessage</li>
- *   <li>onTextCall() — 从 Message 提取 reasoningContent 并存入聊天历史和 LLMMessage</li>
- * </ul>
+ * 为 LLMOpenAIClient 注入 reasoningContent 支持。
+ * 不依赖 Mixin 字段 — 直接在 JSON 层面注入 reasoning_content。
  */
 @Mixin(value = LLMOpenAIClient.class, remap = false)
 public abstract class LLMOpenAIClientMixin {
     @Unique
     private static final ThreadLocal<LLMCallback> enhanced$currentCallback = new ThreadLocal<>();
-
     @Unique
     private static final ThreadLocal<Boolean> enhanced$inRedirect = ThreadLocal.withInitial(() -> false);
 
-    /**
-     * chat() 方法入口：捕获 callback 引用，供后续 redirect 使用。
-     */
     @Inject(method = "chat", at = @At("HEAD"), remap = false)
     private void enhanced$captureCallback(LLMCallback callback, CallbackInfo ci) {
         enhanced$currentCallback.set(callback);
     }
 
     /**
-     * 拦截 GSON.toJson(chatCompletion) 调用。
-     * 在序列化前，将 LLMMessage 中的 reasoningContent 注入到对应的 ChatMessage。
-     * 递归安全：debug 日志会触发第二次 toJson 调用。
+     * 拦截 Gson.toJson，JSON 序列化后注入 reasoning_content 字段。
      */
-    @SuppressWarnings("unchecked")
     @Redirect(
             method = "chat",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lcom/google/gson/Gson;toJson(Ljava/lang/Object;)Ljava/lang/String;"
-            ),
+            at = @At(value = "INVOKE", target = "Lcom/google/gson/Gson;toJson(Ljava/lang/Object;)Ljava/lang/String;"),
             remap = false
     )
     private String enhanced$patchAndToJson(Gson gson, Object src) {
@@ -66,95 +54,81 @@ public abstract class LLMOpenAIClientMixin {
         }
         enhanced$inRedirect.set(true);
         try {
-            ChatCompletion cc = (ChatCompletion) src;
+            String json = gson.toJson(src);
             LLMCallback callback = enhanced$currentCallback.get();
             if (callback != null) {
-                patchReasoningContent(cc, callback);
+                json = injectReasoningContent(json, callback.getMessages());
                 enhanced$currentCallback.remove();
             }
-            return gson.toJson(cc);
+            return json;
         } finally {
             enhanced$inRedirect.remove();
         }
     }
 
     /**
-     * 在 onTextCall 入口提取 reasoningContent 并存入聊天历史。
-     * 原 onTextCall 不记录历史；这里添加带 reasoningContent 的历史记录。
+     * 在 onTextCall 中记录 reasoningContent 到历史。
      */
-    @Inject(
-            method = "onTextCall",
-            at = @At("HEAD"),
-            remap = false
-    )
-    private void enhanced$onTextCall(
-            ResponseCallback<ResponseChat> callback,
-            Message firstChoice,
-            CallbackInfo ci
-    ) {
+    @Inject(method = "onTextCall", at = @At("HEAD"), remap = false)
+    private void enhanced$onTextCall(ResponseCallback<ResponseChat> callback, Message firstChoice, CallbackInfo ci) {
         if (callback instanceof LLMCallback llmCallback && llmCallback.needAddTools) {
-            String rawContent = StringUtils.defaultString(getRawContentSafe(firstChoice));
-            String reasoningContent = getReasoningContentSafe(firstChoice);
+            String rawContent = StringUtils.defaultString(firstChoice.getContent());
+            String reasoningContent = ReasoningContentStore.getFromMessage(firstChoice);
             llmCallback.getChatManager().addAssistantHistory(rawContent, reasoningContent);
-
-            // 将 reasoningContent 存到消息列表最后一个 ASSISTANT 消息中
-            storeReasoningContentOnLastMessage(llmCallback, reasoningContent);
+            storeReasoningContent(llmCallback, reasoningContent);
         }
     }
 
+    /**
+     * 在已有 JSON 的基础上，为 ASSISTANT 消息注入 reasoning_content 字段。
+     */
     @Unique
-    private static void patchReasoningContent(ChatCompletion cc, LLMCallback callback) {
-        List<LLMMessage> llmMessages = callback.getMessages();
-        List<ChatMessage> chatMessages = ((ChatCompletionAccessor) cc).getChatMessages();
+    private static String injectReasoningContent(String json, List<LLMMessage> llmMessages) {
+        try {
+            JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+            JsonArray messages = root.getAsJsonArray("messages");
+            if (messages == null) {
+                return json;
+            }
 
-        int chatIdx = 0;
-        for (LLMMessage llmMsg : llmMessages) {
-            if (llmMsg.role() == Role.ASSISTANT) {
-                String rc = ((LLMMessageMixin) (Object) llmMsg).reasoningContent();
-                if (StringUtils.isNotBlank(rc)) {
-                    for (int i = chatIdx; i < chatMessages.size(); i++) {
-                        ChatMessage chatMsg = chatMessages.get(i);
-                        if (Role.ASSISTANT.getId().equals(chatMsg.getRole())) {
-                            ((ChatMessageMixin) (Object) chatMsg).enhancedSetReasoningContent(rc);
-                            chatIdx = i + 1;
-                            break;
-                        }
+            Iterator<LLMMessage> llmIter = llmMessages.iterator();
+            int msgIdx = 0;
+            while (llmIter.hasNext() && msgIdx < messages.size()) {
+                LLMMessage llmMsg = llmIter.next();
+                JsonElement el = messages.get(msgIdx);
+                if (!el.isJsonObject()) {
+                    msgIdx++;
+                    continue;
+                }
+                JsonObject msgObj = el.getAsJsonObject();
+                String role = msgObj.has("role") ? msgObj.get("role").getAsString() : "";
+
+                if (llmMsg.role() == Role.ASSISTANT && "assistant".equals(role)) {
+                    String rc = ReasoningContentStore.get(llmMsg);
+                    if (StringUtils.isNotBlank(rc)) {
+                        msgObj.addProperty("reasoning_content", rc);
                     }
                 }
+                msgIdx++;
             }
+
+            return new Gson().toJson(root);
+        } catch (Exception e) {
+            // Silently fall back to unmodified JSON
+            return json;
         }
     }
 
     @Unique
-    private static void storeReasoningContentOnLastMessage(LLMCallback callback, @Nullable String reasoningContent) {
+    private static void storeReasoningContent(LLMCallback callback, String reasoningContent) {
         if (StringUtils.isNotBlank(reasoningContent)) {
             List<LLMMessage> messages = callback.getMessages();
             if (!messages.isEmpty()) {
                 LLMMessage lastMsg = messages.get(messages.size() - 1);
                 if (lastMsg.role() == Role.ASSISTANT) {
-                    ((LLMMessageMixin) (Object) lastMsg).enhancedSetReasoningContent(reasoningContent);
+                    ReasoningContentStore.put(lastMsg, reasoningContent);
                 }
             }
-        }
-    }
-
-    @Unique
-    private static String getRawContentSafe(Message message) {
-        try {
-            String raw = ((MessageMixin) (Object) message).getRawContent();
-            return raw != null ? raw : message.getContent();
-        } catch (Exception ignored) {
-            return message.getContent();
-        }
-    }
-
-    @Unique
-    @Nullable
-    private static String getReasoningContentSafe(Message message) {
-        try {
-            return ((MessageMixin) (Object) message).getReasoningContent();
-        } catch (Exception ignored) {
-            return null;
         }
     }
 }
