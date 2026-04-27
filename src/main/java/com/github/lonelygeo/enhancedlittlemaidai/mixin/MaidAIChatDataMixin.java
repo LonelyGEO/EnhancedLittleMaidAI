@@ -96,6 +96,8 @@ public abstract class MaidAIChatDataMixin {
             tag.put(MAID_HISTORY_REASONING_TAG, reasoningList);
         }
 
+        ReasoningContentStore.pruneStaleEntries(new java.util.HashSet<>(messages));
+
         EntityMaid maid = getMaid();
         if (maid != null) {
             MindPalace palace = MindPalace.get(maid.getUUID());

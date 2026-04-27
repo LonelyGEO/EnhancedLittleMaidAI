@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 跨 Mixin 共享的 reasoningContent 存储器。
@@ -22,6 +23,15 @@ public final class ReasoningContentStore {
     @Nullable
     public static String get(LLMMessage msg) {
         return STORE.get(msg);
+    }
+
+    /**
+     * 清理所有不在给定集合中的陈旧消息引用。
+     */
+    public static void pruneStaleEntries(Set<LLMMessage> activeMessages) {
+        synchronized (STORE) {
+            STORE.keySet().removeIf(msg -> !activeMessages.contains(msg));
+        }
     }
 
     /**
