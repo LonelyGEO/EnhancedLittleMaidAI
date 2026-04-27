@@ -93,6 +93,11 @@ public class MindPalace {
         }
     }
 
+    /** 添加单条记忆，使用记忆自带的时间戳。 */
+    public void addMemory(MemoryItem item) {
+        store.add(item, item.gameTime());
+    }
+
     public void readFromTag(CompoundTag tag) {
         if (!tag.contains("MindPalaceMemories", Tag.TAG_LIST)) return;
         ListTag list = tag.getList("MindPalaceMemories", Tag.TAG_COMPOUND);
