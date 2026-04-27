@@ -207,7 +207,7 @@ For Mixin changes under `mixin.*`:
   - `git commit --amend`（已推送的 commit）
   - 以及其他会修改已推送历史或破坏工作区的操作
 - 每次提交前检查 `git status` 和 `git diff`，确保不包含敏感信息（密钥、token 等）。
-- **提交前主动提出版本变更建议**：每次完成代码改动后，Agent 应主动根据 §13 的版本位规则，判断本次改动应触发哪个版本位变更，向用户提出确认。用户同意后本次 commit 可包含版本号变更。
+- **提交前主动提出版本变更建议**：每次完成代码改动后，Agent 应主动根据 §13 的版本位规则进行判断。PATCH 级别（Bug 修复、小调整）可自行决定并变更版本号；MINOR 及以上（新功能、架构重写）必须向用户确认后变更。
 
 ## 13) Versioning
 
@@ -222,7 +222,8 @@ For Mixin changes under `mixin.*`:
 
 规则：
 - 版本号变更单独一条 commit，格式 `release: 0.x.y`
-- 每次版本迭代前**必须向用户确认**，不得自行决定发版
+- PATCH 级别（Bug 修复、参数微调、语言文件补充）Agent 可自行决定并变更，无需等待确认
+- MINOR 及以上版本迭代前**必须向用户确认**，不得自行决定发版
 - 发版时在 `planToAgent.md` 记录该版本已完成的功能
 
 Keep this file updated when tooling/rules/project conventions change.
