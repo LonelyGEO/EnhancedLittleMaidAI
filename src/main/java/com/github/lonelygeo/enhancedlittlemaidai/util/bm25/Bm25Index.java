@@ -42,11 +42,14 @@ public class Bm25Index {
         for (String token : old.tokens) {
             Map<String, Integer> postings = invertedIndex.get(token);
             if (postings != null) {
-                int count = postings.remove(docId) - 1;
-                if (count <= 0) {
-                    postings.remove(docId);
-                } else {
-                    postings.put(docId, count);
+                Integer oldCount = postings.get(docId);
+                if (oldCount != null) {
+                    int newCount = oldCount - 1;
+                    if (newCount <= 0) {
+                        postings.remove(docId);
+                    } else {
+                        postings.put(docId, newCount);
+                    }
                 }
                 if (postings.isEmpty()) {
                     invertedIndex.remove(token);
