@@ -19,10 +19,8 @@ public class MemoryStore {
     private final List<MemoryItem> memories = new ArrayList<>();
     private final Bm25Index index = new Bm25Index();
 
-    /**
-     * 添加记忆。返回 true 表示成功添加，false 表示重复被跳过。
-     */
-    public boolean add(MemoryItem memory) {
+    /** 添加记忆，传入当前游戏时间用于淘汰评分。返回 true 表示成功添加，false 表示重复。 */
+    public boolean add(MemoryItem memory, long gameTime) {
         List<Bm25Index.ScoredDoc> similar = index.search(memory.content(), 1);
         if (!similar.isEmpty() && similar.getFirst().score() > DEDUP_SCORE_THRESHOLD) {
             return false;
@@ -36,7 +34,7 @@ public class MemoryStore {
         }
 
         if (memories.size() > MAX_MEMORIES) {
-            evict(0);
+            evict(gameTime);
         }
 
         return true;

@@ -89,9 +89,8 @@ public class MindPalace {
 
     public void addMemories(List<MemoryItem> items, long currentGameTime) {
         for (MemoryItem item : items) {
-            store.add(item);
+            store.add(item, currentGameTime);
         }
-        store.evict(currentGameTime);
     }
 
     public void readFromTag(CompoundTag tag) {
