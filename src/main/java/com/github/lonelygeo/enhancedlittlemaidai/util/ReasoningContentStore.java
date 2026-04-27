@@ -1,4 +1,4 @@
-package com.github.tartaricacid.enhancedlittlemaidai.util;
+package com.github.lonelygeo.enhancedlittlemaidai.util;
 
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import org.jetbrains.annotations.Nullable;

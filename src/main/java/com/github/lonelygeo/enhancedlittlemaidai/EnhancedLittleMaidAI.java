@@ -1,4 +1,4 @@
-package com.github.tartaricacid.enhancedlittlemaidai;
+package com.github.lonelygeo.enhancedlittlemaidai;
 
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;

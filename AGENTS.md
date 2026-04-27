@@ -3,19 +3,22 @@
 ## Language policy
 
 - 默认使用简体中文回答。
-- 除非我明确要求英文，否则不要切换英文叙述。
+- 除非明确要求英文，否则不要切换英文叙述。
 - 代码、命令、报错、API 名称保持原文，不要强行翻译。
 - 提问澄清时也使用中文。
 
-Repository-specific guidance for coding agents working in `TouhouLittleMaid-1.21`.
+Repository-specific guidance for coding agents working in `EnhancedLittleMaidAI-1.21`.
 All items below were verified against the current repository contents.
 
 ## 1) Project snapshot
 
+- 项目类型: **NeoForge 附属模组（Mixin addon）**
+- 父模组: `touhou_little_maid`（NeoForge 1.21.1）
 - Build system: **Gradle Wrapper** (`gradlew`, `gradlew.bat`)
 - Language toolchain: **Java 21** (`build.gradle`)
 - Mod platform: **NeoForge** (`net.neoforged.moddev` plugin)
-- Packaging: `assemble` depends on `shadowJar`
+- Packaging: 标准 jar（无 shadowJar）
+- 父模组依赖: `implementation files("libs/touhoulittlemaid-...jar")`
 - Test dependency: **JUnit 4.13.2** (`testImplementation`)
 
 ## 2) Cursor/Copilot rule files
@@ -56,9 +59,9 @@ Use `.bat` on Windows and non-`.bat` equivalents on macOS/Linux.
 Gradle test filtering is supported via `--tests`.
 
 - Single class:
-  - `./gradlew.bat test --tests "com.github.tartaricacid.touhoulittlemaid.ExampleTest"`
+  - `./gradlew.bat test --tests "com.github.lonelygeo.enhancedlittlemaidai.ExampleTest"`
 - Single method:
-  - `./gradlew.bat test --tests "com.github.tartaricacid.touhoulittlemaid.ExampleTest.shouldDoThing"`
+  - `./gradlew.bat test --tests "com.github.lonelygeo.enhancedlittlemaidai.ExampleTest.shouldDoThing"`
 - Method wildcard:
   - `./gradlew.bat test --tests "*ExampleTest.should*"`
 
@@ -100,19 +103,8 @@ Avoid reordering imports unless required by your edit.
 - Constants (`static final`): `UPPER_SNAKE_CASE`
 - Packages: lowercase, feature-oriented
 
-### Types and modeling
-
-- Packet payloads often use Java `record`.
-- Packet classes typically expose:
-  - `public static final Type<...> TYPE`
-  - `public static final StreamCodec<...> STREAM_CODEC`
-- Prefer explicit, readable types in shared/core code.
-
 ### Nullability
 
-- Some packages declare defaults in `package-info.java`:
-  - `@ParametersAreNonnullByDefault`
-  - `@MethodsReturnNonnullByDefault`
 - Use `@Nullable` explicitly where null is valid.
 - Prefer guard clauses + early returns for invalid/null state.
 
@@ -125,9 +117,8 @@ Avoid reordering imports unless required by your edit.
 ### Logging
 
 - Main logger pattern:
-  - `public static final Logger LOGGER = LogManager.getLogger(MOD_ID);`
+  - `public static final Logger LOGGER = LogUtils.getLogger();`
 - Use parameterized logging (`{}` placeholders).
-- Marker-based logging appears in resource-loading paths.
 
 ### Comments
 
@@ -137,12 +128,14 @@ Avoid reordering imports unless required by your edit.
 
 ## 6) Architecture hints
 
-- Entry points: `TouhouLittleMaid`, `TouhouLittleMaidClient`
-- Common package roles:
-  - `network.message.*`: networking payloads/handlers
-  - `client.*`: rendering/UI/client resources
-  - `util.*`: shared helpers
-  - `tileentity.*`, `entity.*`, `world.*`: gameplay systems
+- **Entry point**: `EnhancedLittleMaidAI`
+- **Addon pattern**: Mixin 注入式 — 不直接修改父模组源码，通过字节码注入实现功能扩展
+- **Package roles**:
+  - `mixin.*`: Mixin 类，注入到父模组类中（如 `LLMOpenAIClient`、`LLMCallback`、`MaidAIChatData` 等）
+  - `util.*`: 跨 Mixin 共享工具类（如 `ReasoningContentStore`）
+- **跨 Mixin 通讯模式**: 使用 `ReasoningContentStore`（`IdentityHashMap<LLMMessage, String>`）在 Mixin 间共享 reasoningContent，避免跨 Mixin 的 `@Unique` 方法调用（后者需要 refMap）
+- **JSON 注入模式**: `LLMOpenAIClientMixin` 在 `Gson.toJson` 后直接解析 JSON 字符串，按消息顺序匹配并注入 `reasoning_content` 字段，无需在 `ChatMessage` 上添加 Mixin 字段
+- **兼容性处理**: `@Redirect` 使用 `require = 0`，在父模组已内置 thinking 支持时静默跳过
 
 When adding code, place it in the existing feature namespace.
 
@@ -152,11 +145,15 @@ Before editing:
 1. Find a nearby analogous implementation and mirror its style.
 2. Confirm the right Gradle task(s) (`tasks --all` if uncertain).
 3. Determine whether changes are client-only, server-only, or shared.
+4. Verify the target class/method exists in the parent mod (check the `libs/` JAR).
+5. For Mixin changes: confirm the injection point is stable across parent mod versions.
 
 After editing:
 1. Run targeted verification first (filtered `test --tests ...` when applicable).
-2. Run `./gradlew.bat check` before handoff.
-3. Ensure diff does not contain unrelated formatting churn.
+2. Run `./gradlew.bat build` before handoff.
+3. Run `./gradlew.bat runClient` to smoke-test.
+4. Check the runtime log for `Discarding @Unique` warnings — they indicate method conflicts.
+5. Ensure diff does not contain unrelated formatting churn.
 
 ## 8) Packet-specific checklist
 
@@ -167,13 +164,25 @@ For changes under `network.message`:
 4. Follow existing enqueue/handler flow patterns.
 5. Keep boundary nullability checks explicit.
 
-## 9) Do not assume
+## 9) Mixin-specific checklist
+
+For Mixin changes under `mixin.*`:
+1. **Target method verification**: Confirm the target method signature (name + parameter types) exists in the loaded parent mod classes.
+2. **Prefer `@Inject` over `@Overwrite`**: `@Overwrite` replaces an entire method and breaks with parent mod updates. Use `@Inject` + `@Redirect` + `@ModifyVariable` instead.
+3. **`require = 0` for optional injections**: When a mixin should work with both modified and unmodified versions of a class, use `require = 0` on `@Redirect`/`@Inject` to silently skip if the target doesn't exist.
+4. **Avoid cross-Mixin `@Unique` method calls**: Calling a `@Unique` method defined in Mixin A from Mixin B requires a refMap. Use shared utility classes (non-Mixin, outside the mixin package) with reflection or a common data store instead.
+5. **Avoid `@SerializedName` field duplication**: Do not add a Mixin field with `@SerializedName("x")` if the parent mod class already has a field with the same JSON name — Gson will throw an `IllegalArgumentException`.
+6. **Check `Discarding @Unique` warnings**: If the runtime log shows this warning, the `@Unique` method/field already exists in the target class and the Mixin version was discarded. This is normal when the parent mod already has the equivalent code.
+
+## 10) Do not assume
 
 - Auto-format/lint tooling exists (it currently does not).
 - Tests exist for every module.
 - Cursor/Copilot policy files exist (none found right now).
+- **refMap is generated**: This project does not generate a refMap. Avoid cross-Mixin `@Unique` calls.
+- **Parent mod classes are unchanged**: The parent mod may already have some features this addon provides. Use `require = 0` to handle both cases.
 
-## 10) Quick commands
+## 11) Quick commands
 
 - Build: `./gradlew.bat build`
 - Check: `./gradlew.bat check`
@@ -183,7 +192,7 @@ For changes under `network.message`:
 - Run client: `./gradlew.bat runClient`
 - Run data gen: `./gradlew.bat runData`
 
-## 11) Git commit workflow
+## 12) Git commit workflow
 
 - 仓库地址：`https://github.com/LonelyGEO/EnhancedLittleMaidAI.git`
 - **Agent 主动负责提交**：每次代码改动完成后，Agent 应主动执行 `git add` + `git commit`，不等待用户提醒。提交信息用中文，简洁描述改动目的。

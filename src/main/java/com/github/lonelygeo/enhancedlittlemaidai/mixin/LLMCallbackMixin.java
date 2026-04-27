@@ -1,6 +1,6 @@
-package com.github.tartaricacid.enhancedlittlemaidai.mixin;
+package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
-import com.github.tartaricacid.enhancedlittlemaidai.util.ReasoningContentStore;
+import com.github.lonelygeo.enhancedlittlemaidai.util.ReasoningContentStore;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatData;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;

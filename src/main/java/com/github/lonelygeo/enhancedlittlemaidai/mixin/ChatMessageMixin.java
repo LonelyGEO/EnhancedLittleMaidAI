@@ -1,4 +1,4 @@
-package com.github.tartaricacid.enhancedlittlemaidai.mixin;
+package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.request.ChatMessage;
 import org.spongepowered.asm.mixin.Mixin;
