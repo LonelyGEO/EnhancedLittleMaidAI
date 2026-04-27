@@ -18,14 +18,15 @@ public class EnhancedLittleMaidExtension implements ILittleMaid {
         register.registerCategory("nearby_blocks",
                 "Block types around the maid (BFS depth 5 sampling)",
                 false);
-        register.registerCategory("entity_details",
-                "Detailed info of nearby entities (HP, profession, hostility, etc.)",
-                false);
         register.registerCategory("environment_detail",
                 "Light level, indoor/outdoor status, and redstone power",
                 false);
 
         BlockAwareContexts.registerAll(register);
+
+        // 注入到父模组已有的 nearby_entities 类别，补充 HP/职业/敌对等细节
+        register.registerContext("nearby_entities",
+                BlockAwareContexts.createEntityDetailContext());
 
         if (MiningCompat.isLoaded()) {
             register.registerCategory("mining_info",

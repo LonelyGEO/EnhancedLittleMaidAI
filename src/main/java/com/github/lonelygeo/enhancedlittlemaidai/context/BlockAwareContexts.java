@@ -22,7 +22,10 @@ public final class BlockAwareContexts {
     public static void registerAll(GameContextRegister register) {
         register.registerContext("nearby_blocks", new NearbyBlocksContext());
         register.registerContext("environment_detail", new EnvironmentDetailContext());
-        register.registerContext("entity_details", new EntityDetailContext());
+    }
+
+    public static IMaidContext createEntityDetailContext() {
+        return new EntityDetailContext();
     }
 
     private static class NearbyBlocksContext implements IMaidContext {
@@ -109,7 +112,7 @@ public final class BlockAwareContexts {
     private static class EntityDetailContext implements IMaidContext {
         @Override
         public String key() {
-            return "entity_details";
+            return "nearby_entities_detail";
         }
 
         @Override
