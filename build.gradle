@@ -1,0 +1,93 @@
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.95'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.ALL
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = 'enhanced_little_maid_ai'
+}
+
+repositories {
+    mavenCentral()
+}
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    runs {
+        client {
+            client()
+            gameDirectory = project.file('run/client')
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            gameDirectory = project.file('run/server')
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        data {
+            data()
+            gameDirectory = project.file('run/data')
+            programArguments.addAll '--mod', project.mod_id, '--all',
+                    '--output', file('src/generated/resources/').getAbsolutePath(),
+                    '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        configureEach {
+            jvmArguments = [
+                    '-XX:+IgnoreUnrecognizedVMOptions',
+                    '-XX:+AllowEnhancedClassRedefinition'
+            ]
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    // 依赖原版 TouhouLittleMaid 模组
+    compileOnly files("libs/touhoulittlemaid-1.5.2-neoforge+mc1.21.1.jar")
+
+    // 单元测试
+    testImplementation 'junit:junit:4.13.2'
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/generated/resources'
+        }
+    }
+}
+
+// 本附属模组不需要 shadowJar（无外部依赖需要打包）
+// shadowJar 已禁用，直接使用普通 jar 即可
