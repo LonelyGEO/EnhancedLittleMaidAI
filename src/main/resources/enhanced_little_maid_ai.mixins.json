@@ -6,6 +6,7 @@
     "refmap": "enhanced_little_maid_ai.refmap.json",
     "mixins": [
         "ChatMessageMixin",
+        "EntityMaidMixin",
         "LLMMessageMixin",
         "MessageMixin",
         "LLMOpenAIClientMixin",
