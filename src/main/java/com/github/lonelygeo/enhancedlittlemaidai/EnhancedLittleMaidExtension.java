@@ -3,7 +3,7 @@ package com.github.lonelygeo.enhancedlittlemaidai;
 import com.github.lonelygeo.enhancedlittlemaidai.compat.MiningCompat;
 import com.github.lonelygeo.enhancedlittlemaidai.context.BlockAwareContexts;
 import com.github.lonelygeo.enhancedlittlemaidai.context.MiningContextProvider;
-import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
+import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
 import com.github.tartaricacid.touhoulittlemaid.ai.agent.context.GameContextRegister;
@@ -36,7 +36,7 @@ public class EnhancedLittleMaidExtension implements ILittleMaid {
             register.registerContext("mining_info", MiningContextProvider.createMiningStatusContext());
         }
 
-        TouhouLittleMaid.LOGGER.info(
+        EnhancedLittleMaidAI.LOGGER.info(
                 "EnhancedLittleMaidAI: Registered context categories — nearby_blocks, environment_detail, nearby_entities{}",
                 MiningCompat.isLoaded() ? ", mining_info" : "");
     }

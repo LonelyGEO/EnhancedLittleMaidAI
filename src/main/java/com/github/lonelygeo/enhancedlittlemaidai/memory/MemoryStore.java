@@ -1,7 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.memory;
 
 import com.github.lonelygeo.enhancedlittlemaidai.util.bm25.Bm25Index;
-import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
+import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import net.minecraft.core.BlockPos;
 
 import java.util.*;
@@ -29,8 +29,8 @@ public class MemoryStore {
         memories.add(memory);
         index.add(memory.id().toString(), memory.content());
 
-        if (TouhouLittleMaid.DEBUG) {
-            TouhouLittleMaid.LOGGER.debug("EnhancedLittleMaidAI: Memory added, total={}", memories.size());
+        if (EnhancedLittleMaidAI.DEBUG_LOG) {
+            EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: Memory added, total={}", memories.size());
         }
 
         if (memories.size() > MAX_MEMORIES) {
@@ -85,8 +85,8 @@ public class MemoryStore {
             MemoryItem removed = memories.removeLast();
             index.remove(removed.id().toString());
         }
-        if (TouhouLittleMaid.DEBUG) {
-            TouhouLittleMaid.LOGGER.debug("EnhancedLittleMaidAI: Memory evicted {} items, remaining={}",
+        if (EnhancedLittleMaidAI.DEBUG_LOG) {
+            EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: Memory evicted {} items, remaining={}",
                     before - memories.size(), memories.size());
         }
     }
@@ -109,5 +109,23 @@ public class MemoryStore {
 
     public int size() {
         return memories.size();
+    }
+
+    /** 删除最旧的 N 条记忆（按 gameTime 升序）。用于压缩后替换。 */
+    public void removeOldest(int count) {
+        if (memories.size() <= count) {
+            for (MemoryItem m : List.copyOf(memories)) {
+                index.remove(m.id().toString());
+            }
+            memories.clear();
+            return;
+        }
+        List<MemoryItem> sorted = new ArrayList<>(memories);
+        sorted.sort(Comparator.comparingLong(MemoryItem::gameTime));
+        for (int i = 0; i < count; i++) {
+            MemoryItem removed = sorted.get(i);
+            memories.remove(removed);
+            index.remove(removed.id().toString());
+        }
     }
 }

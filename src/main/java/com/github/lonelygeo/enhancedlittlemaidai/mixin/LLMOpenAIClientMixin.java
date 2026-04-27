@@ -1,7 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
 import com.github.lonelygeo.enhancedlittlemaidai.util.ReasoningContentStore;
-import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
+import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.ResponseCallback;
@@ -39,8 +39,8 @@ public abstract class LLMOpenAIClientMixin {
     @Inject(method = "chat", at = @At("HEAD"), remap = false)
     private void enhanced$captureCallback(LLMCallback callback, CallbackInfo ci) {
         enhanced$currentCallback.set(callback);
-        if (TouhouLittleMaid.DEBUG) {
-            TouhouLittleMaid.LOGGER.debug("EnhancedLittleMaidAI: ReasoningContent injector captured callback");
+        if (EnhancedLittleMaidAI.DEBUG_LOG) {
+            EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: ReasoningContent injector captured callback");
         }
     }
 
@@ -63,8 +63,8 @@ public abstract class LLMOpenAIClientMixin {
             if (callback != null) {
                 json = injectReasoningContent(json, callback.getMessages());
                 enhanced$currentCallback.remove();
-                if (TouhouLittleMaid.DEBUG) {
-                    TouhouLittleMaid.LOGGER.debug("EnhancedLittleMaidAI: ReasoningContent injected into JSON");
+                if (EnhancedLittleMaidAI.DEBUG_LOG) {
+                    EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: ReasoningContent injected into JSON");
                 }
             }
             return json;
@@ -83,8 +83,8 @@ public abstract class LLMOpenAIClientMixin {
             String reasoningContent = ReasoningContentStore.getFromMessage(firstChoice);
             llmCallback.getChatManager().addAssistantHistory(rawContent, reasoningContent);
             storeReasoningContent(llmCallback, reasoningContent);
-            if (TouhouLittleMaid.DEBUG && reasoningContent != null) {
-                TouhouLittleMaid.LOGGER.debug("EnhancedLittleMaidAI: Extracted reasoningContent from LLM response");
+            if (EnhancedLittleMaidAI.DEBUG_LOG && reasoningContent != null) {
+                EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: Extracted reasoningContent from LLM response");
             }
         }
     }

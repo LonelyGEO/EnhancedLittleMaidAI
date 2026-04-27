@@ -1,11 +1,16 @@
 package com.github.lonelygeo.enhancedlittlemaidai.memory;
 
+import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
+import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 思维宫殿 —— 每个女仆实例对应一个 MindPalace。
@@ -125,5 +130,43 @@ public class MindPalace {
 
     public boolean needsCompression() {
         return store.needsCompression();
+    }
+
+    // ==================== LLM 记忆压缩 ====================
+
+    /** 异步触发 LLM 记忆压缩。由 LLMCallbackMixin 调用。 */
+    public void triggerCompression(EntityMaid maid, LLMClient llmClient) {
+        List<String> oldTexts = MemoryCompressor.getOldestMemoryTexts(store);
+        if (oldTexts.isEmpty()) return;
+
+        String prompt = MemoryCompressor.buildCompressPrompt(oldTexts);
+        LLMMessage sysMsg = LLMMessage.systemChat(maid, prompt);
+        List<LLMMessage> msgs = List.of(sysMsg);
+
+        CompletableFuture<List<MemoryItem>> future = new CompletableFuture<>();
+        MemoryExtractionCallback cb = new MemoryExtractionCallback(
+                null, msgs, future);
+        llmClient.chat(cb);
+
+        future.whenComplete((summaries, ex) -> {
+            if (ex == null && summaries != null && !summaries.isEmpty()) {
+                applyCompressionResult(summaries);
+                if (EnhancedLittleMaidAI.DEBUG_LOG) {
+                    EnhancedLittleMaidAI.LOGGER.info(
+                            "EnhancedLittleMaidAI: Memory compression completed for maid {}: {} summaries",
+                            maidUuid, summaries.size());
+                }
+            } else if (ex != null) {
+                EnhancedLittleMaidAI.LOGGER.warn(
+                        "EnhancedLittleMaidAI: Memory compression failed for maid {}", maidUuid, ex);
+            }
+        });
+    }
+
+    private void applyCompressionResult(List<MemoryItem> summaries) {
+        store.removeOldest(MemoryCompressor.COMPRESS_BATCH_SIZE);
+        for (MemoryItem item : summaries) {
+            store.restore(item);
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.github.lonelygeo.enhancedlittlemaidai.memory;
 
-import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
+import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat;
@@ -32,8 +32,8 @@ public class MemoryExtractionCallback extends LLMCallback {
     public void onSuccess(ResponseChat responseChat) {
         String text = responseChat.getChatText();
         List<MemoryItem> items = MemoryResponseParser.parse(text);
-        if (TouhouLittleMaid.DEBUG) {
-            TouhouLittleMaid.LOGGER.debug(
+        if (EnhancedLittleMaidAI.DEBUG_LOG) {
+            EnhancedLittleMaidAI.LOGGER.debug(
                     "EnhancedLittleMaidAI: Memory extraction LLM returned {} items", items.size());
         }
         future.complete(items);
@@ -41,7 +41,7 @@ public class MemoryExtractionCallback extends LLMCallback {
 
     @Override
     public void onFailure(HttpRequest request, Throwable throwable, int errorCode) {
-        TouhouLittleMaid.LOGGER.warn(
+        EnhancedLittleMaidAI.LOGGER.warn(
                 "EnhancedLittleMaidAI: Memory extraction LLM call failed with code {}", errorCode);
         future.completeExceptionally(
                 throwable != null ? throwable : new RuntimeException("Memory extraction failed: " + errorCode));

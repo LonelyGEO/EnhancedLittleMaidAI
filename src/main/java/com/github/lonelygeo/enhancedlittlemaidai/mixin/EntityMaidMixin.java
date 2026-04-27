@@ -33,14 +33,41 @@ public abstract class EntityMaidMixin {
         String cause = "未知原因";
         try {
             var ds = maid.getLastDamageSource();
-            if (ds != null) cause = ds.getMsgId();
+            if (ds != null) {
+                var entity = ds.getEntity();
+                if (entity != null) {
+                    cause = entity.getDisplayName().getString();
+                } else {
+                    cause = ds.getMsgId();
+                }
+            }
         } catch (Exception ignored) {
         }
+
+        String heldItem = "空手";
+        try {
+            var mainHand = maid.getMainHandItem();
+            if (mainHand != null && !mainHand.isEmpty()) {
+                heldItem = mainHand.getDescriptionId();
+            }
+        } catch (Exception ignored) {
+        }
+
+        String task = "无";
+        try {
+            var currentTask = maid.getTask();
+            if (currentTask != null) {
+                task = currentTask.getUid().toString();
+            }
+        } catch (Exception ignored) {
+        }
+
+        String deathContent = String.format("被 %s 击杀 手持%s 任务:%s", cause, heldItem, task);
 
         palace.addMemory(new MemoryItem(
                 UUID.randomUUID(),
                 MemoryCategory.EVENT,
-                "被 " + cause + " 击杀",
+                deathContent,
                 Optional.of(maid.blockPosition()),
                 Optional.ofNullable(maid.level().dimension().location().toString()),
                 maid.level().getGameTime(),

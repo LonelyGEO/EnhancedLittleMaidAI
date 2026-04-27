@@ -2,7 +2,7 @@ package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ReasoningContentStore;
-import com.github.tartaricacid.touhoulittlemaid.TouhouLittleMaid;
+import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatData;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.response.ToolCall;
@@ -76,8 +76,8 @@ public abstract class MaidAIChatDataMixin {
         if (maid != null) {
             MindPalace palace = MindPalace.getOrCreate(maid.getUUID());
             palace.readFromTag(cir.getReturnValue());
-            if (TouhouLittleMaid.DEBUG && palace.size() > 0) {
-                TouhouLittleMaid.LOGGER.debug(
+            if (EnhancedLittleMaidAI.DEBUG_LOG && palace.size() > 0) {
+                EnhancedLittleMaidAI.LOGGER.debug(
                         "EnhancedLittleMaidAI: Loaded {} MindPalace memories for maid {}",
                         palace.size(), maid.getUUID());
             }
@@ -103,8 +103,8 @@ public abstract class MaidAIChatDataMixin {
             MindPalace palace = MindPalace.get(maid.getUUID());
             if (palace != null && palace.size() > 0) {
                 palace.writeToTag(cir.getReturnValue());
-                if (TouhouLittleMaid.DEBUG) {
-                    TouhouLittleMaid.LOGGER.debug(
+                if (EnhancedLittleMaidAI.DEBUG_LOG) {
+                    EnhancedLittleMaidAI.LOGGER.debug(
                             "EnhancedLittleMaidAI: Saved {} MindPalace memories for maid {}",
                             palace.size(), maid.getUUID());
                 }
