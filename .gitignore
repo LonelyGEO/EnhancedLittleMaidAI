@@ -28,8 +28,8 @@ run
 src/generated/resources/.cache
 # working plan (internal dev doc, not for release)
 docs/WorkingPlan.md
-# decompiled class files
-com/
+# decompiled class files (root-level only)
+/com/
 
 # Files from Forge MDK
 forge*changelog.txt

@@ -1,0 +1,152 @@
+package com.github.lonelygeo.enhancedlittlemaidai.config;
+
+import com.github.tartaricacid.touhoulittlemaid.api.event.client.AddClothConfigEvent;
+import me.shedaniel.clothconfig2.api.ConfigBuilder;
+import me.shedaniel.clothconfig2.api.ConfigCategory;
+import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import net.minecraft.network.chat.Component;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
+
+/**
+ * Cloth Config 实际事件处理器。
+ * 仅在 cloth_config 已加载时由 ClothConfigIntegration 通过反射实例化。
+ * 直接引用 Cloth Config API 类，避免主类 ClothConfigIntegration 因缺少 Cloth Config 类而加载失败。
+ */
+public final class ClothConfigHandler {
+
+    private ClothConfigHandler() {
+    }
+
+    /**
+     * 注册到 NeoForge 事件总线。由 ClothConfigIntegration 反射调用。
+     */
+    public static void register() {
+        NeoForge.EVENT_BUS.register(ClothConfigHandler.class);
+    }
+
+    @SubscribeEvent
+    public static void onAddClothConfig(AddClothConfigEvent event) {
+        ConfigBuilder builder = event.getRoot();
+        ConfigEntryBuilder entryBuilder = event.getEntryBuilder();
+
+        Component title = Component.translatable(
+                "config.enhancedlittlemaidai.title", "Enhanced Little Maid AI");
+        ConfigCategory category = builder.getOrCreateCategory(title);
+
+        // === 记忆系统 ===
+        category.addEntry(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.memory.maxMemories"),
+                        EnhancedConfig.MAX_MEMORIES.get(), 20, 500)
+                .setDefaultValue(100)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.memory.maxMemories.tooltip"))
+                .setSaveConsumer(EnhancedConfig.MAX_MEMORIES::set)
+                .build());
+
+        category.addEntry(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.memory.compressTrigger"),
+                        EnhancedConfig.COMPRESS_TRIGGER.get(), 20, 500)
+                .setDefaultValue(80)
+                .setSaveConsumer(EnhancedConfig.COMPRESS_TRIGGER::set)
+                .build());
+
+        category.addEntry(entryBuilder
+                .startDoubleField(
+                        Component.translatable("config.enhancedlittlemaidai.memory.dedupThreshold"),
+                        EnhancedConfig.DEDUP_SCORE_THRESHOLD.get())
+                .setDefaultValue(0.85)
+                .setMin(0.5).setMax(1.0)
+                .setSaveConsumer(EnhancedConfig.DEDUP_SCORE_THRESHOLD::set)
+                .build());
+
+        category.addEntry(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.memory.compressBatchSize"),
+                        EnhancedConfig.COMPRESS_BATCH_SIZE.get(), 5, 100)
+                .setDefaultValue(20)
+                .setSaveConsumer(EnhancedConfig.COMPRESS_BATCH_SIZE::set)
+                .build());
+
+        category.addEntry(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.memory.targetSummaries"),
+                        EnhancedConfig.TARGET_SUMMARIES.get(), 1, 30)
+                .setDefaultValue(5)
+                .setSaveConsumer(EnhancedConfig.TARGET_SUMMARIES::set)
+                .build());
+
+        // === 主动聊天 ===
+        category.addEntry(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.proactive.cooldownTicks"),
+                        EnhancedConfig.COOLDOWN_TICKS.get(), 600, 72000)
+                .setDefaultValue(12000)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.proactive.cooldownTicks.tooltip"))
+                .setSaveConsumer(EnhancedConfig.COOLDOWN_TICKS::set)
+                .build());
+
+        category.addEntry(entryBuilder
+                .startDoubleField(
+                        Component.translatable("config.enhancedlittlemaidai.proactive.triggerChance"),
+                        EnhancedConfig.TRIGGER_CHANCE_PER_TICK.get())
+                .setDefaultValue(0.002)
+                .setMin(0.0001).setMax(1.0)
+                .setSaveConsumer(EnhancedConfig.TRIGGER_CHANCE_PER_TICK::set)
+                .build());
+
+        category.addEntry(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.proactive.maxChats"),
+                        EnhancedConfig.MAX_CHATS_PER_SESSION.get(), 1, 100)
+                .setDefaultValue(8)
+                .setSaveConsumer(EnhancedConfig.MAX_CHATS_PER_SESSION::set)
+                .build());
+
+        category.addEntry(entryBuilder
+                .startDoubleField(
+                        Component.translatable("config.enhancedlittlemaidai.proactive.minDistance"),
+                        EnhancedConfig.MIN_PLAYER_DISTANCE.get())
+                .setDefaultValue(10.0)
+                .setMin(1.0).setMax(64.0)
+                .setSaveConsumer(EnhancedConfig.MIN_PLAYER_DISTANCE::set)
+                .build());
+
+        // === 上下文 ===
+        category.addEntry(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.context.bfsDepth"),
+                        EnhancedConfig.BFS_MAX_DEPTH.get(), 1, 10)
+                .setDefaultValue(5)
+                .setSaveConsumer(EnhancedConfig.BFS_MAX_DEPTH::set)
+                .build());
+
+        category.addEntry(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.context.entityRadius"),
+                        EnhancedConfig.ENTITY_RADIUS.get(), 4, 64)
+                .setDefaultValue(16)
+                .setSaveConsumer(EnhancedConfig.ENTITY_RADIUS::set)
+                .build());
+
+        category.addEntry(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.context.maxEntities"),
+                        EnhancedConfig.MAX_ENTITIES.get(), 5, 100)
+                .setDefaultValue(30)
+                .setSaveConsumer(EnhancedConfig.MAX_ENTITIES::set)
+                .build());
+
+        // === 调试 ===
+        category.addEntry(entryBuilder
+                .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.debug.debugLog"),
+                        EnhancedConfig.DEBUG_LOG.get())
+                .setDefaultValue(false)
+                .setSaveConsumer(EnhancedConfig.DEBUG_LOG::set)
+                .build());
+    }
+}
