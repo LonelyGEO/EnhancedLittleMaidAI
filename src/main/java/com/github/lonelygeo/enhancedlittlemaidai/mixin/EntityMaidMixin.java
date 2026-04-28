@@ -6,6 +6,9 @@ import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryCategory;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryItem;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
 import com.github.lonelygeo.enhancedlittlemaidai.util.EnvironmentEventDetector;
+import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidChatCallback;
+import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidChatManager;
+import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidDecisionCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
@@ -13,6 +16,7 @@ import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.entity.Entity;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -95,6 +99,7 @@ public abstract class EntityMaidMixin {
         MindPalace.remove(uuid);
         ProactiveChatManager.reset(uuid);
         EnvironmentEventDetector.reset(uuid);
+        InterMaidChatManager.reset(uuid);
     }
 
     // ==================== 主动聊天 ====================
@@ -119,6 +124,8 @@ public abstract class EntityMaidMixin {
                 if (event == EnvironmentEventDetector.EventType.SUNRISE) {
                     ProactiveChatManager.resetDayCounts(uuid);
                     EnvironmentEventDetector.resetDayCounts(uuid);
+                    InterMaidChatManager.resetDayCounts(uuid);
+                    InterMaidChatManager.resetGlobalDayCount();
                 }
 
                 int eventCount = EnvironmentEventDetector.getEventCount(uuid);
@@ -138,6 +145,35 @@ public abstract class EntityMaidMixin {
                     }
                 }
                 return;
+            }
+
+            // ====== 多女仆对话 ======
+            UUID uuid = maid.getUUID();
+            long gameTime = maid.level().getGameTime();
+
+            // B 侧：检查 pending proposal
+            UUID proposerUuid = InterMaidChatManager.getProposer(uuid);
+            if (proposerUuid != null) {
+                if (InterMaidChatManager.isProposalExpired(uuid, gameTime)) {
+                    // 超时清理
+                } else {
+                    handleProposal(maid, proposerUuid, gameTime);
+                }
+            }
+
+            // A 侧：降频扫描附近女仆
+            int interval = EnhancedConfig.INTER_MAID_SCAN_INTERVAL.get();
+            if (gameTime % interval == uuid.hashCode() % interval) {
+                if (InterMaidChatManager.canScan(maid, gameTime)) {
+                    EntityMaid partner = InterMaidChatManager.findPartner(maid);
+                    if (partner != null) {
+                        InterMaidChatManager.propose(uuid, partner.getUUID(), gameTime);
+                        if (EnhancedConfig.debugLog()) {
+                            EnhancedLittleMaidAI.LOGGER.info(
+                                    "InterMaidChat: Maid {} proposed to {}", uuid, partner.getUUID());
+                        }
+                    }
+                }
             }
 
             // ====== 原有概率流程 ======
@@ -182,4 +218,52 @@ public abstract class EntityMaidMixin {
             return false;
         }
     }
+
+    /**
+     * 处理 B 收到的对话提案。决策后触发或拒绝。
+     */
+    private static void handleProposal(EntityMaid b, UUID proposerUuid, long gameTime) {
+        EntityMaid a = findMaidByUuid(b, proposerUuid);
+        if (a == null || a.isRemoved()) {
+            InterMaidChatManager.clearProposal(b.getUUID());
+            return;
+        }
+
+        if (!InterMaidChatManager.canAccept(b, a, gameTime)) {
+            InterMaidChatManager.markRejected(a.getUUID(), b.getUUID(), gameTime);
+            return;
+        }
+
+        String decisionMode = EnhancedConfig.INTER_MAID_DECISION_MODE.get();
+        if ("LLM".equals(decisionMode)) {
+            String prompt = InterMaidDecisionCallback.buildDecisionPrompt(b, a);
+            LLMMessage sysMsg = LLMMessage.systemChat(b, prompt);
+            LLMMessage userMsg = LLMMessage.userChat(b, "（接受聊天请求）");
+            List<LLMMessage> msgs = List.of(sysMsg, userMsg);
+            MaidAIChatManager mgr = b.getAiChatManager();
+            InterMaidDecisionCallback cb = new InterMaidDecisionCallback(mgr, msgs, a, b);
+            mgr.getLLMSite().client().chat(cb);
+        } else {
+            // WEIGHT mode
+            if (InterMaidChatManager.decideByWeight(b, a)) {
+                InterMaidChatManager.clearProposal(b.getUUID());
+                InterMaidChatCallback.startConversation(a, b,
+                        EnhancedConfig.INTER_MAID_MAX_ROUNDS.get());
+            } else {
+                InterMaidChatManager.markRejected(a.getUUID(), b.getUUID(), gameTime);
+            }
+        }
+    }
+
+    @Nullable
+    private static EntityMaid findMaidByUuid(EntityMaid maid, UUID uuid) {
+        for (EntityMaid e : maid.level().getEntitiesOfClass(
+                EntityMaid.class, maid.getBoundingBox().inflate(64),
+                e -> e.getUUID().equals(uuid))) {
+            return e;
+        }
+        return null;
+    }
+
+    // === import for Nullable ===
 }

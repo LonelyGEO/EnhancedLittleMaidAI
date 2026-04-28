@@ -29,6 +29,25 @@ public class EnhancedConfig {
     public static ModConfigSpec.IntValue ENTITY_RADIUS;
     public static ModConfigSpec.IntValue MAX_ENTITIES;
 
+    // === [inter_maid] 女仆社交 ===
+    public static ModConfigSpec.BooleanValue INTER_MAID_ENABLED;
+    public static ModConfigSpec.ConfigValue<String> INTER_MAID_PROMPT_MODE;
+    public static ModConfigSpec.IntValue INTER_MAID_MAX_ROUNDS;
+    public static ModConfigSpec.DoubleValue INTER_MAID_WORKING_DISTANCE;
+    public static ModConfigSpec.DoubleValue INTER_MAID_IDLE_DISTANCE;
+    public static ModConfigSpec.DoubleValue INTER_MAID_WORKING_CHANCE;
+    public static ModConfigSpec.DoubleValue INTER_MAID_IDLE_CHANCE;
+    public static ModConfigSpec.IntValue INTER_MAID_SCAN_INTERVAL;
+    public static ModConfigSpec.DoubleValue INTER_MAID_PLAYER_DISTANCE;
+    public static ModConfigSpec.IntValue INTER_MAID_MAX_PER_DAY;
+    public static ModConfigSpec.IntValue INTER_MAID_MAX_GLOBAL_PER_DAY;
+    public static ModConfigSpec.IntValue INTER_MAID_COOLDOWN_TICKS;
+    public static ModConfigSpec.ConfigValue<String> INTER_MAID_DECISION_MODE;
+    public static ModConfigSpec.DoubleValue SOCIAL_MEMORY_INJECT_CHANCE;
+    public static ModConfigSpec.IntValue SOCIAL_MEMORY_TOP_K;
+    public static ModConfigSpec.IntValue SOCIAL_STORE_MAX_SIZE;
+    public static ModConfigSpec.IntValue SOCIAL_MEMORY_COMPRESS_TRIGGER;
+
     // === [debug] 调试 ===
     public static ModConfigSpec.BooleanValue DEBUG_LOG;
     public static ModConfigSpec.BooleanValue ENABLE_MINING_CHAT;
@@ -118,6 +137,80 @@ public class EnhancedConfig {
         MAX_ENTITIES = builder
                 .comment("附近实体最大返回数量")
                 .defineInRange("maxEntities", 30, 5, 100);
+
+        builder.pop();
+
+        // ========== inter_maid ==========
+        builder.push("inter_maid");
+        builder.comment("女仆社交配置（多女仆协调对话 + 社交记忆）");
+
+        INTER_MAID_ENABLED = builder
+                .comment("是否启用多女仆协调对话")
+                .define("enabled", true);
+
+        INTER_MAID_PROMPT_MODE = builder
+                .comment("角色设定长度模式: FULL(完整) SUMMARY(摘要) MINIMAL(最小)")
+                .define("promptMode", "FULL");
+
+        INTER_MAID_MAX_ROUNDS = builder
+                .comment("最多对话轮数")
+                .defineInRange("maxRounds", 2, 2, 4);
+
+        INTER_MAID_WORKING_DISTANCE = builder
+                .comment("工作中的女仆触发对话的距离（格）")
+                .defineInRange("workingDistance", 5.0, 1.0, 32.0);
+
+        INTER_MAID_IDLE_DISTANCE = builder
+                .comment("空闲中的女仆触发对话的距离（格）")
+                .defineInRange("idleDistance", 16.0, 1.0, 64.0);
+
+        INTER_MAID_WORKING_CHANCE = builder
+                .comment("工作中的女仆每次 tick 触发扫描的概率")
+                .defineInRange("workingChance", 0.0002, 0.0001, 1.0);
+
+        INTER_MAID_IDLE_CHANCE = builder
+                .comment("空闲中的女仆每次 tick 触发扫描的概率")
+                .defineInRange("idleChance", 0.0005, 0.0001, 1.0);
+
+        INTER_MAID_SCAN_INTERVAL = builder
+                .comment("女仆扫描附近同伴的间隔（tick），40=2秒")
+                .defineInRange("scanInterval", 40, 10, 200);
+
+        INTER_MAID_PLAYER_DISTANCE = builder
+                .comment("玩家感知范围，玩家在此范围内才能触发对话")
+                .defineInRange("playerDistance", 18.0, 1.0, 64.0);
+
+        INTER_MAID_MAX_PER_DAY = builder
+                .comment("每女仆每日对话上限（日出清零）")
+                .defineInRange("maxPerDay", 3, 1, 30);
+
+        INTER_MAID_MAX_GLOBAL_PER_DAY = builder
+                .comment("全局每日对话上限（日出清零）")
+                .defineInRange("maxGlobalPerDay", 10, 1, 50);
+
+        INTER_MAID_COOLDOWN_TICKS = builder
+                .comment("同对女仆对话冷却时间（tick）")
+                .defineInRange("cooldownTicks", 6000, 600, 72000);
+
+        INTER_MAID_DECISION_MODE = builder
+                .comment("B接受提案的决策方式: LLM(基于社交记忆AI判断) WEIGHT(纯概率权重)")
+                .define("decisionMode", "LLM");
+
+        SOCIAL_MEMORY_INJECT_CHANCE = builder
+                .comment("主动聊天时注入社交记忆的概率")
+                .defineInRange("socialMemoryInjectChance", 0.3, 0.0, 1.0);
+
+        SOCIAL_MEMORY_TOP_K = builder
+                .comment("每次注入社交记忆的最大条数")
+                .defineInRange("socialMemoryTopK", 2, 1, 5);
+
+        SOCIAL_STORE_MAX_SIZE = builder
+                .comment("社交记忆存储上限")
+                .defineInRange("socialStoreMaxSize", 50, 10, 200);
+
+        SOCIAL_MEMORY_COMPRESS_TRIGGER = builder
+                .comment("触发社交记忆压缩的阈值")
+                .defineInRange("socialMemoryCompressTrigger", 40, 10, 200);
 
         builder.pop();
 

@@ -4,6 +4,8 @@ import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryCategory;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryExtractionCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryItem;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
+import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidChatCallback;
+import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidDecisionCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ReasoningContentStore;
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
@@ -119,6 +121,8 @@ public abstract class LLMCallbackMixin {
             // 防递归：MemoryExtractionCallback/ProactiveChatCallback 自身触发不做提取
             if ((Object) this instanceof MemoryExtractionCallback) return;
             if ((Object) this instanceof ProactiveChatCallback) return;
+            if ((Object) this instanceof InterMaidChatCallback) return;
+            if ((Object) this instanceof InterMaidDecisionCallback) return;
 
             EntityMaid maid = getMaid();
             if (maid == null || maid.isRemoved()) return;
