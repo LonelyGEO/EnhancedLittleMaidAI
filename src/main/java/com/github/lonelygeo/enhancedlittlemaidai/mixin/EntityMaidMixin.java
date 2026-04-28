@@ -9,7 +9,6 @@ import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
-import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMSite;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -107,11 +106,7 @@ public abstract class EntityMaidMixin {
             if (!ProactiveChatManager.canTrigger(maid)) return;
 
             MaidAIChatManager chatManager = maid.getAiChatManager();
-            if (chatManager == null) return;
-            LLMSite site = chatManager.getLLMSite();
-            if (site == null || !site.enabled()) return;
-            LLMClient client = site.client();
-            if (client == null) return;
+            LLMClient client = chatManager.getLLMSite().client();
 
             String systemPrompt = ProactiveChatCallback.buildProactivePrompt(maid);
             LLMMessage sysMsg = LLMMessage.systemChat(maid, systemPrompt);

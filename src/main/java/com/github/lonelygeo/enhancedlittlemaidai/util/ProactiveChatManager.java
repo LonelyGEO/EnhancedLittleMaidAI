@@ -18,6 +18,7 @@ import java.util.UUID;
  *
  * <p>限制规则：
  * <ul>
+ *   <li>好感度限制：仅好感度 >=2 级（朋友/挚友）时启用</li>
  *   <li>冷却时间：两次主动聊天之间最少间隔 10 分钟 (12000 ticks)</li>
  *   <li>触发概率：冷却结束后每次 tick 有 0.2% 概率触发（预期 ~25 秒触发）</li>
  *   <li>会话上限：每次游戏会话最多 8 次主动聊天</li>
@@ -54,6 +55,8 @@ public final class ProactiveChatManager {
     public static boolean canTrigger(EntityMaid maid) {
         if (maid.level().isClientSide()) return false;
         if (maid.isRemoved()) return false;
+
+        if (maid.getFavorabilityManager().getLevel() <= 1) return false;
 
         LivingEntity owner = maid.getOwner();
         if (!(owner instanceof ServerPlayer)) return false;
