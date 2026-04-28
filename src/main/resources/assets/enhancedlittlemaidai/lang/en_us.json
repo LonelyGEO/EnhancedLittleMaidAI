@@ -4,7 +4,6 @@
     "config.enhancedlittlemaidai.sub.memory": "Memory System",
     "config.enhancedlittlemaidai.sub.proactive": "Proactive Chat",
     "config.enhancedlittlemaidai.sub.context": "World Context",
-    "config.enhancedlittlemaidai.sub.mining": "Mining Chat",
     "config.enhancedlittlemaidai.sub.debug": "Debug",
 
     "config.enhancedlittlemaidai.memory.maxMemories": "Max Memories",
@@ -26,8 +25,6 @@
 
     "config.enhancedlittlemaidai.debug.debugLog": "Debug Log",
 
-    "config.enhancedlittlemaidai.mining.enableMiningChat": "LLM Mining Chat",
-    "config.enhancedlittlemaidai.mining.enableMiningChat.tooltip": "Replace MLM hardcoded mining messages with LLM-generated dialogue",
-    "config.enhancedlittlemaidai.mining.chatPrompt": "Mining Chat Prompt",
-    "config.enhancedlittlemaidai.mining.chatPrompt.tooltip": "System prompt template. Placeholders: {maid}=maid name, {situation}=situation description"
+    "config.enhancedlittlemaidai.debug.enableMiningChat": "LLM Mining Chat",
+    "config.enhancedlittlemaidai.debug.enableMiningChat.tooltip": "Replace MLM hardcoded mining messages with LLM dialogue based on maid's character setting"
 }

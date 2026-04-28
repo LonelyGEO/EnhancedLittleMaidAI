@@ -159,33 +159,6 @@ public final class ClothConfigHandler {
 
         category.addEntry(contextSub.build());
 
-        // ========== 采矿对话 ==========
-        SubCategoryBuilder miningSub = entryBuilder.startSubCategory(
-                Component.translatable("config.enhancedlittlemaidai.sub.mining"));
-        miningSub.setExpanded(true);
-
-        miningSub.add(entryBuilder
-                .startBooleanToggle(
-                        Component.translatable("config.enhancedlittlemaidai.mining.enableMiningChat"),
-                        EnhancedConfig.ENABLE_MINING_CHAT.get())
-                .setDefaultValue(true)
-                .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.mining.enableMiningChat.tooltip"))
-                .setSaveConsumer(EnhancedConfig.ENABLE_MINING_CHAT::set)
-                .build());
-
-        miningSub.add(entryBuilder
-                .startStrField(
-                        Component.translatable("config.enhancedlittlemaidai.mining.chatPrompt"),
-                        EnhancedConfig.MINING_CHAT_PROMPT.get())
-                .setDefaultValue("你是一只正在采矿的女仆...")
-                .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.mining.chatPrompt.tooltip"))
-                .setSaveConsumer(EnhancedConfig.MINING_CHAT_PROMPT::set)
-                .build());
-
-        category.addEntry(miningSub.build());
-
         // ========== 调试 ==========
         SubCategoryBuilder debugSub = entryBuilder.startSubCategory(
                 Component.translatable("config.enhancedlittlemaidai.sub.debug"));
@@ -197,6 +170,16 @@ public final class ClothConfigHandler {
                         EnhancedConfig.DEBUG_LOG.get())
                 .setDefaultValue(false)
                 .setSaveConsumer(EnhancedConfig.DEBUG_LOG::set)
+                .build());
+
+        debugSub.add(entryBuilder
+                .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.debug.enableMiningChat"),
+                        EnhancedConfig.ENABLE_MINING_CHAT.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.debug.enableMiningChat.tooltip"))
+                .setSaveConsumer(EnhancedConfig.ENABLE_MINING_CHAT::set)
                 .build());
 
         category.addEntry(debugSub.build());

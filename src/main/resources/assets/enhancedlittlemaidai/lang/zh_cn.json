@@ -4,7 +4,6 @@
     "config.enhancedlittlemaidai.sub.memory": "记忆系统",
     "config.enhancedlittlemaidai.sub.proactive": "主动聊天",
     "config.enhancedlittlemaidai.sub.context": "上下文感知",
-    "config.enhancedlittlemaidai.sub.mining": "采矿对话",
     "config.enhancedlittlemaidai.sub.debug": "调试",
 
     "config.enhancedlittlemaidai.memory.maxMemories": "最大记忆数量",
@@ -26,8 +25,6 @@
 
     "config.enhancedlittlemaidai.debug.debugLog": "调试日志",
 
-    "config.enhancedlittlemaidai.mining.enableMiningChat": "LLM 采矿对话",
-    "config.enhancedlittlemaidai.mining.enableMiningChat.tooltip": "启用后，采矿消息由 LLM 生成而非 MLM 硬编码文本",
-    "config.enhancedlittlemaidai.mining.chatPrompt": "采矿对话提示词",
-    "config.enhancedlittlemaidai.mining.chatPrompt.tooltip": "系统提示词模板。占位符: {maid}=女仆名, {situation}=情况描述"
+    "config.enhancedlittlemaidai.debug.enableMiningChat": "LLM 采矿对话",
+    "config.enhancedlittlemaidai.debug.enableMiningChat.tooltip": "启用后，MLM 采矿消息由 LLM 基于女仆角色设定生成"
 }
