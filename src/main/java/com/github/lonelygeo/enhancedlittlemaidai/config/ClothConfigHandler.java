@@ -133,6 +133,26 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.MIN_PLAYER_DISTANCE::set)
                 .build());
 
+        proactiveSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.proactive.eventCooldown"),
+                        EnhancedConfig.EVENT_COOLDOWN_TICKS.get() / 20, 60, 3600)
+                .setDefaultValue(300)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.proactive.eventCooldown.tooltip"))
+                .setSaveConsumer(val -> EnhancedConfig.EVENT_COOLDOWN_TICKS.set(val * 20))
+                .build());
+
+        proactiveSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.proactive.eventMaxPerSession"),
+                        EnhancedConfig.EVENT_MAX_PER_SESSION.get(), 1, 30)
+                .setDefaultValue(5)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.proactive.eventMaxPerSession.tooltip"))
+                .setSaveConsumer(EnhancedConfig.EVENT_MAX_PER_SESSION::set)
+                .build());
+
         category.addEntry(proactiveSub.build());
 
         // ========== 调试 ==========

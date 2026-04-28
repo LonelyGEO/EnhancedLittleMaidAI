@@ -21,6 +21,8 @@ public class EnhancedConfig {
     public static ModConfigSpec.DoubleValue TRIGGER_CHANCE_PER_TICK;
     public static ModConfigSpec.IntValue MAX_CHATS_PER_SESSION;
     public static ModConfigSpec.DoubleValue MIN_PLAYER_DISTANCE;
+    public static ModConfigSpec.IntValue EVENT_COOLDOWN_TICKS;
+    public static ModConfigSpec.IntValue EVENT_MAX_PER_SESSION;
 
     // === [context] 上下文感知 ===
     public static ModConfigSpec.IntValue BFS_MAX_DEPTH;
@@ -91,6 +93,14 @@ public class EnhancedConfig {
         MIN_PLAYER_DISTANCE = builder
                 .comment("主人距离女仆多少格以内才可能触发主动聊天")
                 .defineInRange("minPlayerDistance", 10.0, 1.0, 64.0);
+
+        EVENT_COOLDOWN_TICKS = builder
+                .comment("环境事件主动聊天的冷却时间（tick）")
+                .defineInRange("eventCooldownTicks", 6000, 1200, 72000);
+
+        EVENT_MAX_PER_SESSION = builder
+                .comment("每次游戏会话环境事件主动聊天的最大触发次数")
+                .defineInRange("eventMaxPerSession", 5, 1, 30);
 
         builder.pop();
 

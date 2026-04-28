@@ -10,6 +10,7 @@ import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.entity.LivingEntity;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.http.HttpRequest;
 import java.util.List;
@@ -83,6 +84,16 @@ public class ProactiveChatCallback extends LLMCallback {
      * 包含环境信息（生物群系、时间、天气）+ MindPalace 记忆上下文。
      */
     public static String buildProactivePrompt(EntityMaid maid) {
+        return buildProactivePrompt(maid, null);
+    }
+
+    /**
+     * 构建主动聊天的系统 prompt，可附带环境事件描述。
+     *
+     * @param maid             女仆
+     * @param eventDescription 环境事件描述，如"现在是清晨日出时分。"，为 null 时行为同无参版本
+     */
+    public static String buildProactivePrompt(EntityMaid maid, @Nullable String eventDescription) {
         String biome = "未知";
         try {
             var biomeKey = maid.level().getBiome(maid.blockPosition()).unwrapKey();
@@ -138,15 +149,20 @@ public class ProactiveChatCallback extends LLMCallback {
         } catch (Exception ignored) {
         }
 
+        String eventLine = "";
+        if (eventDescription != null) {
+            eventLine = eventDescription + "\n";
+        }
+
         return String.format("""
                 [系统指令] 你现在要主动发起对话（不需要等待主人说话）。
 
                 你是%s，%s的忠诚女仆。你目前在%s，%s天气，%s。
-                %s
+                %s%s
                 请用1-2句简短自然的话主动和主人聊天。直接说话即可，不要加动作描写、括号注释或任何格式标记。
 
                 可选话题：关心主人状态、评论环境或天气、分享你注意到的事情、询问是否需要帮助。
                 注意：你是在主动发起对话，不要回应任何人的话。""",
-                maidName, ownerName, biome, weather, timeOfDay, memoryContext);
+                maidName, ownerName, biome, weather, timeOfDay, eventLine, memoryContext);
     }
 }

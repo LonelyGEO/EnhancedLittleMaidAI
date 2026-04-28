@@ -26,6 +26,11 @@
     "config.enhancedlittlemaidai.proactive.minDistance": "Min Trigger Distance (blocks)",
     "config.enhancedlittlemaidai.proactive.minDistance.tooltip": "Owner must be within this distance for proactive chat to trigger",
 
+    "config.enhancedlittlemaidai.proactive.eventCooldown": "Event Cooldown (seconds)",
+    "config.enhancedlittlemaidai.proactive.eventCooldown.tooltip": "Min interval between environment event-triggered chats, 300 = 5 min",
+    "config.enhancedlittlemaidai.proactive.eventMaxPerSession": "Max Event Triggers",
+    "config.enhancedlittlemaidai.proactive.eventMaxPerSession.tooltip": "Maximum environment event chat triggers per game session",
+
     "config.enhancedlittlemaidai.context.bfsDepth": "BFS Sampling Depth",
     "config.enhancedlittlemaidai.context.bfsDepth.tooltip": "Maximum BFS scan depth for nearby blocks (higher = larger area)",
     "config.enhancedlittlemaidai.context.entityRadius": "Entity Scan Radius",
@@ -37,5 +42,9 @@
     "config.enhancedlittlemaidai.mining.enableMiningChat.tooltip": "Replace MLM hardcoded mining messages with LLM dialogue based on maid character setting",
 
     "config.enhancedlittlemaidai.debug.debugLog": "Debug Log",
-    "config.enhancedlittlemaidai.debug.debugLog.tooltip": "Enable detailed debug output to log file"
+    "config.enhancedlittlemaidai.debug.debugLog.tooltip": "Enable detailed debug output to log file",
+
+    "context.enhancedlittlemaidai.food": "Food Level",
+    "context.enhancedlittlemaidai.tool_durability": "Tool Durability",
+    "context.enhancedlittlemaidai.nearby_players": "Nearby Players"
 }

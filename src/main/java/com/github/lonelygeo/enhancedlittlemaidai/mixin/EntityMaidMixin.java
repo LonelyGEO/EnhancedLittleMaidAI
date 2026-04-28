@@ -5,6 +5,7 @@ import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryCategory;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryItem;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
+import com.github.lonelygeo.enhancedlittlemaidai.util.EnvironmentEventDetector;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
@@ -23,7 +24,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * 女仆死亡时记录死亡记忆到 MindPalace；移除时清理全局 Map。
+ * 女仆死亡时记录死亡记忆到 MindPalace；移除时清理全局 Map；tick 中触发主动聊天/环境事件。
  */
 @Mixin(value = EntityMaid.class, remap = false)
 public abstract class EntityMaidMixin {
@@ -93,23 +94,70 @@ public abstract class EntityMaidMixin {
         UUID uuid = ((EntityMaid) (Object) this).getUUID();
         MindPalace.remove(uuid);
         ProactiveChatManager.reset(uuid);
+        EnvironmentEventDetector.reset(uuid);
     }
 
     // ==================== 主动聊天 ====================
 
     /**
-     * 每 tick 检查主动聊天触发条件。
+     * 每 tick 检查触发条件。优先环境事件，其次原有概率流程。
      */
     @Inject(method = "tick", at = @At("TAIL"), remap = false)
     private void enhanced$proactiveChatTick(CallbackInfo ci) {
         try {
             EntityMaid maid = (EntityMaid) (Object) this;
+            if (maid.level().isClientSide()) return;
+            if (maid.isRemoved()) return;
+
+            // ====== 环境事件优先 ======
+            EnvironmentEventDetector.EventType event = EnvironmentEventDetector.detect(maid);
+            if (event != null) {
+                UUID uuid = maid.getUUID();
+                long gameTime = maid.level().getGameTime();
+                int eventCount = EnvironmentEventDetector.getEventCount(uuid);
+                if (eventCount >= EnhancedConfig.EVENT_MAX_PER_SESSION.get()) return;
+                if (!EnvironmentEventDetector.canTriggerEvent(uuid, gameTime,
+                        EnhancedConfig.EVENT_COOLDOWN_TICKS.get())) return;
+
+                String eventDesc = EnvironmentEventDetector.toDescription(event, maid);
+                String systemPrompt = ProactiveChatCallback.buildProactivePrompt(maid, eventDesc);
+                if (triggerProactiveChat(maid, systemPrompt)) {
+                    EnvironmentEventDetector.markTriggered(uuid, gameTime);
+                    ProactiveChatManager.markTriggered(uuid, gameTime);
+                    if (EnhancedConfig.debugLog()) {
+                        EnhancedLittleMaidAI.LOGGER.info(
+                                "EnhancedLittleMaidAI: Event-triggered chat for maid {} ({}), #{}",
+                                uuid, event, eventCount + 1);
+                    }
+                }
+                return;
+            }
+
+            // ====== 原有概率流程 ======
             if (!ProactiveChatManager.canTrigger(maid)) return;
 
+            String systemPrompt = ProactiveChatCallback.buildProactivePrompt(maid);
+            if (triggerProactiveChat(maid, systemPrompt)) {
+                ProactiveChatManager.markTriggered(maid.getUUID(), maid.level().getGameTime());
+                if (EnhancedConfig.debugLog()) {
+                    EnhancedLittleMaidAI.LOGGER.info(
+                            "EnhancedLittleMaidAI: Proactive chat triggered for maid {} (#{})",
+                            maid.getUUID(), ProactiveChatManager.getCount(maid.getUUID()));
+                }
+            }
+        } catch (Exception e) {
+            EnhancedLittleMaidAI.LOGGER.warn("EnhancedLittleMaidAI: Proactive chat trigger failed", e);
+        }
+    }
+
+    /**
+     * 执行一次主动聊天 LLM 调用。返回 true 表示发送成功。
+     */
+    private static boolean triggerProactiveChat(EntityMaid maid, String systemPrompt) {
+        try {
             MaidAIChatManager chatManager = maid.getAiChatManager();
             LLMClient client = chatManager.getLLMSite().client();
 
-            String systemPrompt = ProactiveChatCallback.buildProactivePrompt(maid);
             LLMMessage sysMsg = LLMMessage.systemChat(maid, systemPrompt);
             LLMMessage userMsg = LLMMessage.userChat(maid, "（主动发起对话）");
             List<LLMMessage> messages = List.of(sysMsg, userMsg);
@@ -121,15 +169,10 @@ public abstract class EntityMaidMixin {
             callback.setWaitingBubbleId(waitingBubbleId);
 
             client.chat(callback);
-            ProactiveChatManager.markTriggered(maid.getUUID(), maid.level().getGameTime());
-
-            if (EnhancedConfig.debugLog()) {
-                EnhancedLittleMaidAI.LOGGER.info(
-                        "EnhancedLittleMaidAI: Proactive chat triggered for maid {} (#{})",
-                        maid.getUUID(), ProactiveChatManager.getCount(maid.getUUID()));
-            }
+            return true;
         } catch (Exception e) {
-            EnhancedLittleMaidAI.LOGGER.warn("EnhancedLittleMaidAI: Proactive chat trigger failed", e);
+            EnhancedLittleMaidAI.LOGGER.warn("EnhancedLittleMaidAI: triggerProactiveChat failed", e);
+            return false;
         }
     }
 }
