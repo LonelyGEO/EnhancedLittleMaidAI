@@ -219,6 +219,14 @@ For Mixin changes under `mixin.*`:
 - 每次提交前检查 `git status` 和 `git diff`，确保不包含敏感信息（密钥、token 等）。
 - **提交前主动提出版本变更建议**：每次完成代码改动后，Agent 应主动根据 §13 的版本位规则进行判断。PATCH 级别（Bug 修复、小调整）可自行决定并变更版本号；MINOR 及以上（新功能、架构重写）必须向用户确认后变更。
 
+### GitHub Release 发布
+
+- 当前版本号 < 1.0.0，发布一律标记为 **Pre-release（Beta）**，Agent 可自行执行：
+  ```
+  gh release create v0.x.x build/libs/*.jar --title "v0.x.x-beta" --prerelease
+  ```
+- **正式 Release（非 Pre-release）必须征得用户同意**，不得自行发布。版本号达 1.0.0 后默认改为正式 Release。
+
 ## 13) Versioning
 
 - 当前版本: `0.5.1-neoforge+mc1.21.1`
