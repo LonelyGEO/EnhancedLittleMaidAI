@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai;
 
 import com.github.lonelygeo.enhancedlittlemaidai.command.MindPalaceCommand;
+import com.github.lonelygeo.enhancedlittlemaidai.compat.MiningCompat;
 import com.github.lonelygeo.enhancedlittlemaidai.config.ClothConfigIntegration;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.mojang.logging.LogUtils;
@@ -23,10 +24,22 @@ public class EnhancedLittleMaidAI {
         modContainer.registerConfig(ModConfig.Type.COMMON, EnhancedConfig.SPEC);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
         ClothConfigIntegration.registerIfAvailable();
+        registerMiningMessageHandlerIfAvailable();
     }
 
     @SubscribeEvent
     private void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(MindPalaceCommand.register());
+    }
+
+    private static void registerMiningMessageHandlerIfAvailable() {
+        if (!MiningCompat.isLoaded()) return;
+        try {
+            Class<?> handlerClass = Class.forName(
+                    "com.github.lonelygeo.enhancedlittlemaidai.compat.MiningMessageHandler");
+            handlerClass.getMethod("register").invoke(null);
+        } catch (Exception e) {
+            LOGGER.debug("EnhancedLittleMaidAI: MiningMessageHandler not available");
+        }
     }
 }

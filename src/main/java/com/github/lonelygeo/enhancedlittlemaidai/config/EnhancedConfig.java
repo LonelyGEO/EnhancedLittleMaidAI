@@ -27,8 +27,18 @@ public class EnhancedConfig {
     public static ModConfigSpec.IntValue ENTITY_RADIUS;
     public static ModConfigSpec.IntValue MAX_ENTITIES;
 
+    // === [mining] 采矿对话 ===
+    public static ModConfigSpec.BooleanValue ENABLE_MINING_CHAT;
+    public static ModConfigSpec.ConfigValue<String> MINING_CHAT_PROMPT;
+
     // === [debug] 调试 ===
     public static ModConfigSpec.BooleanValue DEBUG_LOG;
+
+    private static final String DEFAULT_MINING_PROMPT =
+            "你是一只正在采矿的女仆，名字是{maid}。" +
+            "刚才发生了以下情况：{situation}" +
+            "请用1-2句简短自然的中文，以女仆的口吻告诉主人。" +
+            "不要加动作描写、括号注释或任何格式标记，直接说话即可。";
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -107,6 +117,21 @@ public class EnhancedConfig {
         MAX_ENTITIES = builder
                 .comment("附近实体最大返回数量")
                 .defineInRange("maxEntities", 30, 5, 100);
+
+        builder.pop();
+
+        // ========== mining ==========
+        builder.push("mining");
+        builder.comment("采矿 LLM 对话配置（需 MiningLittleMaid 模组）");
+
+        ENABLE_MINING_CHAT = builder
+                .comment("是否启用 LLM 接管采矿消息（替代 MLM 硬编码文本）")
+                .define("enableMiningChat", true);
+
+        MINING_CHAT_PROMPT = builder
+                .comment("采矿对话系统提示词模板。" +
+                        "占位符: {maid}=女仆名, {situation}=当前情况描述")
+                .define("miningChatPrompt", DEFAULT_MINING_PROMPT);
 
         builder.pop();
 
