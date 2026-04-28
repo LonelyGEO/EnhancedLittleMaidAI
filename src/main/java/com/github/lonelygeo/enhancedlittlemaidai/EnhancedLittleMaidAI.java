@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 
 @Mod(EnhancedLittleMaidAI.MOD_ID)
 public class EnhancedLittleMaidAI {
-    public static final String MOD_ID = "enhanced_little_maid_ai";
+    public static final String MOD_ID = "enhancedlittlemaidai";
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public EnhancedLittleMaidAI(IEventBus modEventBus, ModContainer modContainer) {

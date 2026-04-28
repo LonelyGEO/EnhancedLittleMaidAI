@@ -3,7 +3,7 @@
     "minVersion": "0.8",
     "package": "com.github.lonelygeo.enhancedlittlemaidai.mixin",
     "compatibilityLevel": "JAVA_17",
-    "refmap": "enhanced_little_maid_ai.refmap.json",
+    "refmap": "enhancedlittlemaidai.refmap.json",
     "mixins": [
         "ChatMessageMixin",
         "EntityMaidMixin",
