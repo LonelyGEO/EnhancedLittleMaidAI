@@ -71,7 +71,7 @@ Gradle test filtering is supported via `--tests`.
 - Method wildcard:
   - `./gradlew.bat test --tests "*ExampleTest.should*"`
 
-Current state note: `src/test/java` is not present right now.
+Current state note: `src/test/java` now has unit tests (ChineseTokenizerTest, Bm25IndexTest).
 
 ## 4) Lint/format reality
 
@@ -230,7 +230,7 @@ For Mixin changes under `mixin.*`:
 
 ## 13) Versioning
 
-- 当前版本: `0.5.1-neoforge+mc1.21.1`
+- 当前版本: `0.6.0-neoforge+mc1.21.1`
 - 后缀 `-neoforge+mc1.21.1` 为平台标识，保持不变
 
 | 版本位 | 触发条件 |
