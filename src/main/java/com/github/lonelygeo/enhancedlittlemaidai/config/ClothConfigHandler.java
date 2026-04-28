@@ -155,6 +155,172 @@ public final class ClothConfigHandler {
 
         category.addEntry(proactiveSub.build());
 
+        // ========== 女仆社交 ==========
+        SubCategoryBuilder interMaidSub = entryBuilder.startSubCategory(
+                Component.translatable("config.enhancedlittlemaidai.sub.interMaid"));
+        interMaidSub.setExpanded(true);
+
+        interMaidSub.add(entryBuilder
+                .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.enabled"),
+                        EnhancedConfig.INTER_MAID_ENABLED.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.enabled.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_ENABLED::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startStrField(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.promptMode"),
+                        EnhancedConfig.INTER_MAID_PROMPT_MODE.get())
+                .setDefaultValue("FULL")
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.promptMode.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_PROMPT_MODE::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.maxRounds"),
+                        EnhancedConfig.INTER_MAID_MAX_ROUNDS.get(), 2, 4)
+                .setDefaultValue(2)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.maxRounds.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_MAX_ROUNDS::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startDoubleField(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.workingDistance"),
+                        EnhancedConfig.INTER_MAID_WORKING_DISTANCE.get())
+                .setDefaultValue(5.0)
+                .setMin(1.0).setMax(32.0)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.workingDistance.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_WORKING_DISTANCE::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startDoubleField(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.idleDistance"),
+                        EnhancedConfig.INTER_MAID_IDLE_DISTANCE.get())
+                .setDefaultValue(16.0)
+                .setMin(1.0).setMax(64.0)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.idleDistance.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_IDLE_DISTANCE::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startDoubleField(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.workingChance"),
+                        EnhancedConfig.INTER_MAID_WORKING_CHANCE.get())
+                .setDefaultValue(0.0002)
+                .setMin(0.0001).setMax(1.0)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.workingChance.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_WORKING_CHANCE::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startDoubleField(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.idleChance"),
+                        EnhancedConfig.INTER_MAID_IDLE_CHANCE.get())
+                .setDefaultValue(0.0005)
+                .setMin(0.0001).setMax(1.0)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.idleChance.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_IDLE_CHANCE::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.scanInterval"),
+                        EnhancedConfig.INTER_MAID_SCAN_INTERVAL.get(), 10, 200)
+                .setDefaultValue(40)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.scanInterval.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_SCAN_INTERVAL::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startDoubleField(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.playerDistance"),
+                        EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.get())
+                .setDefaultValue(18.0)
+                .setMin(1.0).setMax(64.0)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.playerDistance.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_PLAYER_DISTANCE::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.maxPerDay"),
+                        EnhancedConfig.INTER_MAID_MAX_PER_DAY.get(), 1, 30)
+                .setDefaultValue(3)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.maxPerDay.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_MAX_PER_DAY::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.maxGlobalPerDay"),
+                        EnhancedConfig.INTER_MAID_MAX_GLOBAL_PER_DAY.get(), 1, 50)
+                .setDefaultValue(10)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.maxGlobalPerDay.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_MAX_GLOBAL_PER_DAY::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.cooldownTicks"),
+                        EnhancedConfig.INTER_MAID_COOLDOWN_TICKS.get() / 20, 30, 3600)
+                .setDefaultValue(300)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.cooldownTicks.tooltip"))
+                .setSaveConsumer(val -> EnhancedConfig.INTER_MAID_COOLDOWN_TICKS.set(val * 20))
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startStrField(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.decisionMode"),
+                        EnhancedConfig.INTER_MAID_DECISION_MODE.get())
+                .setDefaultValue("LLM")
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.decisionMode.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_DECISION_MODE::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startDoubleField(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.socialInjectChance"),
+                        EnhancedConfig.SOCIAL_MEMORY_INJECT_CHANCE.get())
+                .setDefaultValue(0.3)
+                .setMin(0.0).setMax(1.0)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.socialInjectChance.tooltip"))
+                .setSaveConsumer(EnhancedConfig.SOCIAL_MEMORY_INJECT_CHANCE::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.socialTopK"),
+                        EnhancedConfig.SOCIAL_MEMORY_TOP_K.get(), 1, 5)
+                .setDefaultValue(2)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.socialTopK.tooltip"))
+                .setSaveConsumer(EnhancedConfig.SOCIAL_MEMORY_TOP_K::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.socialMaxSize"),
+                        EnhancedConfig.SOCIAL_STORE_MAX_SIZE.get(), 10, 200)
+                .setDefaultValue(50)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.socialMaxSize.tooltip"))
+                .setSaveConsumer(EnhancedConfig.SOCIAL_STORE_MAX_SIZE::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.socialCompressTrigger"),
+                        EnhancedConfig.SOCIAL_MEMORY_COMPRESS_TRIGGER.get(), 10, 200)
+                .setDefaultValue(40)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.socialCompressTrigger.tooltip"))
+                .setSaveConsumer(EnhancedConfig.SOCIAL_MEMORY_COMPRESS_TRIGGER::set)
+                .build());
+
+        category.addEntry(interMaidSub.build());
+
         // ========== 调试 ==========
         SubCategoryBuilder debugSub = entryBuilder.startSubCategory(
                 Component.translatable("config.enhancedlittlemaidai.sub.debug"));
