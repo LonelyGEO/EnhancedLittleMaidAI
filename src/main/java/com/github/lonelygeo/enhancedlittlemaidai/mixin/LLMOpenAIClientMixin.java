@@ -1,5 +1,6 @@
 package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
+import com.github.lonelygeo.enhancedlittlemaidai.util.LLMResponseCache;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ReasoningContentStore;
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
@@ -36,10 +37,31 @@ public abstract class LLMOpenAIClientMixin {
     private static final ThreadLocal<LLMCallback> enhanced$currentCallback = new ThreadLocal<>();
     @Unique
     private static final ThreadLocal<Boolean> enhanced$inRedirect = ThreadLocal.withInitial(() -> false);
+    @Unique
+    private static final ThreadLocal<String> enhanced$cacheKey = new ThreadLocal<>();
 
-    @Inject(method = "chat", at = @At("HEAD"), remap = false)
+    @Inject(method = "chat", at = @At("HEAD"), cancellable = true, remap = false)
     private void enhanced$captureCallback(LLMCallback callback, CallbackInfo ci) {
         enhanced$currentCallback.set(callback);
+
+        if (LLMResponseCache.shouldCache(callback)) {
+            String key = LLMResponseCache.computeKey(callback);
+            if (key != null) {
+                enhanced$cacheKey.set(key);
+                long ttl = LLMResponseCache.getTtlMs(callback);
+                ResponseChat cached = LLMResponseCache.get(key, ttl);
+                if (cached != null) {
+                    ci.cancel();
+                    callback.onSuccess(cached);
+                    if (EnhancedConfig.debugLog()) {
+                        EnhancedLittleMaidAI.LOGGER.debug(
+                                "EnhancedLittleMaidAI: Cache hit for callback {}", callback.getClass().getSimpleName());
+                    }
+                    return;
+                }
+            }
+        }
+
         if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: ReasoningContent injector captured callback");
         }
@@ -87,6 +109,26 @@ public abstract class LLMOpenAIClientMixin {
             if (EnhancedConfig.debugLog() && reasoningContent != null) {
                 EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: Extracted reasoningContent from LLM response");
             }
+        }
+    }
+
+    /**
+     * 在 onTextCall 尾部，将 LLM 回复存入缓存供后续重用。
+     */
+    @Inject(method = "onTextCall", at = @At("TAIL"), remap = false)
+    private void enhanced$cacheOnTextCall(ResponseCallback<ResponseChat> callback, Message firstChoice,
+                                           CallbackInfo ci) {
+        try {
+            String key = enhanced$cacheKey.get();
+            if (key != null && callback instanceof LLMCallback llmCallback
+                    && LLMResponseCache.shouldCache(llmCallback)) {
+                String content = StringUtils.defaultString(firstChoice.getContent());
+                if (StringUtils.isNotBlank(content)) {
+                    LLMResponseCache.put(key, content);
+                }
+            }
+        } finally {
+            enhanced$cacheKey.remove();
         }
     }
 
