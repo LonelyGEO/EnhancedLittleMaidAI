@@ -2,6 +2,7 @@ package com.github.lonelygeo.enhancedlittlemaidai.util;
 
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
+import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat;
@@ -145,8 +146,27 @@ public class InterMaidChatCallback extends LLMCallback {
         if (participants.size() >= 2) {
             EntityMaid a = participants.get(0);
             EntityMaid b = participants.get(1);
-            InterMaidChatManager.releaseBusy(a.getUUID(), b.getUUID());
             long gameTime = a.level().getGameTime();
+
+            // 写入社交记忆
+            for (Map.Entry<UUID, String> entry : conversationHistory.entrySet()) {
+                String speakerName = participants.stream()
+                        .filter(m -> m.getUUID().equals(entry.getKey()))
+                        .findFirst().map(m -> m.getDisplayName().getString())
+                        .orElse("某女仆");
+
+                // 双方都记录
+                MindPalace pa = MindPalace.getOrCreate(a.getUUID());
+                MindPalace pb = MindPalace.getOrCreate(b.getUUID());
+                String memA = "和" + b.getDisplayName().getString() + "聊天，"
+                        + speakerName + "说：" + entry.getValue();
+                String memB = "和" + a.getDisplayName().getString() + "聊天，"
+                        + speakerName + "说：" + entry.getValue();
+                pa.addSocialMemory(memA, gameTime);
+                pb.addSocialMemory(memB, gameTime);
+            }
+
+            InterMaidChatManager.releaseBusy(a.getUUID(), b.getUUID());
             InterMaidChatManager.markTriggered(a.getUUID(), b.getUUID(), gameTime);
         }
     }

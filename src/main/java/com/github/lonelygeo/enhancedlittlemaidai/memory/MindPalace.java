@@ -28,6 +28,7 @@ public class MindPalace {
 
     private final UUID maidUuid;
     private final MemoryStore store = new MemoryStore();
+    private final MemoryStore socialStore = new MemoryStore();
     private int chatRoundCounter = 0;
     private long lastExtractionGameTime = 0;
 
@@ -101,12 +102,59 @@ public class MindPalace {
         store.add(item, item.gameTime());
     }
 
+    // ==================== 社交记忆 ====================
+
+    /** 添加社交记忆 */
+    public void addSocialMemory(String content, long gameTime) {
+        MemoryItem item = new MemoryItem(
+                UUID.randomUUID(), MemoryCategory.EVENT,
+                content, Optional.empty(), Optional.empty(),
+                gameTime, 0, 3
+        );
+        socialStore.add(item, gameTime);
+    }
+
+    /** 检索社交记忆 Top-K */
+    public List<MemoryItem> retrieveSocialMemories(String query, int topK) {
+        return socialStore.retrieve(query, topK);
+    }
+
+    /** 构建社交记忆上下文文本（用于 Prompt 注入） */
+    public String buildSocialMemoryContext() {
+        List<MemoryItem> memories = socialStore.retrieve("社交", 
+                EnhancedConfig.SOCIAL_MEMORY_TOP_K.get());
+        if (memories.isEmpty()) return "";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n你记得最近和其他女仆的互动：\n");
+        for (MemoryItem m : memories) {
+            sb.append("- ").append(m.content()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    public MemoryStore getSocialStore() {
+        return socialStore;
+    }
+
+    public boolean needsSocialCompression() {
+        return socialStore.size() >= EnhancedConfig.SOCIAL_MEMORY_COMPRESS_TRIGGER.get();
+    }
+
+    // ==================== NBT 持久化 ====================
+
     public void readFromTag(CompoundTag tag) {
-        if (!tag.contains("MindPalaceMemories", Tag.TAG_LIST)) return;
-        ListTag list = tag.getList("MindPalaceMemories", Tag.TAG_COMPOUND);
-        for (int i = 0; i < list.size(); i++) {
-            MemoryItem item = MemoryItem.fromTag(list.getCompound(i));
-            store.restore(item);
+        if (tag.contains("MindPalaceMemories", Tag.TAG_LIST)) {
+            ListTag list = tag.getList("MindPalaceMemories", Tag.TAG_COMPOUND);
+            for (int i = 0; i < list.size(); i++) {
+                store.restore(MemoryItem.fromTag(list.getCompound(i)));
+            }
+        }
+        if (tag.contains("MindPalaceSocialMemories", Tag.TAG_LIST)) {
+            ListTag list = tag.getList("MindPalaceSocialMemories", Tag.TAG_COMPOUND);
+            for (int i = 0; i < list.size(); i++) {
+                socialStore.restore(MemoryItem.fromTag(list.getCompound(i)));
+            }
         }
     }
 
@@ -116,6 +164,12 @@ public class MindPalace {
             list.add(m.toTag());
         }
         tag.put("MindPalaceMemories", list);
+
+        ListTag socialList = new ListTag();
+        for (MemoryItem m : socialStore.toList()) {
+            socialList.add(m.toTag());
+        }
+        tag.put("MindPalaceSocialMemories", socialList);
     }
 
     public MemoryStore getStore() {

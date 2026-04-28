@@ -149,6 +149,21 @@ public class ProactiveChatCallback extends LLMCallback {
         } catch (Exception ignored) {
         }
 
+        // 社交记忆注入
+        String socialMemoryContext = "";
+        try {
+            if (Math.random() < EnhancedConfig.SOCIAL_MEMORY_INJECT_CHANCE.get()) {
+                MindPalace palace = MindPalace.get(maid.getUUID());
+                if (palace != null && palace.getSocialStore().size() > 0) {
+                    String social = palace.buildSocialMemoryContext();
+                    if (!social.isEmpty()) {
+                        socialMemoryContext = social;
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
         String eventLine = "";
         if (eventDescription != null) {
             eventLine = eventDescription + "\n";
@@ -158,11 +173,11 @@ public class ProactiveChatCallback extends LLMCallback {
                 [系统指令] 你现在要主动发起对话（不需要等待主人说话）。
 
                 你是%s，%s的忠诚女仆。你目前在%s，%s天气，%s。
-                %s%s
+                %s%s%s
                 请用1-2句简短自然的话主动和主人聊天。直接说话即可，不要加动作描写、括号注释或任何格式标记。
 
                 可选话题：关心主人状态、评论环境或天气、分享你注意到的事情、询问是否需要帮助。
                 注意：你是在主动发起对话，不要回应任何人的话。""",
-                maidName, ownerName, biome, weather, timeOfDay, eventLine, memoryContext);
+                maidName, ownerName, biome, weather, timeOfDay, eventLine, memoryContext, socialMemoryContext);
     }
 }
