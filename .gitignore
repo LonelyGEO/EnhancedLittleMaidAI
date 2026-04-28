@@ -33,3 +33,4 @@ com/
 forge*changelog.txt
 /src/generated/resources/.cache/
 .sisyphus
+planToAgent.md
