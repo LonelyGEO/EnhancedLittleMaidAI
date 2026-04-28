@@ -27,6 +27,8 @@ runs
 run
 src/generated/resources/.cache
 src/test
+# decompiled class files
+com/
 
 # Files from Forge MDK
 forge*changelog.txt
