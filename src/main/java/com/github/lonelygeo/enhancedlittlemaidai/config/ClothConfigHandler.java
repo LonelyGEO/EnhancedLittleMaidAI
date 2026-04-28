@@ -1,5 +1,6 @@
 package com.github.lonelygeo.enhancedlittlemaidai.config;
 
+import com.github.lonelygeo.enhancedlittlemaidai.compat.MiningCompat;
 import com.github.tartaricacid.touhoulittlemaid.api.event.client.AddClothConfigEvent;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
@@ -35,16 +36,18 @@ public final class ClothConfigHandler {
                 "config.enhancedlittlemaidai.title", "ELMAI");
         ConfigCategory category = builder.getOrCreateCategory(title);
 
-        // ========== 采矿对话（父分类根层级独立条目，置顶） ==========
-        category.addEntry(entryBuilder
-                .startBooleanToggle(
-                        Component.translatable("config.enhancedlittlemaidai.mining.enableMiningChat"),
-                        EnhancedConfig.ENABLE_MINING_CHAT.get())
-                .setDefaultValue(true)
-                .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.mining.enableMiningChat.tooltip"))
-                .setSaveConsumer(EnhancedConfig.ENABLE_MINING_CHAT::set)
-                .build());
+        // ========== 采矿对话（父分类根层级独立条目，置顶，仅 MLM 加载时显示） ==========
+        if (MiningCompat.isLoaded()) {
+            category.addEntry(entryBuilder
+                    .startBooleanToggle(
+                            Component.translatable("config.enhancedlittlemaidai.mining.enableMiningChat"),
+                            EnhancedConfig.ENABLE_MINING_CHAT.get())
+                    .setDefaultValue(true)
+                    .setTooltip(Component.translatable(
+                            "config.enhancedlittlemaidai.mining.enableMiningChat.tooltip"))
+                    .setSaveConsumer(EnhancedConfig.ENABLE_MINING_CHAT::set)
+                    .build());
+        }
 
         // ========== 上下文感知 ==========
         SubCategoryBuilder contextSub = entryBuilder.startSubCategory(
