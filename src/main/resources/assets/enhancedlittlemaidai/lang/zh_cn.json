@@ -13,8 +13,8 @@
     "config.enhancedlittlemaidai.memory.compressBatchSize": "压缩批次大小",
     "config.enhancedlittlemaidai.memory.targetSummaries": "压缩摘要上限",
 
-    "config.enhancedlittlemaidai.proactive.cooldownTicks": "冷却时间 (tick)",
-    "config.enhancedlittlemaidai.proactive.cooldownTicks.tooltip": "两次主动聊天之间的最小间隔，12000 = 10 分钟",
+    "config.enhancedlittlemaidai.proactive.cooldownTicks": "冷却时间 (秒)",
+    "config.enhancedlittlemaidai.proactive.cooldownTicks.tooltip": "两次主动聊天之间的最小间隔，600 = 10 分钟",
     "config.enhancedlittlemaidai.proactive.triggerChance": "触发概率 (每 tick)",
     "config.enhancedlittlemaidai.proactive.maxChats": "会话最大聊天次数",
     "config.enhancedlittlemaidai.proactive.minDistance": "触发最小距离 (格)",

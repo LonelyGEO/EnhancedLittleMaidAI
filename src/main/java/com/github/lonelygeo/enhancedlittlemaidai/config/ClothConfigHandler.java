@@ -93,11 +93,11 @@ public final class ClothConfigHandler {
         proactiveSub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.proactive.cooldownTicks"),
-                        EnhancedConfig.COOLDOWN_TICKS.get(), 600, 72000)
-                .setDefaultValue(12000)
+                        EnhancedConfig.COOLDOWN_TICKS.get() / 20, 30, 3600)
+                .setDefaultValue(600)
                 .setTooltip(Component.translatable(
                         "config.enhancedlittlemaidai.proactive.cooldownTicks.tooltip"))
-                .setSaveConsumer(EnhancedConfig.COOLDOWN_TICKS::set)
+                .setSaveConsumer(val -> EnhancedConfig.COOLDOWN_TICKS.set(val * 20))
                 .build());
 
         proactiveSub.add(entryBuilder
