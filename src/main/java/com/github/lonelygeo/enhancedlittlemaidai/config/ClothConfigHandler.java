@@ -55,6 +55,8 @@ public final class ClothConfigHandler {
                         Component.translatable("config.enhancedlittlemaidai.memory.compressTrigger"),
                         EnhancedConfig.COMPRESS_TRIGGER.get(), 20, 500)
                 .setDefaultValue(80)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.memory.compressTrigger.tooltip"))
                 .setSaveConsumer(EnhancedConfig.COMPRESS_TRIGGER::set)
                 .build());
 
@@ -64,6 +66,8 @@ public final class ClothConfigHandler {
                         EnhancedConfig.DEDUP_SCORE_THRESHOLD.get())
                 .setDefaultValue(0.85)
                 .setMin(0.5).setMax(1.0)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.memory.dedupThreshold.tooltip"))
                 .setSaveConsumer(EnhancedConfig.DEDUP_SCORE_THRESHOLD::set)
                 .build());
 
@@ -72,6 +76,8 @@ public final class ClothConfigHandler {
                         Component.translatable("config.enhancedlittlemaidai.memory.compressBatchSize"),
                         EnhancedConfig.COMPRESS_BATCH_SIZE.get(), 5, 100)
                 .setDefaultValue(20)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.memory.compressBatchSize.tooltip"))
                 .setSaveConsumer(EnhancedConfig.COMPRESS_BATCH_SIZE::set)
                 .build());
 
@@ -80,6 +86,8 @@ public final class ClothConfigHandler {
                         Component.translatable("config.enhancedlittlemaidai.memory.targetSummaries"),
                         EnhancedConfig.TARGET_SUMMARIES.get(), 1, 30)
                 .setDefaultValue(5)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.memory.targetSummaries.tooltip"))
                 .setSaveConsumer(EnhancedConfig.TARGET_SUMMARIES::set)
                 .build());
 
@@ -106,6 +114,8 @@ public final class ClothConfigHandler {
                         EnhancedConfig.TRIGGER_CHANCE_PER_TICK.get())
                 .setDefaultValue(0.002)
                 .setMin(0.0001).setMax(1.0)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.proactive.triggerChance.tooltip"))
                 .setSaveConsumer(EnhancedConfig.TRIGGER_CHANCE_PER_TICK::set)
                 .build());
 
@@ -114,6 +124,8 @@ public final class ClothConfigHandler {
                         Component.translatable("config.enhancedlittlemaidai.proactive.maxChats"),
                         EnhancedConfig.MAX_CHATS_PER_SESSION.get(), 1, 100)
                 .setDefaultValue(8)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.proactive.maxChats.tooltip"))
                 .setSaveConsumer(EnhancedConfig.MAX_CHATS_PER_SESSION::set)
                 .build());
 
@@ -123,6 +135,8 @@ public final class ClothConfigHandler {
                         EnhancedConfig.MIN_PLAYER_DISTANCE.get())
                 .setDefaultValue(10.0)
                 .setMin(1.0).setMax(64.0)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.proactive.minDistance.tooltip"))
                 .setSaveConsumer(EnhancedConfig.MIN_PLAYER_DISTANCE::set)
                 .build());
 
@@ -138,6 +152,8 @@ public final class ClothConfigHandler {
                         Component.translatable("config.enhancedlittlemaidai.context.bfsDepth"),
                         EnhancedConfig.BFS_MAX_DEPTH.get(), 1, 10)
                 .setDefaultValue(5)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.context.bfsDepth.tooltip"))
                 .setSaveConsumer(EnhancedConfig.BFS_MAX_DEPTH::set)
                 .build());
 
@@ -146,6 +162,8 @@ public final class ClothConfigHandler {
                         Component.translatable("config.enhancedlittlemaidai.context.entityRadius"),
                         EnhancedConfig.ENTITY_RADIUS.get(), 4, 64)
                 .setDefaultValue(16)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.context.entityRadius.tooltip"))
                 .setSaveConsumer(EnhancedConfig.ENTITY_RADIUS::set)
                 .build());
 
@@ -154,10 +172,23 @@ public final class ClothConfigHandler {
                         Component.translatable("config.enhancedlittlemaidai.context.maxEntities"),
                         EnhancedConfig.MAX_ENTITIES.get(), 5, 100)
                 .setDefaultValue(30)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.context.maxEntities.tooltip"))
                 .setSaveConsumer(EnhancedConfig.MAX_ENTITIES::set)
                 .build());
 
         category.addEntry(contextSub.build());
+
+        // ========== 采矿对话（父分类根层级独立条目） ==========
+        category.addEntry(entryBuilder
+                .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.mining.enableMiningChat"),
+                        EnhancedConfig.ENABLE_MINING_CHAT.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.mining.enableMiningChat.tooltip"))
+                .setSaveConsumer(EnhancedConfig.ENABLE_MINING_CHAT::set)
+                .build());
 
         // ========== 调试 ==========
         SubCategoryBuilder debugSub = entryBuilder.startSubCategory(
@@ -169,17 +200,9 @@ public final class ClothConfigHandler {
                         Component.translatable("config.enhancedlittlemaidai.debug.debugLog"),
                         EnhancedConfig.DEBUG_LOG.get())
                 .setDefaultValue(false)
-                .setSaveConsumer(EnhancedConfig.DEBUG_LOG::set)
-                .build());
-
-        debugSub.add(entryBuilder
-                .startBooleanToggle(
-                        Component.translatable("config.enhancedlittlemaidai.debug.enableMiningChat"),
-                        EnhancedConfig.ENABLE_MINING_CHAT.get())
-                .setDefaultValue(true)
                 .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.debug.enableMiningChat.tooltip"))
-                .setSaveConsumer(EnhancedConfig.ENABLE_MINING_CHAT::set)
+                        "config.enhancedlittlemaidai.debug.debugLog.tooltip"))
+                .setSaveConsumer(EnhancedConfig.DEBUG_LOG::set)
                 .build());
 
         category.addEntry(debugSub.build());

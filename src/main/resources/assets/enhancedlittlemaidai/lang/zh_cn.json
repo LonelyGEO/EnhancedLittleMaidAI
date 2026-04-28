@@ -9,22 +9,34 @@
     "config.enhancedlittlemaidai.memory.maxMemories": "最大记忆数量",
     "config.enhancedlittlemaidai.memory.maxMemories.tooltip": "每只女仆可存储的最大记忆数量",
     "config.enhancedlittlemaidai.memory.compressTrigger": "压缩触发阈值",
+    "config.enhancedlittlemaidai.memory.compressTrigger.tooltip": "记忆数量达到此值时触发 LLM 压缩",
     "config.enhancedlittlemaidai.memory.dedupThreshold": "去重相似度阈值",
+    "config.enhancedlittlemaidai.memory.dedupThreshold.tooltip": "BM25 相似度高于此值的记忆视为重复（0.5~1.0）",
     "config.enhancedlittlemaidai.memory.compressBatchSize": "压缩批次大小",
+    "config.enhancedlittlemaidai.memory.compressBatchSize.tooltip": "每次压缩时取最旧的记忆条数",
     "config.enhancedlittlemaidai.memory.targetSummaries": "压缩摘要上限",
+    "config.enhancedlittlemaidai.memory.targetSummaries.tooltip": "压缩后 LLM 最多生成的摘要数量",
 
     "config.enhancedlittlemaidai.proactive.cooldownTicks": "冷却时间 (秒)",
     "config.enhancedlittlemaidai.proactive.cooldownTicks.tooltip": "两次主动聊天之间的最小间隔，600 = 10 分钟",
     "config.enhancedlittlemaidai.proactive.triggerChance": "触发概率 (每 tick)",
+    "config.enhancedlittlemaidai.proactive.triggerChance.tooltip": "冷却结束后每 tick 触发主动聊天的概率",
     "config.enhancedlittlemaidai.proactive.maxChats": "会话最大聊天次数",
+    "config.enhancedlittlemaidai.proactive.maxChats.tooltip": "每次进入游戏后主动聊天的最大触发次数",
     "config.enhancedlittlemaidai.proactive.minDistance": "触发最小距离 (格)",
+    "config.enhancedlittlemaidai.proactive.minDistance.tooltip": "主人必须在多少格以内才可能触发主动聊天",
 
     "config.enhancedlittlemaidai.context.bfsDepth": "BFS 采样深度",
+    "config.enhancedlittlemaidai.context.bfsDepth.tooltip": "附近方块 BFS 扫描的最大层数（层数越大范围越广）",
     "config.enhancedlittlemaidai.context.entityRadius": "实体扫描半径",
+    "config.enhancedlittlemaidai.context.entityRadius.tooltip": "检测附近实体的最大范围（格）",
     "config.enhancedlittlemaidai.context.maxEntities": "实体最大返回数",
+    "config.enhancedlittlemaidai.context.maxEntities.tooltip": "返回给 LLM 的实体信息数量上限",
+
+    "config.enhancedlittlemaidai.mining.enableMiningChat": "LLM 采矿对话",
+    "config.enhancedlittlemaidai.mining.enableMiningChat.tooltip": "启用后，MLM 采矿消息由 LLM 基于女仆角色设定生成",
+
 
     "config.enhancedlittlemaidai.debug.debugLog": "调试日志",
-
-    "config.enhancedlittlemaidai.debug.enableMiningChat": "LLM 采矿对话",
-    "config.enhancedlittlemaidai.debug.enableMiningChat.tooltip": "启用后，MLM 采矿消息由 LLM 基于女仆角色设定生成"
+    "config.enhancedlittlemaidai.debug.debugLog.tooltip": "开启后输出详细运行信息到日志文件"
 }
