@@ -78,7 +78,7 @@ dependencies {
     implementation files("libs/touhoulittlemaid-1.5.2-neoforge+mc1.21.1.jar")
 
     // MiningLittleMaid 联动（编译时引用 API，运行时 optional）
-    compileOnly files("libs/mininglittlemaid-0.4.2-neoforge+mc1.21.1.jar")
+    compileOnly files("libs/mininglittlemaid-0.6.0-neoforge+mc1.21.1.jar")
 
     // Cloth Config 联动（编译+开发运行时，生产环境由 TLM 提供）
     implementation files("libs/cloth-config-neoforge-15.0.140.jar")
