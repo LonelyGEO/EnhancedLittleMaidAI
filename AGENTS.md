@@ -21,6 +21,8 @@ All items below were verified against the current repository contents.
 - Mod platform: **NeoForge** (`net.neoforged.moddev` plugin)
 - Packaging: 标准 jar（无 shadowJar）
 - 父模组依赖: `implementation files("libs/touhoulittlemaid-...jar")`
+- 联动模组: `mining_little_maid`（compileOnly optional）
+- 联动模组仓库: `https://github.com/LonelyGEO/MiningLittleMaid.git`
 - Test dependency: **JUnit 4.13.2** (`testImplementation`)
 
 ## 2) Cursor/Copilot rule files
