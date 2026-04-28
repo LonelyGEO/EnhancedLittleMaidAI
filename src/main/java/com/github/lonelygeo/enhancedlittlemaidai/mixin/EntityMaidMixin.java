@@ -163,7 +163,7 @@ public abstract class EntityMaidMixin {
 
             // A 侧：降频扫描附近女仆
             int interval = EnhancedConfig.INTER_MAID_SCAN_INTERVAL.get();
-            if (gameTime % interval == uuid.hashCode() % interval) {
+            if (gameTime % interval == Math.floorMod(uuid.hashCode(), interval)) {
                 if (InterMaidChatManager.canScan(maid, gameTime)) {
                     EntityMaid partner = InterMaidChatManager.findPartner(maid);
                     if (partner != null) {

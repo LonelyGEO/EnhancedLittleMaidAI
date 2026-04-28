@@ -8,6 +8,7 @@ import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 多女仆协调对话管理器。
@@ -26,7 +27,7 @@ public final class InterMaidChatManager {
     private static final Map<UUID, Integer> DAY_COUNTS =
             Collections.synchronizedMap(new HashMap<>());
     // 全局每日计数
-    private static int globalDayCount = 0;
+    private static final AtomicInteger globalDayCount = new AtomicInteger();
     // pending proposals: toUUID → Proposal
     private static final Map<UUID, Proposal> PENDING_PROPOSALS =
             Collections.synchronizedMap(new HashMap<>());
@@ -128,7 +129,7 @@ public final class InterMaidChatManager {
 
         UUID uuid = maid.getUUID();
         if (DAY_COUNTS.getOrDefault(uuid, 0) >= EnhancedConfig.INTER_MAID_MAX_PER_DAY.get()) return false;
-        if (globalDayCount >= EnhancedConfig.INTER_MAID_MAX_GLOBAL_PER_DAY.get()) return false;
+        if (globalDayCount.get() >= EnhancedConfig.INTER_MAID_MAX_GLOBAL_PER_DAY.get()) return false;
 
         // 附近有任意玩家？
         double playerDist = EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.get();
@@ -207,7 +208,7 @@ public final class InterMaidChatManager {
         PAIR_COOLDOWNS.put(pairKey(a, b), gameTime);
         DAY_COUNTS.merge(a, 1, Integer::sum);
         DAY_COUNTS.merge(b, 1, Integer::sum);
-        globalDayCount++;
+        globalDayCount.incrementAndGet();
     }
 
     public static void markRejected(UUID a, UUID b, long gameTime) {
@@ -224,11 +225,15 @@ public final class InterMaidChatManager {
     }
 
     public static void resetGlobalDayCount() {
-        globalDayCount = 0;
+        globalDayCount.set(0);
     }
 
     public static void reset(UUID uuid) {
-        PAIR_COOLDOWNS.entrySet().removeIf(e -> e.getKey().contains(uuid.toString()));
+        PAIR_COOLDOWNS.entrySet().removeIf(e -> {
+            String[] parts = e.getKey().split("\\|");
+            String id = uuid.toString();
+            return parts.length == 2 && (parts[0].equals(id) || parts[1].equals(id));
+        });
         DAY_COUNTS.remove(uuid);
         PENDING_PROPOSALS.remove(uuid);
         BUSY.remove(uuid);
@@ -241,7 +246,7 @@ public final class InterMaidChatManager {
     }
 
     public static int getGlobalDayCount() {
-        return globalDayCount;
+        return globalDayCount.get();
     }
 
     public static int getPendingProposalCount() {

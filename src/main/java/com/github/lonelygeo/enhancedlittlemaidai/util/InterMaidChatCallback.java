@@ -225,7 +225,7 @@ public class InterMaidChatCallback extends LLMCallback {
         return sb.toString();
     }
 
-    private String getCharacterSetting(EntityMaid maid) {
+    private static String getCharacterSetting(EntityMaid maid) {
         String mode = EnhancedConfig.INTER_MAID_PROMPT_MODE.get();
         if ("MINIMAL".equals(mode)) {
             return maid.getDisplayName().getString() + "，一位女仆。";
@@ -307,8 +307,7 @@ public class InterMaidChatCallback extends LLMCallback {
     }
 
     private static String buildInitPrompt(EntityMaid speaker, EntityMaid other) {
-        String setting = new InterMaidChatCallback(null, null, List.of(), 0)
-                .getCharacterSetting(speaker); // 复用 getCharacterSetting
+        String setting = getCharacterSetting(speaker);
         return setting + "\n\n你看到了" + other.getDisplayName().getString()
                 + "。请和她聊几句。说一句简短自然的话主动发起对话。"
                 + "直接说话即可，不要加动作描写、括号注释或任何格式标记。";

@@ -5,6 +5,7 @@ import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryExtractionCallback
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.Role;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -34,14 +35,14 @@ public final class LLMResponseCache {
             String lastUser = "";
             for (int i = messages.size() - 1; i >= 0; i--) {
                 LLMMessage msg = messages.get(i);
-                if (msg.role() == com.github.tartaricacid.touhoulittlemaid.ai.service.llm.Role.USER) {
+                if (msg.role() == Role.USER) {
                     lastUser = msg.message();
                     break;
                 }
             }
 
             for (LLMMessage msg : messages) {
-                if (msg.role() == com.github.tartaricacid.touhoulittlemaid.ai.service.llm.Role.SYSTEM) {
+                if (msg.role() == Role.SYSTEM) {
                     md.update((byte) 0);
                     md.update(msg.message().getBytes(StandardCharsets.UTF_8));
                 }

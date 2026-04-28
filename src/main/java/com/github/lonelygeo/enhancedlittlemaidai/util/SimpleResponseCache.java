@@ -21,7 +21,7 @@ final class SimpleResponseCache {
         };
     }
 
-    String get(String key, long ttlMs) {
+    synchronized String get(String key, long ttlMs) {
         TimedEntry entry = cache.get(key);
         if (entry == null) return null;
         if (System.currentTimeMillis() - entry.createdAt > ttlMs) {
@@ -31,7 +31,7 @@ final class SimpleResponseCache {
         return entry.text;
     }
 
-    void put(String key, String text) {
+    synchronized void put(String key, String text) {
         if (key == null || text == null) return;
         cache.put(key, new TimedEntry(System.currentTimeMillis(), text));
     }

@@ -42,7 +42,8 @@ public class InterMaidDecisionCallback extends LLMCallback {
         }
 
         String upper = text.trim().toUpperCase();
-        if (upper.contains("ACCEPT") && !upper.contains("REJECT")) {
+        String firstWord = upper.split("[\\s,.!?;:]+")[0];
+        if ("ACCEPT".equals(firstWord)) {
             accept();
         } else {
             reject();
