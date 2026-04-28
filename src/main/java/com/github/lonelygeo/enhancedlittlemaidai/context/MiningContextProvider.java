@@ -2,6 +2,7 @@ package com.github.lonelygeo.enhancedlittlemaidai.context;
 
 import com.github.lonelygeo.enhancedlittlemaidai.compat.MiningCompat;
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.agent.context.IMaidContext;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
@@ -67,7 +68,7 @@ public final class MiningContextProvider {
                                 .append(" x").append(e.getValue()).append("; "));
                 sb.append("| sniff_radius=").append(sniffRadius);
                 String result = sb.toString();
-                if (EnhancedLittleMaidAI.DEBUG_LOG) {
+                if (EnhancedConfig.debugLog()) {
                     EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: mining_nearby_ores radius={}, ores={}",
                             sniffRadius, oreCounts.size());
                 }
@@ -104,7 +105,7 @@ public final class MiningContextProvider {
 
                 String result = String.format("active=%b, favor_level=%d, sniff_radius=%d",
                         isActive, favorLevel, sniffRadius);
-                if (EnhancedLittleMaidAI.DEBUG_LOG) {
+                if (EnhancedConfig.debugLog()) {
                     EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: mining_status active={}", isActive);
                 }
                 return result;

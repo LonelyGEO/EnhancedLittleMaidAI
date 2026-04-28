@@ -7,6 +7,7 @@ import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ReasoningContentStore;
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatData;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
@@ -149,7 +150,7 @@ public abstract class LLMCallbackMixin {
                             4
                     );
                     palace.addMemory(quickMemory);
-                    if (EnhancedLittleMaidAI.DEBUG_LOG) {
+                    if (EnhancedConfig.debugLog()) {
                         EnhancedLittleMaidAI.LOGGER.info(
                                 "EnhancedLittleMaidAI: Quick memory saved for maid {} (keyword trigger)",
                                 maid.getUUID());
@@ -160,7 +161,7 @@ public abstract class LLMCallbackMixin {
             if (!palace.shouldExtractMemories(gameTime)) return;
             palace.markExtractionDone(gameTime);
 
-            if (EnhancedLittleMaidAI.DEBUG_LOG) {
+            if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.info(
                         "EnhancedLittleMaidAI: Triggering memory extraction for maid {}",
                         maid.getUUID());
@@ -175,7 +176,7 @@ public abstract class LLMCallbackMixin {
                     LLMClient client = site.client();
                     if (client != null) {
                         palace.triggerCompression(maid, client);
-                        if (EnhancedLittleMaidAI.DEBUG_LOG) {
+                        if (EnhancedConfig.debugLog()) {
                             EnhancedLittleMaidAI.LOGGER.info(
                                     "EnhancedLittleMaidAI: Triggering memory compression for maid {}",
                                     maid.getUUID());
@@ -194,7 +195,7 @@ public abstract class LLMCallbackMixin {
     private void enhanced$triggerAsyncMemoryExtraction(EntityMaid maid, MindPalace palace, long gameTime) {
         LLMSite site = chatManager.getLLMSite();
         if (site == null || !site.enabled()) {
-            if (EnhancedLittleMaidAI.DEBUG_LOG) {
+            if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.info(
                         "EnhancedLittleMaidAI: LLM site not available for maid {}, skipping extraction",
                         maid.getUUID());
@@ -227,7 +228,7 @@ public abstract class LLMCallbackMixin {
             }
             if (items != null && !items.isEmpty()) {
                 palace.addMemories(items, gameTime);
-                if (EnhancedLittleMaidAI.DEBUG_LOG) {
+                if (EnhancedConfig.debugLog()) {
                     EnhancedLittleMaidAI.LOGGER.info(
                             "EnhancedLittleMaidAI: Memory extraction completed for maid {}: {} memories",
                             maid.getUUID(), items.size());

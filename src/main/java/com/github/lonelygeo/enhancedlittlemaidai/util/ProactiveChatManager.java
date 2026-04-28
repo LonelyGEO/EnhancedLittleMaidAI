@@ -1,5 +1,6 @@
 package com.github.lonelygeo.enhancedlittlemaidai.util;
 
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMSite;
@@ -28,15 +29,6 @@ import java.util.UUID;
  */
 public final class ProactiveChatManager {
 
-    /** 两次主动聊天之间最少间隔（tick） */
-    private static final long COOLDOWN_TICKS = 12000;
-    /** 冷却结束后每次 tick 触发概率 */
-    private static final double TRIGGER_CHANCE_PER_TICK = 0.002;
-    /** 每次游戏会话最多主动聊天次数 */
-    private static final int MAX_CHATS_PER_SESSION = 8;
-    /** 主人玩家须在 10 格内（平方距离） */
-    private static final double MIN_PLAYER_DISTANCE_SQ = 100.0;
-
     private static final Map<UUID, Long> lastChatTime =
             Collections.synchronizedMap(new HashMap<>());
     private static final Map<UUID, Integer> chatCount =
@@ -60,22 +52,23 @@ public final class ProactiveChatManager {
 
         LivingEntity owner = maid.getOwner();
         if (!(owner instanceof ServerPlayer)) return false;
-        if (owner.distanceToSqr(maid) > MIN_PLAYER_DISTANCE_SQ) return false;
+        double minDist = EnhancedConfig.MIN_PLAYER_DISTANCE.get();
+        if (owner.distanceToSqr(maid) > minDist * minDist) return false;
 
         UUID uuid = maid.getUUID();
         long currentTime = maid.level().getGameTime();
 
         Long lastTime = lastChatTime.get(uuid);
-        if (lastTime != null && (currentTime - lastTime) < COOLDOWN_TICKS) {
+        if (lastTime != null && (currentTime - lastTime) < EnhancedConfig.COOLDOWN_TICKS.get()) {
             return false;
         }
 
         int count = chatCount.getOrDefault(uuid, 0);
-        if (count >= MAX_CHATS_PER_SESSION) {
+        if (count >= EnhancedConfig.MAX_CHATS_PER_SESSION.get()) {
             return false;
         }
 
-        if (Math.random() >= TRIGGER_CHANCE_PER_TICK) {
+        if (Math.random() >= EnhancedConfig.TRIGGER_CHANCE_PER_TICK.get()) {
             return false;
         }
 

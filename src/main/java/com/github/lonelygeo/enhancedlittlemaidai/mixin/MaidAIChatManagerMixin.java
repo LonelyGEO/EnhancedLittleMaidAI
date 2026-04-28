@@ -2,6 +2,7 @@ package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
@@ -44,7 +45,7 @@ public abstract class MaidAIChatManagerMixin {
                 int insertPos = Math.min(2, messages.size());
                 messages.add(insertPos, memoryMessage);
 
-                if (EnhancedLittleMaidAI.DEBUG_LOG) {
+                if (EnhancedConfig.debugLog()) {
                     EnhancedLittleMaidAI.LOGGER.debug(
                             "EnhancedLittleMaidAI: Injected memory context for maid {} ({} items)",
                             maid.getUUID(), palace.size());

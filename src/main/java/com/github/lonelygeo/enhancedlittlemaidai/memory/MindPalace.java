@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.memory;
 
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
@@ -24,9 +25,6 @@ public class MindPalace {
                     return size() > 1000;
                 }
             });
-
-    private static final int SPATIAL_RECALL_RADIUS = 16;
-    private static final int SEMANTIC_RETRIEVE_TOP_K = 3;
 
     private final UUID maidUuid;
     private final MemoryStore store = new MemoryStore();
@@ -54,8 +52,8 @@ public class MindPalace {
      * 包含：语义检索 Top-K + 空间召回（如果女仆在记忆位置附近）。
      */
     public String buildMemoryContext(String userMessage, BlockPos maidPos) {
-        List<MemoryItem> semanticResults = store.retrieve(userMessage, SEMANTIC_RETRIEVE_TOP_K);
-        List<MemoryItem> spatialResults = store.retrieveByLocation(maidPos, SPATIAL_RECALL_RADIUS);
+        List<MemoryItem> semanticResults = store.retrieve(userMessage, EnhancedConfig.SEMANTIC_RETRIEVE_TOP_K.get());
+        List<MemoryItem> spatialResults = store.retrieveByLocation(maidPos, EnhancedConfig.SPATIAL_RECALL_RADIUS.get());
 
         Set<MemoryItem> merged = new LinkedHashSet<>(semanticResults);
         merged.addAll(spatialResults);
@@ -151,7 +149,7 @@ public class MindPalace {
         future.whenComplete((summaries, ex) -> {
             if (ex == null && summaries != null && !summaries.isEmpty()) {
                 applyCompressionResult(summaries);
-                if (EnhancedLittleMaidAI.DEBUG_LOG) {
+                if (EnhancedConfig.debugLog()) {
                     EnhancedLittleMaidAI.LOGGER.info(
                             "EnhancedLittleMaidAI: Memory compression completed for maid {}: {} summaries",
                             maidUuid, summaries.size());
@@ -164,7 +162,7 @@ public class MindPalace {
     }
 
     private void applyCompressionResult(List<MemoryItem> summaries) {
-        store.removeOldest(MemoryCompressor.COMPRESS_BATCH_SIZE);
+        store.removeOldest(EnhancedConfig.COMPRESS_BATCH_SIZE.get());
         for (MemoryItem item : summaries) {
             store.restore(item);
         }

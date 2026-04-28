@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.memory;
 
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat;
@@ -32,7 +33,7 @@ public class MemoryExtractionCallback extends LLMCallback {
     public void onSuccess(ResponseChat responseChat) {
         String text = responseChat.getChatText();
         List<MemoryItem> items = MemoryResponseParser.parse(text);
-        if (EnhancedLittleMaidAI.DEBUG_LOG) {
+        if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.debug(
                     "EnhancedLittleMaidAI: Memory extraction LLM returned {} items", items.size());
         }

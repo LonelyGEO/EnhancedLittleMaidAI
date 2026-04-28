@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.context;
 
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.agent.context.GameContextRegister;
 import com.github.tartaricacid.touhoulittlemaid.ai.agent.context.IMaidContext;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
@@ -16,9 +17,6 @@ import net.minecraft.world.phys.AABB;
 import java.util.*;
 
 public final class BlockAwareContexts {
-    private static final int BFS_MAX_DEPTH = 5;
-    private static final int ENTITY_RADIUS = 16;
-    private static final int MAX_ENTITIES = 30;
 
     public static void registerAll(GameContextRegister register) {
         register.registerContext("nearby_blocks", new NearbyBlocksContext());
@@ -52,7 +50,7 @@ public final class BlockAwareContexts {
             visited.add(center);
 
             int depth = 0;
-            while (!queue.isEmpty() && depth <= BFS_MAX_DEPTH) {
+            while (!queue.isEmpty() && depth <= EnhancedConfig.BFS_MAX_DEPTH.get()) {
                 int layerSize = queue.size();
                 for (int i = 0; i < layerSize; i++) {
                     BlockPos pos = queue.poll();
@@ -74,7 +72,7 @@ public final class BlockAwareContexts {
                     .forEach(e -> sb.append(e.getKey().getDescriptionId())
                             .append(" x").append(e.getValue()).append("; "));
             String result = sb.isEmpty() ? "none" : sb.toString();
-            if (EnhancedLittleMaidAI.DEBUG_LOG) {
+            if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: nearby_blocks BFS result len={}", result.length());
             }
             return result;
@@ -111,7 +109,7 @@ public final class BlockAwareContexts {
 
             String result = String.format("light=%d, indoors=%b, sky_visible=%b, redstone_power=%d",
                     light, indoors || hasCeiling, skyVisible, redstone);
-            if (EnhancedLittleMaidAI.DEBUG_LOG) {
+            if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: environment_detail result={}", result);
             }
             return result;
@@ -132,14 +130,14 @@ public final class BlockAwareContexts {
         @Override
         public String getValue(EntityMaid maid) {
             Level level = maid.level();
-            AABB range = maid.getBoundingBox().inflate(ENTITY_RADIUS);
+            AABB range = maid.getBoundingBox().inflate(EnhancedConfig.ENTITY_RADIUS.get());
             List<LivingEntity> entities = level.getEntitiesOfClass(
                     LivingEntity.class, range,
                     e -> e != maid && e.isAlive()
             );
             entities.sort(Comparator.comparingDouble(e -> e.distanceToSqr(maid)));
-            if (entities.size() > MAX_ENTITIES) {
-                entities = entities.subList(0, MAX_ENTITIES);
+            if (entities.size() > EnhancedConfig.MAX_ENTITIES.get()) {
+                entities = entities.subList(0, EnhancedConfig.MAX_ENTITIES.get());
             }
 
             StringBuilder sb = new StringBuilder();
@@ -160,7 +158,7 @@ public final class BlockAwareContexts {
                 sb.append("; ");
             }
             String result = sb.isEmpty() ? "none" : sb.toString();
-            if (EnhancedLittleMaidAI.DEBUG_LOG) {
+            if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: entity_detail entities={}", entities.size());
             }
             return result;

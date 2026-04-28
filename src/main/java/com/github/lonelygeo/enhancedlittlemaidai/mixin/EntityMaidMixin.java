@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryCategory;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryItem;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
@@ -122,7 +123,7 @@ public abstract class EntityMaidMixin {
             client.chat(callback);
             ProactiveChatManager.markTriggered(maid.getUUID(), maid.level().getGameTime());
 
-            if (EnhancedLittleMaidAI.DEBUG_LOG) {
+            if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.info(
                         "EnhancedLittleMaidAI: Proactive chat triggered for maid {} (#{})",
                         maid.getUUID(), ProactiveChatManager.getCount(maid.getUUID()));

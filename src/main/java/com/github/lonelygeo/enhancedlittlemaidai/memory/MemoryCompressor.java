@@ -1,18 +1,17 @@
 package com.github.lonelygeo.enhancedlittlemaidai.memory;
 
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 /**
  * LLM 版记忆压缩器。
- * 触发条件：store.size() >= COMPRESS_TRIGGER (80)
- * 策略：取最旧的 20 条记忆发给 LLM，合并为最多 5 条摘要，替换原记忆。
+ * 触发条件：store.size() >= compressTrigger
+ * 策略：取最旧的 compressBatchSize 条记忆发给 LLM，合并为最多 targetSummaries 条摘要，替换原记忆。
  */
 public final class MemoryCompressor {
-    static final int COMPRESS_TRIGGER = 80;
-    static final int COMPRESS_BATCH_SIZE = 20;
-    static final int TARGET_SUMMARIES = 5;
 
     private MemoryCompressor() {}
 
@@ -31,7 +30,7 @@ public final class MemoryCompressor {
                 - Output at most %d summaries
 
                 Memories to compress:
-                """.formatted(TARGET_SUMMARIES));
+                """.formatted(EnhancedConfig.TARGET_SUMMARIES.get()));
 
         for (String text : memoryTexts) {
             sb.append(text).append("\n");
@@ -40,13 +39,13 @@ public final class MemoryCompressor {
     }
 
     public static boolean needsCompression(MemoryStore store) {
-        return store.size() >= COMPRESS_TRIGGER;
+        return store.size() >= EnhancedConfig.COMPRESS_TRIGGER.get();
     }
 
     public static List<String> getOldestMemoryTexts(MemoryStore store) {
         List<MemoryItem> items = new ArrayList<>(store.toList());
         items.sort(Comparator.comparingLong(MemoryItem::gameTime));
-        int count = Math.min(COMPRESS_BATCH_SIZE, items.size());
+        int count = Math.min(EnhancedConfig.COMPRESS_BATCH_SIZE.get(), items.size());
         List<String> texts = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             MemoryItem m = items.get(i);

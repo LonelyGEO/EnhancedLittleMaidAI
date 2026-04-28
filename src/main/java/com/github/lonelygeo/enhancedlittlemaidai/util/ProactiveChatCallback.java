@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.util;
 
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
@@ -58,7 +59,7 @@ public class ProactiveChatCallback extends LLMCallback {
             }
         }
 
-        if (EnhancedLittleMaidAI.DEBUG_LOG) {
+        if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.info(
                     "EnhancedLittleMaidAI: Proactive chat delivered for maid {}: {}",
                     maid != null ? maid.getUUID() : "null",
