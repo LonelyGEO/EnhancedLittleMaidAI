@@ -31,7 +31,7 @@ public final class ClothConfigHandler {
         ConfigEntryBuilder entryBuilder = event.getEntryBuilder();
 
         Component title = Component.translatable(
-                "config.enhancedlittlemaidai.title", "Enhanced Little Maid AI");
+                "config.enhancedlittlemaidai.title", "ELMAI");
         ConfigCategory category = builder.getOrCreateCategory(title);
 
         // === 记忆系统 ===
