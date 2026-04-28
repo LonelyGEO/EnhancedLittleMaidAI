@@ -36,7 +36,7 @@ public final class MiningContextProvider {
 
             @Override
             public String getValue(EntityMaid maid) {
-                if (!MiningCompat.isLoaded()) return "mining_little_maid not loaded";
+                if (!MiningCompat.isLoaded()) return "mininglittlemaid not loaded";
 
                 Level level = maid.level();
                 BlockPos center = maid.blockPosition();
@@ -91,7 +91,7 @@ public final class MiningContextProvider {
 
             @Override
             public String getValue(EntityMaid maid) {
-                if (!MiningCompat.isLoaded()) return "mining_little_maid not loaded";
+                if (!MiningCompat.isLoaded()) return "mininglittlemaid not loaded";
 
                 int favorLevel = maid.getFavorabilityManager().getLevel();
                 int sniffRadius = MiningCompat.getSniffRadius(favorLevel);
@@ -99,7 +99,7 @@ public final class MiningContextProvider {
                 boolean isActive = false;
                 if (maid.getTask() != null) {
                     ResourceLocation uid = maid.getTask().getUid();
-                    isActive = "mining_little_maid".equals(uid.getNamespace())
+                    isActive = "mininglittlemaid".equals(uid.getNamespace())
                             && "mining".equals(uid.getPath());
                 }
 

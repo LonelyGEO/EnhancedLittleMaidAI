@@ -11,7 +11,7 @@ import org.slf4j.Logger;
  */
 public final class MiningCompat {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final boolean LOADED = ModList.get().isLoaded("mining_little_maid");
+    private static final boolean LOADED = ModList.get().isLoaded("mininglittlemaid");
 
     private MiningCompat() {}
 

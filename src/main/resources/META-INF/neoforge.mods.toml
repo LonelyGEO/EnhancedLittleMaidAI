@@ -36,7 +36,7 @@ issueTrackerURL = "https://github.com/TartaricAcid/TouhouLittleMaid/issues"
     side = "BOTH"
 
 [[dependencies."${mod_id}"]]
-    modId = "mining_little_maid"
+    modId = "mininglittlemaid"
     type = "optional"
     versionRange = "[1.0.0,]"
     ordering = "AFTER"
