@@ -9,6 +9,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import org.slf4j.Logger;
 
@@ -20,7 +21,7 @@ public class EnhancedLittleMaidAI {
     public EnhancedLittleMaidAI(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Enhanced Little Maid AI addon loaded.");
         modContainer.registerConfig(ModConfig.Type.COMMON, EnhancedConfig.SPEC);
-        modEventBus.addListener(this::registerCommands);
+        NeoForge.EVENT_BUS.addListener(this::registerCommands);
         ClothConfigIntegration.registerIfAvailable();
     }
 
