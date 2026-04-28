@@ -78,7 +78,7 @@ dependencies {
     implementation files("libs/touhoulittlemaid-1.5.2-neoforge+mc1.21.1.jar")
 
     // MiningLittleMaid 联动（编译时引用 API，运行时 optional）
-    compileOnly files("libs/mining_little_maid-1.0.0-neoforge+mc1.21.1.jar")
+    compileOnly files("libs/mining_little_maid-0.3.1-neoforge+mc1.21.1.jar")
 
     // 单元测试
     testImplementation 'junit:junit:4.13.2'
