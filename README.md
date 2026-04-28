@@ -125,10 +125,29 @@ cd EnhancedLittleMaidAI
   - `mininglittlemaid-0.4.2-neoforge+mc1.21.1.jar`（可选，compileOnly）
   - `cloth-config-neoforge-15.0.140.jar`（可选，compileOnly）
 
+## 版本历史
+
+| 版本 | 日期 | 说明 |
+|------|------|------|
+| 0.6.0 | 2026-04-28 | Config 统一配置系统（ModConfigSpec / 4 section / 17 项） |
+| 0.5.1 | 2026-04-28 | 好感度限制 + MLM 0.3.1→0.4.2 依赖更新 / 清理冗余LLM站点检查 |
+| 0.5.0 | 2026-04-28 | 阶段五：女仆主动聊天（tick调度 + 多层冷却限制 + ProactiveChatCallback） |
+| 0.4.0 | 2026-04-28 | 阶段四：/mindpalace命令 + 独立DEBUG_LOG + 死亡记忆增强 + 关键词触发记忆 + LLM记忆压缩 |
+| 0.3.7 | 2026-04-28 | 女仆死亡时写入死亡记忆到 MindPalace |
+| 0.3.6 | 2026-04-28 | EntityMaidMixin：女仆remove时注销 MindPalace |
+| 0.3.5 | 2026-04-28 | ReasoningContentStore 存盘时 prune 陈旧引用 |
+| 0.3.4 | 2026-04-28 | 修复 MemoryStore.evict(0) 淘汰评分失效 |
+| 0.3.3 | 2026-04-28 | 修复 BM25Index.remove() 删除计数bug |
+| 0.3.2 | 2026-04-28 | 全链路 13 处 debug log 覆盖 |
+| 0.3.1 | 2026-04-28 | 补齐异步LLM记忆提取 + 全链路debug log点 |
+| 0.3.0 | 2026-04-28 | 阶段二：长期记忆/思维宫殿（BM25检索+MemoryStore+MindPalace） |
+| 0.2.1 | 2026-04-28 | entity_details 并入父模组 nearby_entities 类别 |
+| 0.2.0 | 2026-04-28 | 阶段一+三：世界上下文增强 + MiningLittleMaid 联动 |
+| 0.1.0 | 2026-04-27 | 初始版本：thinking/reasoningContent 支持 + NBT 持久化 |
+
 ## 开发文档
 
 - [AGENTS.md](AGENTS.md) — AI 编码助手规范与项目约定
-- [planToAgent.md](planToAgent.md) — 各版本已完成功能记录
 
 ## 许可证
 
