@@ -1,8 +1,15 @@
 package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
+import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryCategory;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryItem;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
+import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatCallback;
+import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatManager;
+import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMSite;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,8 +17,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 女仆死亡时记录死亡记忆到 MindPalace；移除时清理全局 Map。
@@ -81,6 +90,50 @@ public abstract class EntityMaidMixin {
      */
     @Inject(method = "remove", at = @At("TAIL"), remap = false)
     private void enhanced$cleanupMindPalace(Entity.RemovalReason reason, CallbackInfo ci) {
-        MindPalace.remove(((EntityMaid) (Object) this).getUUID());
+        UUID uuid = ((EntityMaid) (Object) this).getUUID();
+        MindPalace.remove(uuid);
+        ProactiveChatManager.reset(uuid);
+    }
+
+    // ==================== 主动聊天 ====================
+
+    /**
+     * 每 tick 检查主动聊天触发条件。
+     */
+    @Inject(method = "tick", at = @At("TAIL"), remap = false)
+    private void enhanced$proactiveChatTick(CallbackInfo ci) {
+        try {
+            EntityMaid maid = (EntityMaid) (Object) this;
+            if (!ProactiveChatManager.canTrigger(maid)) return;
+
+            MaidAIChatManager chatManager = maid.getAiChatManager();
+            if (chatManager == null) return;
+            LLMSite site = chatManager.getLLMSite();
+            if (site == null || !site.enabled()) return;
+            LLMClient client = site.client();
+            if (client == null) return;
+
+            String systemPrompt = ProactiveChatCallback.buildProactivePrompt(maid);
+            LLMMessage sysMsg = LLMMessage.systemChat(maid, systemPrompt);
+            LLMMessage userMsg = LLMMessage.userChat(maid, "（主动发起对话）");
+            List<LLMMessage> messages = List.of(sysMsg, userMsg);
+
+            long waitingBubbleId = maid.getChatBubbleManager().addThinkingText("...");
+
+            CompletableFuture<String> future = new CompletableFuture<>();
+            ProactiveChatCallback callback = new ProactiveChatCallback(chatManager, messages, future);
+            callback.setWaitingBubbleId(waitingBubbleId);
+
+            client.chat(callback);
+            ProactiveChatManager.markTriggered(maid.getUUID(), maid.level().getGameTime());
+
+            if (EnhancedLittleMaidAI.DEBUG_LOG) {
+                EnhancedLittleMaidAI.LOGGER.info(
+                        "EnhancedLittleMaidAI: Proactive chat triggered for maid {} (#{})",
+                        maid.getUUID(), ProactiveChatManager.getCount(maid.getUUID()));
+            }
+        } catch (Exception e) {
+            EnhancedLittleMaidAI.LOGGER.warn("EnhancedLittleMaidAI: Proactive chat trigger failed", e);
+        }
     }
 }
