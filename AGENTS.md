@@ -216,6 +216,7 @@ For Mixin changes under `mixin.*`:
   - `git commit --amend`（已推送的 commit）
   - 以及其他会修改已推送历史或破坏工作区的操作
 - **修改 `.gitignore` 必须征得用户同意**：Agent 不得自行增删 `.gitignore` 条目。如确需修改，先向用户说明理由并取得确认。
+- **禁止绕过 `.gitignore`**：不得使用 `git add -f` 等变相手段强制添加被忽略文件。若提交时发现文件被忽略，应告知用户并征求处理方案。
 - 每次提交前检查 `git status` 和 `git diff`，确保不包含敏感信息（密钥、token 等）。
 - **提交前主动提出版本变更建议**：每次完成代码改动后，Agent 应主动根据 §13 的版本位规则进行判断。PATCH 级别（Bug 修复、小调整）可自行决定并变更版本号；MINOR 及以上（新功能、架构重写）必须向用户确认后变更。
 
@@ -241,7 +242,7 @@ For Mixin changes under `mixin.*`:
 
 规则：
 - 版本号变更单独一条 commit，格式 `release: 0.x.y`
-- PATCH、MINOR 级别（Bug 修复、参数微调、语言文件补充）Agent 可自行决定并变更，无需等待确认
+- PATCH 级别（Bug 修复、参数微调、语言文件补充）Agent 可自行决定并变更版本号；MINOR 及以上（新功能、架构重写）必须向用户确认后变更。
 - MAJOR 版本迭代前**必须向用户确认**，不得自行决定发版
 - 发版时在 `WorkingPlan.md` 记录该版本已完成的功能
 
