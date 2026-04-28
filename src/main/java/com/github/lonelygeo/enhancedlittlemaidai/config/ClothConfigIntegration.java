@@ -1,12 +1,11 @@
 package com.github.lonelygeo.enhancedlittlemaidai.config;
 
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
-import net.neoforged.fml.ModList;
 
 /**
  * Cloth Config 设置界面集成入口。
- * 仅在 cloth_config 已加载时通过反射实例化 ClothConfigHandler，
- * 避免直接引用 Cloth Config API 类导致 NoClassDefFoundError。
+ * 通过反射加载 ClothConfigHandler 避免直接引用 Cloth Config API 导致 NoClassDefFoundError。
+ * 当 TLM 的 AddClothConfigEvent 触发时，Handler 将配置项注入 TLM 配置菜单。
  */
 public final class ClothConfigIntegration {
 
@@ -14,18 +13,17 @@ public final class ClothConfigIntegration {
     }
 
     /**
-     * 在模组构造器中调用。若 Cloth Config 未加载则不做任何事。
+     * 在模组构造器中调用。尝试反射注册 ClothConfigHandler 到 NeoForge.EVENT_BUS。
+     * 若 Cloth Config 类不可用（生产环境无对应 jar），Class.forName 会失败，静默跳过。
      */
     public static void registerIfAvailable() {
-        if (!ModList.get().isLoaded("cloth_config")) return;
         try {
             Class<?> handlerClass = Class.forName(
                     "com.github.lonelygeo.enhancedlittlemaidai.config.ClothConfigHandler");
             handlerClass.getMethod("register").invoke(null);
             EnhancedLittleMaidAI.LOGGER.info("EnhancedLittleMaidAI: Cloth Config integration registered");
         } catch (Exception e) {
-            EnhancedLittleMaidAI.LOGGER.warn(
-                    "EnhancedLittleMaidAI: Failed to register Cloth Config integration", e);
+            EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: Cloth Config not available, GUI config skipped");
         }
     }
 }
