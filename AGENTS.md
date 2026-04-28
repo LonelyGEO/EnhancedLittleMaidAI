@@ -14,6 +14,8 @@ All items below were verified against the current repository contents.
 
 - 项目类型: **NeoForge 附属模组（Mixin addon）**
 - 父模组: `touhou_little_maid`（NeoForge 1.21.1）
+- 父模组仓库: `https://github.com/TartaricAcid/TouhouLittleMaid`
+- 本模组仓库: `https://github.com/LonelyGEO/EnhancedLittleMaidAI.git`
 - Build system: **Gradle Wrapper** (`gradlew`, `gradlew.bat`)
 - Language toolchain: **Java 21** (`build.gradle`)
 - Mod platform: **NeoForge** (`net.neoforged.moddev` plugin)
@@ -133,8 +135,13 @@ Avoid reordering imports unless required by your edit.
 - **Entry point**: `EnhancedLittleMaidAI`
 - **Addon pattern**: Mixin 注入式 — 不直接修改父模组源码，通过字节码注入实现功能扩展
 - **Package roles**:
-  - `mixin.*`: Mixin 类，注入到父模组类中（如 `LLMOpenAIClient`、`LLMCallback`、`MaidAIChatData` 等）
-  - `util.*`: 跨 Mixin 共享工具类（如 `ReasoningContentStore`）
+  - `mixin.*`: Mixin 类，注入到父模组类中（`LLMOpenAIClient`、`LLMCallback`、`MaidAIChatData`、`EntityMaid`、`MaidAIChatManager`）
+  - `util.*`: 跨 Mixin 共享工具类（`ReasoningContentStore`、`ProactiveChatManager`、`ProactiveChatCallback`）
+  - `memory.*`: 记忆系统（`MemoryStore`、`MindPalace`、`MemoryCompressor` 等）
+  - `context.*`: 世界上下文提供者（`BlockAwareContexts`、`MiningContextProvider`）
+  - `compat.*`: 模组兼容层（`MiningCompat`）
+  - `config.*`: NeoForge Config 系统（`EnhancedConfig`）
+  - `command.*`: 游戏内命令（`MindPalaceCommand`）
 - **跨 Mixin 通讯模式**: 使用 `ReasoningContentStore`（`IdentityHashMap<LLMMessage, String>`）在 Mixin 间共享 reasoningContent，避免跨 Mixin 的 `@Unique` 方法调用（后者需要 refMap）
 - **JSON 注入模式**: `LLMOpenAIClientMixin` 在 `Gson.toJson` 后直接解析 JSON 字符串，按消息顺序匹配并注入 `reasoning_content` 字段，无需在 `ChatMessage` 上添加 Mixin 字段
 - **兼容性处理**: `@Redirect` 使用 `require = 0`，在父模组已内置 thinking 支持时静默跳过
@@ -211,7 +218,7 @@ For Mixin changes under `mixin.*`:
 
 ## 13) Versioning
 
-- 当前版本: `0.2.0-neoforge+mc1.21.1`
+- 当前版本: `0.5.1-neoforge+mc1.21.1`
 - 后缀 `-neoforge+mc1.21.1` 为平台标识，保持不变
 
 | 版本位 | 触发条件 |
