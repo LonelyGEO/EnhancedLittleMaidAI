@@ -4,6 +4,7 @@ import com.github.tartaricacid.touhoulittlemaid.api.event.client.AddClothConfigE
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import net.minecraft.network.chat.Component;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -34,8 +35,12 @@ public final class ClothConfigHandler {
                 "config.enhancedlittlemaidai.title", "ELMAI");
         ConfigCategory category = builder.getOrCreateCategory(title);
 
-        // === 记忆系统 ===
-        category.addEntry(entryBuilder
+        // ========== 记忆系统 ==========
+        SubCategoryBuilder memorySub = entryBuilder.startSubCategory(
+                Component.translatable("config.enhancedlittlemaidai.sub.memory"));
+        memorySub.setExpanded(true);
+
+        memorySub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.memory.maxMemories"),
                         EnhancedConfig.MAX_MEMORIES.get(), 20, 500)
@@ -45,7 +50,7 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.MAX_MEMORIES::set)
                 .build());
 
-        category.addEntry(entryBuilder
+        memorySub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.memory.compressTrigger"),
                         EnhancedConfig.COMPRESS_TRIGGER.get(), 20, 500)
@@ -53,7 +58,7 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.COMPRESS_TRIGGER::set)
                 .build());
 
-        category.addEntry(entryBuilder
+        memorySub.add(entryBuilder
                 .startDoubleField(
                         Component.translatable("config.enhancedlittlemaidai.memory.dedupThreshold"),
                         EnhancedConfig.DEDUP_SCORE_THRESHOLD.get())
@@ -62,7 +67,7 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.DEDUP_SCORE_THRESHOLD::set)
                 .build());
 
-        category.addEntry(entryBuilder
+        memorySub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.memory.compressBatchSize"),
                         EnhancedConfig.COMPRESS_BATCH_SIZE.get(), 5, 100)
@@ -70,7 +75,7 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.COMPRESS_BATCH_SIZE::set)
                 .build());
 
-        category.addEntry(entryBuilder
+        memorySub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.memory.targetSummaries"),
                         EnhancedConfig.TARGET_SUMMARIES.get(), 1, 30)
@@ -78,8 +83,14 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.TARGET_SUMMARIES::set)
                 .build());
 
-        // === 主动聊天 ===
-        category.addEntry(entryBuilder
+        category.addEntry(memorySub.build());
+
+        // ========== 主动聊天 ==========
+        SubCategoryBuilder proactiveSub = entryBuilder.startSubCategory(
+                Component.translatable("config.enhancedlittlemaidai.sub.proactive"));
+        proactiveSub.setExpanded(true);
+
+        proactiveSub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.proactive.cooldownTicks"),
                         EnhancedConfig.COOLDOWN_TICKS.get(), 600, 72000)
@@ -89,7 +100,7 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.COOLDOWN_TICKS::set)
                 .build());
 
-        category.addEntry(entryBuilder
+        proactiveSub.add(entryBuilder
                 .startDoubleField(
                         Component.translatable("config.enhancedlittlemaidai.proactive.triggerChance"),
                         EnhancedConfig.TRIGGER_CHANCE_PER_TICK.get())
@@ -98,7 +109,7 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.TRIGGER_CHANCE_PER_TICK::set)
                 .build());
 
-        category.addEntry(entryBuilder
+        proactiveSub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.proactive.maxChats"),
                         EnhancedConfig.MAX_CHATS_PER_SESSION.get(), 1, 100)
@@ -106,7 +117,7 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.MAX_CHATS_PER_SESSION::set)
                 .build());
 
-        category.addEntry(entryBuilder
+        proactiveSub.add(entryBuilder
                 .startDoubleField(
                         Component.translatable("config.enhancedlittlemaidai.proactive.minDistance"),
                         EnhancedConfig.MIN_PLAYER_DISTANCE.get())
@@ -115,8 +126,14 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.MIN_PLAYER_DISTANCE::set)
                 .build());
 
-        // === 上下文 ===
-        category.addEntry(entryBuilder
+        category.addEntry(proactiveSub.build());
+
+        // ========== 上下文感知 ==========
+        SubCategoryBuilder contextSub = entryBuilder.startSubCategory(
+                Component.translatable("config.enhancedlittlemaidai.sub.context"));
+        contextSub.setExpanded(true);
+
+        contextSub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.context.bfsDepth"),
                         EnhancedConfig.BFS_MAX_DEPTH.get(), 1, 10)
@@ -124,7 +141,7 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.BFS_MAX_DEPTH::set)
                 .build());
 
-        category.addEntry(entryBuilder
+        contextSub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.context.entityRadius"),
                         EnhancedConfig.ENTITY_RADIUS.get(), 4, 64)
@@ -132,7 +149,7 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.ENTITY_RADIUS::set)
                 .build());
 
-        category.addEntry(entryBuilder
+        contextSub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.context.maxEntities"),
                         EnhancedConfig.MAX_ENTITIES.get(), 5, 100)
@@ -140,13 +157,21 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.MAX_ENTITIES::set)
                 .build());
 
-        // === 调试 ===
-        category.addEntry(entryBuilder
+        category.addEntry(contextSub.build());
+
+        // ========== 调试 ==========
+        SubCategoryBuilder debugSub = entryBuilder.startSubCategory(
+                Component.translatable("config.enhancedlittlemaidai.sub.debug"));
+        debugSub.setExpanded(false);
+
+        debugSub.add(entryBuilder
                 .startBooleanToggle(
                         Component.translatable("config.enhancedlittlemaidai.debug.debugLog"),
                         EnhancedConfig.DEBUG_LOG.get())
                 .setDefaultValue(false)
                 .setSaveConsumer(EnhancedConfig.DEBUG_LOG::set)
                 .build());
+
+        category.addEntry(debugSub.build());
     }
 }

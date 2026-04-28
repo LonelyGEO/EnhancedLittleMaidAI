@@ -1,6 +1,11 @@
 {
     "config.enhancedlittlemaidai.title": "强化AI",
 
+    "config.enhancedlittlemaidai.sub.memory": "记忆系统",
+    "config.enhancedlittlemaidai.sub.proactive": "主动聊天",
+    "config.enhancedlittlemaidai.sub.context": "上下文感知",
+    "config.enhancedlittlemaidai.sub.debug": "调试",
+
     "config.enhancedlittlemaidai.memory.maxMemories": "最大记忆数量",
     "config.enhancedlittlemaidai.memory.maxMemories.tooltip": "每只女仆可存储的最大记忆数量",
     "config.enhancedlittlemaidai.memory.compressTrigger": "压缩触发阈值",
@@ -8,7 +13,7 @@
     "config.enhancedlittlemaidai.memory.compressBatchSize": "压缩批次大小",
     "config.enhancedlittlemaidai.memory.targetSummaries": "压缩摘要上限",
 
-    "config.enhancedlittlemaidai.proactive.cooldownTicks": "主动聊天冷却时间 (tick)",
+    "config.enhancedlittlemaidai.proactive.cooldownTicks": "冷却时间 (tick)",
     "config.enhancedlittlemaidai.proactive.cooldownTicks.tooltip": "两次主动聊天之间的最小间隔，12000 = 10 分钟",
     "config.enhancedlittlemaidai.proactive.triggerChance": "触发概率 (每 tick)",
     "config.enhancedlittlemaidai.proactive.maxChats": "会话最大聊天次数",
