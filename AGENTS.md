@@ -241,8 +241,8 @@ For Mixin changes under `mixin.*`:
 
 规则：
 - 版本号变更单独一条 commit，格式 `release: 0.x.y`
-- PATCH 级别（Bug 修复、参数微调、语言文件补充）Agent 可自行决定并变更，无需等待确认
-- MINOR 及以上版本迭代前**必须向用户确认**，不得自行决定发版
-- 发版时在 `planToAgent.md` 记录该版本已完成的功能
+- PATCH、MINOR 级别（Bug 修复、参数微调、语言文件补充）Agent 可自行决定并变更，无需等待确认
+- MAJOR 版本迭代前**必须向用户确认**，不得自行决定发版
+- 发版时在 `WorkingPlan.md` 记录该版本已完成的功能
 
 Keep this file updated when tooling/rules/project conventions change.
