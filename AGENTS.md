@@ -213,6 +213,7 @@ For Mixin changes under `mixin.*`:
   - `git branch -D` 删除分支
   - `git commit --amend`（已推送的 commit）
   - 以及其他会修改已推送历史或破坏工作区的操作
+- **修改 `.gitignore` 必须征得用户同意**：Agent 不得自行增删 `.gitignore` 条目。如确需修改，先向用户说明理由并取得确认。
 - 每次提交前检查 `git status` 和 `git diff`，确保不包含敏感信息（密钥、token 等）。
 - **提交前主动提出版本变更建议**：每次完成代码改动后，Agent 应主动根据 §13 的版本位规则进行判断。PATCH 级别（Bug 修复、小调整）可自行决定并变更版本号；MINOR 及以上（新功能、架构重写）必须向用户确认后变更。
 
