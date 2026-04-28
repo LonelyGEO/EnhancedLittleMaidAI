@@ -26,7 +26,6 @@ eclipse
 runs
 run
 src/generated/resources/.cache
-src/test
 # decompiled class files
 com/
 
