@@ -35,63 +35,53 @@ public final class ClothConfigHandler {
                 "config.enhancedlittlemaidai.title", "ELMAI");
         ConfigCategory category = builder.getOrCreateCategory(title);
 
-        // ========== 记忆系统 ==========
-        SubCategoryBuilder memorySub = entryBuilder.startSubCategory(
-                Component.translatable("config.enhancedlittlemaidai.sub.memory"));
-        memorySub.setExpanded(true);
-
-        memorySub.add(entryBuilder
-                .startIntSlider(
-                        Component.translatable("config.enhancedlittlemaidai.memory.maxMemories"),
-                        EnhancedConfig.MAX_MEMORIES.get(), 20, 500)
-                .setDefaultValue(100)
+        // ========== 采矿对话（父分类根层级独立条目，置顶） ==========
+        category.addEntry(entryBuilder
+                .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.mining.enableMiningChat"),
+                        EnhancedConfig.ENABLE_MINING_CHAT.get())
+                .setDefaultValue(true)
                 .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.memory.maxMemories.tooltip"))
-                .setSaveConsumer(EnhancedConfig.MAX_MEMORIES::set)
+                        "config.enhancedlittlemaidai.mining.enableMiningChat.tooltip"))
+                .setSaveConsumer(EnhancedConfig.ENABLE_MINING_CHAT::set)
                 .build());
 
-        memorySub.add(entryBuilder
-                .startIntSlider(
-                        Component.translatable("config.enhancedlittlemaidai.memory.compressTrigger"),
-                        EnhancedConfig.COMPRESS_TRIGGER.get(), 20, 500)
-                .setDefaultValue(80)
-                .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.memory.compressTrigger.tooltip"))
-                .setSaveConsumer(EnhancedConfig.COMPRESS_TRIGGER::set)
-                .build());
+        // ========== 上下文感知 ==========
+        SubCategoryBuilder contextSub = entryBuilder.startSubCategory(
+                Component.translatable("config.enhancedlittlemaidai.sub.context"));
+        contextSub.setExpanded(true);
 
-        memorySub.add(entryBuilder
-                .startDoubleField(
-                        Component.translatable("config.enhancedlittlemaidai.memory.dedupThreshold"),
-                        EnhancedConfig.DEDUP_SCORE_THRESHOLD.get())
-                .setDefaultValue(0.85)
-                .setMin(0.5).setMax(1.0)
-                .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.memory.dedupThreshold.tooltip"))
-                .setSaveConsumer(EnhancedConfig.DEDUP_SCORE_THRESHOLD::set)
-                .build());
-
-        memorySub.add(entryBuilder
+        contextSub.add(entryBuilder
                 .startIntSlider(
-                        Component.translatable("config.enhancedlittlemaidai.memory.compressBatchSize"),
-                        EnhancedConfig.COMPRESS_BATCH_SIZE.get(), 5, 100)
-                .setDefaultValue(20)
-                .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.memory.compressBatchSize.tooltip"))
-                .setSaveConsumer(EnhancedConfig.COMPRESS_BATCH_SIZE::set)
-                .build());
-
-        memorySub.add(entryBuilder
-                .startIntSlider(
-                        Component.translatable("config.enhancedlittlemaidai.memory.targetSummaries"),
-                        EnhancedConfig.TARGET_SUMMARIES.get(), 1, 30)
+                        Component.translatable("config.enhancedlittlemaidai.context.bfsDepth"),
+                        EnhancedConfig.BFS_MAX_DEPTH.get(), 1, 10)
                 .setDefaultValue(5)
                 .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.memory.targetSummaries.tooltip"))
-                .setSaveConsumer(EnhancedConfig.TARGET_SUMMARIES::set)
+                        "config.enhancedlittlemaidai.context.bfsDepth.tooltip"))
+                .setSaveConsumer(EnhancedConfig.BFS_MAX_DEPTH::set)
                 .build());
 
-        category.addEntry(memorySub.build());
+        contextSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.context.entityRadius"),
+                        EnhancedConfig.ENTITY_RADIUS.get(), 4, 64)
+                .setDefaultValue(16)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.context.entityRadius.tooltip"))
+                .setSaveConsumer(EnhancedConfig.ENTITY_RADIUS::set)
+                .build());
+
+        contextSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.context.maxEntities"),
+                        EnhancedConfig.MAX_ENTITIES.get(), 5, 100)
+                .setDefaultValue(30)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.context.maxEntities.tooltip"))
+                .setSaveConsumer(EnhancedConfig.MAX_ENTITIES::set)
+                .build());
+
+        category.addEntry(contextSub.build());
 
         // ========== 主动聊天 ==========
         SubCategoryBuilder proactiveSub = entryBuilder.startSubCategory(
@@ -141,54 +131,6 @@ public final class ClothConfigHandler {
                 .build());
 
         category.addEntry(proactiveSub.build());
-
-        // ========== 上下文感知 ==========
-        SubCategoryBuilder contextSub = entryBuilder.startSubCategory(
-                Component.translatable("config.enhancedlittlemaidai.sub.context"));
-        contextSub.setExpanded(true);
-
-        contextSub.add(entryBuilder
-                .startIntSlider(
-                        Component.translatable("config.enhancedlittlemaidai.context.bfsDepth"),
-                        EnhancedConfig.BFS_MAX_DEPTH.get(), 1, 10)
-                .setDefaultValue(5)
-                .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.context.bfsDepth.tooltip"))
-                .setSaveConsumer(EnhancedConfig.BFS_MAX_DEPTH::set)
-                .build());
-
-        contextSub.add(entryBuilder
-                .startIntSlider(
-                        Component.translatable("config.enhancedlittlemaidai.context.entityRadius"),
-                        EnhancedConfig.ENTITY_RADIUS.get(), 4, 64)
-                .setDefaultValue(16)
-                .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.context.entityRadius.tooltip"))
-                .setSaveConsumer(EnhancedConfig.ENTITY_RADIUS::set)
-                .build());
-
-        contextSub.add(entryBuilder
-                .startIntSlider(
-                        Component.translatable("config.enhancedlittlemaidai.context.maxEntities"),
-                        EnhancedConfig.MAX_ENTITIES.get(), 5, 100)
-                .setDefaultValue(30)
-                .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.context.maxEntities.tooltip"))
-                .setSaveConsumer(EnhancedConfig.MAX_ENTITIES::set)
-                .build());
-
-        category.addEntry(contextSub.build());
-
-        // ========== 采矿对话（父分类根层级独立条目） ==========
-        category.addEntry(entryBuilder
-                .startBooleanToggle(
-                        Component.translatable("config.enhancedlittlemaidai.mining.enableMiningChat"),
-                        EnhancedConfig.ENABLE_MINING_CHAT.get())
-                .setDefaultValue(true)
-                .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.mining.enableMiningChat.tooltip"))
-                .setSaveConsumer(EnhancedConfig.ENABLE_MINING_CHAT::set)
-                .build());
 
         // ========== 调试 ==========
         SubCategoryBuilder debugSub = entryBuilder.startSubCategory(
