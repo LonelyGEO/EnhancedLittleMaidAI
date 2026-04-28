@@ -1,6 +1,6 @@
 ﻿# EnhancedLittleMaidAI <-> MiningLittleMaid API Requirement
 
-> Version: 1.0 | Date: 2026-04-29 | From: EnhancedLittleMaidAI
+> Version: 1.0 | Date: 2026-04-29 | From: EnhancedLittleMaidAI | Status: ✅ Delivered
 
 ---
 
@@ -117,11 +117,11 @@ public void onMiningMessage(MiningMessageEvent event) {
 
 ## 6. Checklist
 
-- [ ] MiningMessageEvent class + enum definition
-- [ ] Four trigger points insert post() call
-- [ ] Cancel check: skip original message if event cancelled
-- [ ] Integration test: EnhancedLittleMaidAI subscribes, verifies LLM takeover
-- [ ] MLM version bump (MINOR, new API)
+- [x] MiningMessageEvent class + enum definition    (MLM v1.0.0)
+- [x] Four trigger points insert post() call         (MLM v1.0.0)
+- [x] Cancel check: skip original message if event cancelled (MLM v1.0.0)
+- [ ] Integration test: EnhancedLittleMaidAI subscribes, verifies LLM takeover (待 ELMAI 侧实现)
+- [x] MLM version bump (MINOR, new API)              (MLM v1.0.0)
 
 ---
 
