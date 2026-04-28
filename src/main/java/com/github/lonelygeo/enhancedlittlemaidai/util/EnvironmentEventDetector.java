@@ -66,11 +66,8 @@ public final class EnvironmentEventDetector {
     }
 
     /** 将游戏时间映射为阶段: 0=清晨(0-6000), 1=白天(6000-12000), 2=黄昏(12000-13000), 3=夜晚(13000-24000) */
-    private static int getDayPhase(long dayTime) {
-        if (dayTime < 6000) return 0;
-        if (dayTime < 12000) return 1;
-        if (dayTime < 13000) return 2;
-        return 3;
+    static int getDayPhase(long dayTime) {
+        return DayPhaseUtil.getDayPhase(dayTime);
     }
 
     /** 事件名称转中文描述 */
