@@ -221,11 +221,12 @@ For Mixin changes under `mixin.*`:
 
 ### GitHub Release 发布
 
-- 当前版本号 < 1.0.0，发布一律标记为 **Pre-release（Beta）**，Agent 可自行执行：
+- Agent **不得自行发布任何 Release**（包括 Beta 和正式版），必须先向用户提出并取得确认。
+- 当前版本号 < 1.0.0 时，发布一律标记为 **Pre-release（Beta）**：
   ```
   gh release create v0.x.x build/libs/*.jar --title "v0.x.x-beta" --prerelease
   ```
-- **正式 Release（非 Pre-release）必须征得用户同意**，不得自行发布。版本号达 1.0.0 后默认改为正式 Release。
+- 版本号达 1.0.0 后默认改为正式 Release。
 
 ## 13) Versioning
 
