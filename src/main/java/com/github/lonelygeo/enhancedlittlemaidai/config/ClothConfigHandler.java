@@ -86,6 +86,64 @@ public final class ClothConfigHandler {
 
         category.addEntry(contextSub.build());
 
+        // ========== 记忆系统 ==========
+        SubCategoryBuilder memorySub = entryBuilder.startSubCategory(
+                Component.translatable("config.enhancedlittlemaidai.sub.memory"));
+        memorySub.setExpanded(true);
+
+        memorySub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.memory.maxMemories"),
+                        EnhancedConfig.MAX_MEMORIES.get(), 20, 500)
+                .setDefaultValue(100)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.memory.maxMemories.tooltip"))
+                .setSaveConsumer(EnhancedConfig.MAX_MEMORIES::set)
+                .build());
+
+        memorySub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.memory.compressTrigger"),
+                        EnhancedConfig.COMPRESS_TRIGGER.get(), 20, 500)
+                .setDefaultValue(80)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.memory.compressTrigger.tooltip"))
+                .setSaveConsumer(EnhancedConfig.COMPRESS_TRIGGER::set)
+                .build());
+
+        memorySub.add(entryBuilder
+                .startDoubleField(
+                        Component.translatable("config.enhancedlittlemaidai.memory.dedupThreshold"),
+                        EnhancedConfig.DEDUP_SCORE_THRESHOLD.get())
+                .setDefaultValue(0.85)
+                .setMin(0.5).setMax(1.0)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.memory.dedupThreshold.tooltip"))
+                .setSaveConsumer(EnhancedConfig.DEDUP_SCORE_THRESHOLD::set)
+                .build());
+
+        memorySub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.memory.compressBatchSize"),
+                        EnhancedConfig.COMPRESS_BATCH_SIZE.get(), 5, 100)
+                .setDefaultValue(20)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.memory.compressBatchSize.tooltip"))
+                .setSaveConsumer(EnhancedConfig.COMPRESS_BATCH_SIZE::set)
+                .build());
+
+        memorySub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.memory.targetSummaries"),
+                        EnhancedConfig.TARGET_SUMMARIES.get(), 1, 30)
+                .setDefaultValue(5)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.memory.targetSummaries.tooltip"))
+                .setSaveConsumer(EnhancedConfig.TARGET_SUMMARIES::set)
+                .build());
+
+        category.addEntry(memorySub.build());
+
         // ========== 主动聊天 ==========
         SubCategoryBuilder proactiveSub = entryBuilder.startSubCategory(
                 Component.translatable("config.enhancedlittlemaidai.sub.proactive"));
