@@ -1,0 +1,22 @@
+{
+    "config.enhancedlittlemaidai.title": "Enhanced Little Maid AI",
+
+    "config.enhancedlittlemaidai.memory.maxMemories": "Max Memories",
+    "config.enhancedlittlemaidai.memory.maxMemories.tooltip": "Maximum memories stored per maid",
+    "config.enhancedlittlemaidai.memory.compressTrigger": "Compression Trigger",
+    "config.enhancedlittlemaidai.memory.dedupThreshold": "Dedup Similarity Threshold",
+    "config.enhancedlittlemaidai.memory.compressBatchSize": "Compression Batch Size",
+    "config.enhancedlittlemaidai.memory.targetSummaries": "Target Summaries",
+
+    "config.enhancedlittlemaidai.proactive.cooldownTicks": "Proactive Chat Cooldown (ticks)",
+    "config.enhancedlittlemaidai.proactive.cooldownTicks.tooltip": "Min interval between proactive chats, 12000 = 10 min",
+    "config.enhancedlittlemaidai.proactive.triggerChance": "Trigger Chance (per tick)",
+    "config.enhancedlittlemaidai.proactive.maxChats": "Max Chats Per Session",
+    "config.enhancedlittlemaidai.proactive.minDistance": "Min Trigger Distance (blocks)",
+
+    "config.enhancedlittlemaidai.context.bfsDepth": "BFS Sampling Depth",
+    "config.enhancedlittlemaidai.context.entityRadius": "Entity Scan Radius",
+    "config.enhancedlittlemaidai.context.maxEntities": "Max Entity Count",
+
+    "config.enhancedlittlemaidai.debug.debugLog": "Debug Log"
+}

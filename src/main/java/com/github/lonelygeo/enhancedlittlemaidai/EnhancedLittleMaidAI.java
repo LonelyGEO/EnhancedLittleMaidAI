@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai;
 
 import com.github.lonelygeo.enhancedlittlemaidai.command.MindPalaceCommand;
+import com.github.lonelygeo.enhancedlittlemaidai.config.ClothConfigIntegration;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
@@ -20,6 +21,7 @@ public class EnhancedLittleMaidAI {
         LOGGER.info("Enhanced Little Maid AI addon loaded.");
         modContainer.registerConfig(ModConfig.Type.COMMON, EnhancedConfig.SPEC);
         modEventBus.addListener(this::registerCommands);
+        ClothConfigIntegration.registerIfAvailable();
     }
 
     @SubscribeEvent
