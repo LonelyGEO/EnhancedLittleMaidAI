@@ -22,7 +22,7 @@ import java.util.UUID;
  *   <li>好感度限制：仅好感度 >=2 级（朋友/挚友）时启用</li>
  *   <li>冷却时间：两次主动聊天之间最少间隔 10 分钟 (12000 ticks)</li>
  *   <li>触发概率：冷却结束后每次 tick 有 0.2% 概率触发（预期 ~25 秒触发）</li>
- *   <li>会话上限：每次游戏会话最多 8 次主动聊天</li>
+ *   <li>每日上限：每个 Minecraft 日最多 8 次主动聊天（日出清零）</li>
  *   <li>距离限制：主人玩家须在 10 格以内</li>
  *   <li>前置条件：LLM 站点已启用、主人是玩家且在线</li>
  * </ul>
@@ -31,7 +31,7 @@ public final class ProactiveChatManager {
 
     private static final Map<UUID, Long> lastChatTime =
             Collections.synchronizedMap(new HashMap<>());
-    private static final Map<UUID, Integer> chatCount =
+    private static final Map<UUID, Integer> dayChatCount =
             Collections.synchronizedMap(new HashMap<>());
 
     private ProactiveChatManager() {
@@ -63,8 +63,8 @@ public final class ProactiveChatManager {
             return false;
         }
 
-        int count = chatCount.getOrDefault(uuid, 0);
-        if (count >= EnhancedConfig.MAX_CHATS_PER_SESSION.get()) {
+        int count = dayChatCount.getOrDefault(uuid, 0);
+        if (count >= EnhancedConfig.MAX_CHATS_PER_DAY.get()) {
             return false;
         }
 
@@ -84,23 +84,25 @@ public final class ProactiveChatManager {
 
     /**
      * 标记主动聊天已触发，更新冷却时间和计数。
-     *
-     * @param uuid     女仆 UUID
-     * @param gameTime 当前游戏时间
      */
     public static void markTriggered(UUID uuid, long gameTime) {
         lastChatTime.put(uuid, gameTime);
-        chatCount.merge(uuid, 1, Integer::sum);
+        dayChatCount.merge(uuid, 1, Integer::sum);
     }
 
-    /** 获取当前会话已触发次数（调试用） */
+    /** 获取本日已触发次数（调试用） */
     public static int getCount(UUID uuid) {
-        return chatCount.getOrDefault(uuid, 0);
+        return dayChatCount.getOrDefault(uuid, 0);
+    }
+
+    /** 日出时清零本日计数 */
+    public static void resetDayCounts(UUID uuid) {
+        dayChatCount.remove(uuid);
     }
 
     /** 清理指定女仆的所有状态（女仆移除/死亡时调用） */
     public static void reset(UUID uuid) {
         lastChatTime.remove(uuid);
-        chatCount.remove(uuid);
+        dayChatCount.remove(uuid);
     }
 }

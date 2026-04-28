@@ -19,7 +19,7 @@ public final class EnvironmentEventDetector {
             Collections.synchronizedMap(new HashMap<>());
     private static final Map<UUID, Long> LAST_EVENT_TIME =
             Collections.synchronizedMap(new HashMap<>());
-    private static final Map<UUID, Integer> EVENT_COUNT =
+    private static final Map<UUID, Integer> DAY_EVENT_COUNT =
             Collections.synchronizedMap(new HashMap<>());
 
     private EnvironmentEventDetector() {
@@ -104,19 +104,24 @@ public final class EnvironmentEventDetector {
     /** 标记事件已触发 */
     public static void markTriggered(UUID uuid, long gameTime) {
         LAST_EVENT_TIME.put(uuid, gameTime);
-        EVENT_COUNT.merge(uuid, 1, Integer::sum);
+        DAY_EVENT_COUNT.merge(uuid, 1, Integer::sum);
     }
 
-    /** 事件触发次数 */
+    /** 本日事件触发次数 */
     public static int getEventCount(UUID uuid) {
-        return EVENT_COUNT.getOrDefault(uuid, 0);
+        return DAY_EVENT_COUNT.getOrDefault(uuid, 0);
+    }
+
+    /** 日出时清零本日事件计数 */
+    public static void resetDayCounts(UUID uuid) {
+        DAY_EVENT_COUNT.remove(uuid);
     }
 
     /** 清理女仆状态 */
     public static void reset(UUID uuid) {
         SNAPSHOTS.remove(uuid);
         LAST_EVENT_TIME.remove(uuid);
-        EVENT_COUNT.remove(uuid);
+        DAY_EVENT_COUNT.remove(uuid);
     }
 
     private record Snapshot(boolean raining, boolean thundering, int dayPhase, ResourceLocation biome) {

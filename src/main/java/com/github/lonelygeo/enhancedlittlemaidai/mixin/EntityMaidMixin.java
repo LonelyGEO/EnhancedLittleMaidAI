@@ -114,8 +114,15 @@ public abstract class EntityMaidMixin {
             if (event != null) {
                 UUID uuid = maid.getUUID();
                 long gameTime = maid.level().getGameTime();
+
+                // 日出时重置所有每日计数器
+                if (event == EnvironmentEventDetector.EventType.SUNRISE) {
+                    ProactiveChatManager.resetDayCounts(uuid);
+                    EnvironmentEventDetector.resetDayCounts(uuid);
+                }
+
                 int eventCount = EnvironmentEventDetector.getEventCount(uuid);
-                if (eventCount >= EnhancedConfig.EVENT_MAX_PER_SESSION.get()) return;
+                if (eventCount >= EnhancedConfig.EVENT_MAX_PER_DAY.get()) return;
                 if (!EnvironmentEventDetector.canTriggerEvent(uuid, gameTime,
                         EnhancedConfig.EVENT_COOLDOWN_TICKS.get())) return;
 

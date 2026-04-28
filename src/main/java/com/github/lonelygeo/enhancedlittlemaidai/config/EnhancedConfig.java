@@ -19,10 +19,10 @@ public class EnhancedConfig {
     // === [proactive_chat] 主动聊天 ===
     public static ModConfigSpec.IntValue COOLDOWN_TICKS;
     public static ModConfigSpec.DoubleValue TRIGGER_CHANCE_PER_TICK;
-    public static ModConfigSpec.IntValue MAX_CHATS_PER_SESSION;
+    public static ModConfigSpec.IntValue MAX_CHATS_PER_DAY;
     public static ModConfigSpec.DoubleValue MIN_PLAYER_DISTANCE;
     public static ModConfigSpec.IntValue EVENT_COOLDOWN_TICKS;
-    public static ModConfigSpec.IntValue EVENT_MAX_PER_SESSION;
+    public static ModConfigSpec.IntValue EVENT_MAX_PER_DAY;
 
     // === [context] 上下文感知 ===
     public static ModConfigSpec.IntValue BFS_MAX_DEPTH;
@@ -86,9 +86,9 @@ public class EnhancedConfig {
                 .comment("冷却结束后每次 tick 触发主动聊天的概率")
                 .defineInRange("triggerChancePerTick", 0.002, 0.0001, 1.0);
 
-        MAX_CHATS_PER_SESSION = builder
-                .comment("每次游戏会话最多主动聊天次数")
-                .defineInRange("maxChatsPerSession", 8, 1, 100);
+        MAX_CHATS_PER_DAY = builder
+                .comment("每天凌晨时主动聊天的最大触发次数（日出清零）")
+                .defineInRange("maxChatsPerDay", 8, 1, 100);
 
         MIN_PLAYER_DISTANCE = builder
                 .comment("主人距离女仆多少格以内才可能触发主动聊天")
@@ -98,9 +98,9 @@ public class EnhancedConfig {
                 .comment("环境事件主动聊天的冷却时间（tick）")
                 .defineInRange("eventCooldownTicks", 6000, 1200, 72000);
 
-        EVENT_MAX_PER_SESSION = builder
-                .comment("每次游戏会话环境事件主动聊天的最大触发次数")
-                .defineInRange("eventMaxPerSession", 5, 1, 30);
+        EVENT_MAX_PER_DAY = builder
+                .comment("每天凌晨时环境事件主动聊天的最大触发次数（日出清零）")
+                .defineInRange("eventMaxPerDay", 5, 1, 30);
 
         builder.pop();
 

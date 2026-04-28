@@ -115,11 +115,11 @@ public final class ClothConfigHandler {
         proactiveSub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.proactive.maxChats"),
-                        EnhancedConfig.MAX_CHATS_PER_SESSION.get(), 1, 100)
+                        EnhancedConfig.MAX_CHATS_PER_DAY.get(), 1, 100)
                 .setDefaultValue(8)
                 .setTooltip(Component.translatable(
                         "config.enhancedlittlemaidai.proactive.maxChats.tooltip"))
-                .setSaveConsumer(EnhancedConfig.MAX_CHATS_PER_SESSION::set)
+                .setSaveConsumer(EnhancedConfig.MAX_CHATS_PER_DAY::set)
                 .build());
 
         proactiveSub.add(entryBuilder
@@ -146,11 +146,11 @@ public final class ClothConfigHandler {
         proactiveSub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.proactive.eventMaxPerSession"),
-                        EnhancedConfig.EVENT_MAX_PER_SESSION.get(), 1, 30)
+                        EnhancedConfig.EVENT_MAX_PER_DAY.get(), 1, 30)
                 .setDefaultValue(5)
                 .setTooltip(Component.translatable(
                         "config.enhancedlittlemaidai.proactive.eventMaxPerSession.tooltip"))
-                .setSaveConsumer(EnhancedConfig.EVENT_MAX_PER_SESSION::set)
+                .setSaveConsumer(EnhancedConfig.EVENT_MAX_PER_DAY::set)
                 .build());
 
         category.addEntry(proactiveSub.build());
