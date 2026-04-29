@@ -55,18 +55,14 @@ public final class MaidSpawnHandler {
                 || chatManager.getSetting().isPresent();
 
         if (hasSetting) {
-            if (EnhancedConfig.debugLog()) {
-                EnhancedLittleMaidAI.LOGGER.debug(
-                        "MaidSpawn: Maid {} has existing setting, generating greeting", maid.getUUID());
-            }
-            sendGreeting(chatManager, client, maid);
-        } else {
-            if (EnhancedConfig.debugLog()) {
-                EnhancedLittleMaidAI.LOGGER.debug(
-                        "MaidSpawn: Maid {} has no setting, auto-generating + greeting", maid.getUUID());
-            }
-            genSetting(chatManager, client, maid, 0);
+            return;
         }
+
+        if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.debug(
+                    "MaidSpawn: Maid {} has no setting, auto-generating + greeting", maid.getUUID());
+        }
+        genSetting(chatManager, client, maid, 0);
     }
 
     // ==================== 设定生成 ====================
