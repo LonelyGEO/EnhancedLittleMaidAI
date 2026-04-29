@@ -216,6 +216,15 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.EVENT_MAX_PER_DAY::set)
                 .build());
 
+        proactiveSub.add(entryBuilder
+                .startStrField(
+                        Component.translatable("config.enhancedlittlemaidai.proactive.promptMode"),
+                        EnhancedConfig.PROACTIVE_PROMPT_MODE.get())
+                .setDefaultValue("FULL")
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.proactive.promptMode.tooltip"))
+                .setSaveConsumer(EnhancedConfig.PROACTIVE_PROMPT_MODE::set)
+                .build());
+
         category.addEntry(proactiveSub.build());
 
         // ========== 女仆社交 ==========

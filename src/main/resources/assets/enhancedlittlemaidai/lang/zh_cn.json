@@ -35,6 +35,9 @@
     "config.enhancedlittlemaidai.proactive.eventMaxPerSession": "每日环境事件上限",
     "config.enhancedlittlemaidai.proactive.eventMaxPerSession.tooltip": "每个 Minecraft 日环境事件最大触发次数（日出清零）",
 
+    "config.enhancedlittlemaidai.proactive.promptMode": "主动聊天提示词模式",
+    "config.enhancedlittlemaidai.proactive.promptMode.tooltip": "角色设定长度: FULL(完整) SUMMARY(前200字) MINIMAL(仅名字)",
+
     "config.enhancedlittlemaidai.context.bfsDepth": "BFS 采样深度",
     "config.enhancedlittlemaidai.context.bfsDepth.tooltip": "附近方块 BFS 扫描的最大层数（层数越大范围越广）",
     "config.enhancedlittlemaidai.context.entityRadius": "实体扫描半径",

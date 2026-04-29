@@ -60,7 +60,8 @@ public final class MiningMessageHandler {
         String situation = buildSituation(event);
         String prompt = characterSetting
                 + "\n\n[系统指令] 刚才发生了以下情况：" + situation
-                + "\n请用1-2句简短自然的话告诉主人。直接说话即可，不要加动作描写或格式标记。";
+                + "\n请用1-2句简短自然的话告诉主人。直接说话即可，不要加动作描写或格式标记。" +
+                " 注意：英文地名、物品名请转换为中文MC玩家熟知的名词。";
 
         LLMMessage sysMsg = LLMMessage.systemChat(maid, prompt);
         LLMMessage userMsg = LLMMessage.userChat(maid, "（采矿事件触发对话）");

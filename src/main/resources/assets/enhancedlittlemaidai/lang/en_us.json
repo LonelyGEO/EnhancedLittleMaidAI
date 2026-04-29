@@ -35,6 +35,9 @@
     "config.enhancedlittlemaidai.proactive.eventMaxPerSession": "Max Event Triggers Per Day",
     "config.enhancedlittlemaidai.proactive.eventMaxPerSession.tooltip": "Maximum environment event chat triggers per Minecraft day (reset at sunrise)",
 
+    "config.enhancedlittlemaidai.proactive.promptMode": "Proactive Prompt Mode",
+    "config.enhancedlittlemaidai.proactive.promptMode.tooltip": "Character setting length: FULL(complete) SUMMARY(first 200 chars) MINIMAL(name only)",
+
     "config.enhancedlittlemaidai.context.bfsDepth": "BFS Sampling Depth",
     "config.enhancedlittlemaidai.context.bfsDepth.tooltip": "Maximum BFS scan depth for nearby blocks (higher = larger area)",
     "config.enhancedlittlemaidai.context.entityRadius": "Entity Scan Radius",

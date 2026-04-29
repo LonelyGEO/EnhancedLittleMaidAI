@@ -6,6 +6,7 @@ import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat;
+import com.github.tartaricacid.touhoulittlemaid.ai.manager.setting.CharacterSetting;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.entity.LivingEntity;
@@ -131,10 +132,9 @@ public class ProactiveChatCallback extends LLMCallback {
         } catch (Exception ignored) {
         }
 
-        String maidName = "";
-        try {
-            maidName = maid.getDisplayName().getString();
-        } catch (Exception ignored) {
+        String characterSetting = getCharacterSetting(maid);
+        if (StringUtils.isBlank(characterSetting)) {
+            characterSetting = maid.getDisplayName().getString() + "，" + ownerName + "的忠诚女仆。";
         }
 
         String memoryContext = "";
@@ -172,12 +172,44 @@ public class ProactiveChatCallback extends LLMCallback {
         return String.format("""
                 [系统指令] 你现在要主动发起对话（不需要等待主人说话）。
 
-                你是%s，%s的忠诚女仆。你目前在%s，%s天气，%s。
+                %s
+                你目前在%s，%s天气，%s。
                 %s%s%s
                 请用1-2句简短自然的话主动和主人聊天。直接说话即可，不要加动作描写、括号注释或任何格式标记。
 
                 可选话题：关心主人状态、评论环境或天气、分享你注意到的事情、询问是否需要帮助。
-                注意：你是在主动发起对话，不要回应任何人的话。""",
-                maidName, ownerName, biome, weather, timeOfDay, eventLine, memoryContext, socialMemoryContext);
+                注意：你是在主动发起对话，不要回应任何人的话。
+                注意：游戏数据中的英文地名、物品名，请转换为中文Minecraft玩家熟知的名词。例如：wooded badlands → 繁茂的恶地，iron_ore → 铁矿石。""",
+                characterSetting, biome, weather, timeOfDay, eventLine, memoryContext, socialMemoryContext);
+    }
+
+    /** 获取角色设定（复用于主动聊天 prompt） */
+    private static String getCharacterSetting(EntityMaid maid) {
+        String mode = EnhancedConfig.PROACTIVE_PROMPT_MODE.get();
+        if ("MINIMAL".equals(mode)) {
+            return maid.getDisplayName().getString() + "，一位女仆。";
+        }
+
+        String custom = maid.getAiChatManager().customSetting;
+        if (StringUtils.isNotBlank(custom)) {
+            if ("SUMMARY".equals(mode)) {
+                return custom.substring(0, Math.min(200, custom.length()));
+            }
+            return custom;
+        }
+
+        try {
+            var optSetting = maid.getAiChatManager().getSetting();
+            if (optSetting.isPresent()) {
+                String raw = optSetting.get().getSetting(maid, "zh_cn");
+                if ("SUMMARY".equals(mode)) {
+                    return raw.substring(0, Math.min(200, raw.length()));
+                }
+                return raw;
+            }
+        } catch (Exception ignored) {
+        }
+
+        return maid.getDisplayName().getString() + "，一位女仆。";
     }
 }

@@ -355,6 +355,7 @@ public class InterMaidChatCallback extends LLMCallback {
         String setting = getCharacterSetting(speaker);
         return setting + "\n\n你看到了" + other.getDisplayName().getString()
                 + "。请和她聊几句。说一句简短自然的话主动发起对话。"
-                + "直接说话即可，不要加动作描写、括号注释或任何格式标记。";
+                + "直接说话即可，不要加动作描写、括号注释或任何格式标记。" +
+                " 注意：游戏数据中的英文地名、物品名请转换为中文MC玩家熟知的名词。";
     }
 }
