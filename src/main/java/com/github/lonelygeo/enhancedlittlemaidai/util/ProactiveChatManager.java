@@ -1,9 +1,6 @@
 package com.github.lonelygeo.enhancedlittlemaidai.util;
 
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
-import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
-import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
-import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMSite;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -73,14 +70,7 @@ public final class ProactiveChatManager {
             return false;
         }
 
-        MaidAIChatManager chatManager = maid.getAiChatManager();
-        if (chatManager == null) return false;
-        LLMSite site = chatManager.getLLMSite();
-        if (site == null || !site.enabled()) return false;
-        LLMClient client = site.client();
-        if (client == null) return false;
-
-        return true;
+        return LLMUtil.isAvailable(maid);
     }
 
     /**

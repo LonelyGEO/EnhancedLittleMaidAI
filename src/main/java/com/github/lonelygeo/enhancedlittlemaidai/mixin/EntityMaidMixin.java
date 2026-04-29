@@ -9,6 +9,7 @@ import com.github.lonelygeo.enhancedlittlemaidai.util.EnvironmentEventDetector;
 import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidChatCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidChatManager;
 import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidDecisionCallback;
+import com.github.lonelygeo.enhancedlittlemaidai.util.LLMUtil;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
@@ -128,7 +129,7 @@ public abstract class EntityMaidMixin {
                     InterMaidChatManager.resetGlobalDayCount();
                 }
 
-                if (!isLLMAvailable(maid)) return;
+                if (!LLMUtil.isAvailable(maid)) return;
 
                 int eventCount = EnvironmentEventDetector.getEventCount(uuid);
                 if (eventCount >= EnhancedConfig.EVENT_MAX_PER_DAY.get()) return;
@@ -153,7 +154,7 @@ public abstract class EntityMaidMixin {
             UUID uuid = maid.getUUID();
             long gameTime = maid.level().getGameTime();
 
-            if (!isLLMAvailable(maid)) return;
+            if (!LLMUtil.isAvailable(maid)) return;
 
             // B 侧：检查 pending proposal
             UUID proposerUuid = InterMaidChatManager.getProposer(uuid);
@@ -285,15 +286,6 @@ public abstract class EntityMaidMixin {
             return e;
         }
         return null;
-    }
-
-    /** 检查女仆的 LLM 站点是否可用 */
-    private static boolean isLLMAvailable(EntityMaid maid) {
-        try {
-            return maid.getAiChatManager().getLLMSite().enabled();
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     // === import for Nullable ===

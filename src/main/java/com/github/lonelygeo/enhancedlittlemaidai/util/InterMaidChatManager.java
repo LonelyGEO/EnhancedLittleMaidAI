@@ -206,7 +206,7 @@ public final class InterMaidChatManager {
     public static boolean canScan(EntityMaid maid, long gameTime) {
         if (maid.level().isClientSide()) return false;
         if (maid.isRemoved()) return false;
-        if (!isLLMAvailable(maid)) return false;
+        if (!LLMUtil.isAvailable(maid)) return false;
         if (!EnhancedConfig.INTER_MAID_ENABLED.get()) return false;
         if (BUSY.contains(maid.getUUID())) return false;
 
@@ -228,7 +228,7 @@ public final class InterMaidChatManager {
     public static boolean canAccept(EntityMaid b, EntityMaid a, long gameTime) {
         if (b.level().isClientSide()) return false;
         if (b.isRemoved()) return false;
-        if (!isLLMAvailable(b)) return false;
+        if (!LLMUtil.isAvailable(b)) return false;
         if (BUSY.contains(b.getUUID())) return false;
 
         UUID bUuid = b.getUUID();
@@ -379,13 +379,5 @@ public final class InterMaidChatManager {
         double scanRange = getTriggerDistance(maid) * SELECTION_RANGE_MULTIPLIER;
         List<EntityMaid> all = scanNearbyMaids(maid, scanRange);
         return all.subList(0, Math.min(maxGroupSize - 1, all.size()));
-    }
-
-    private static boolean isLLMAvailable(EntityMaid maid) {
-        try {
-            return maid.getAiChatManager().getLLMSite().enabled();
-        } catch (Exception e) {
-            return false;
-        }
     }
 }

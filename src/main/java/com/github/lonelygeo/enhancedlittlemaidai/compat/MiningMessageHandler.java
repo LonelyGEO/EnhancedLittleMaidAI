@@ -2,6 +2,7 @@ package com.github.lonelygeo.enhancedlittlemaidai.compat;
 
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
+import com.github.lonelygeo.enhancedlittlemaidai.util.LLMUtil;
 import com.github.lonelygeo.mininglittlemaid.api.event.MiningMessageEvent;
 import com.github.lonelygeo.mininglittlemaid.api.event.MiningMessageType;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
@@ -42,14 +43,10 @@ public final class MiningMessageHandler {
         EntityMaid maid = event.getMaid();
         if (maid == null || maid.isRemoved()) return;
 
+        if (!LLMUtil.isAvailable(maid)) return;
+
         MaidAIChatManager chatManager = maid.getAiChatManager();
-        if (chatManager == null) return;
-
-        var site = chatManager.getLLMSite();
-        if (site == null || !site.enabled()) return;
-
-        LLMClient client = site.client();
-        if (client == null) return;
+        LLMClient client = chatManager.getLLMSite().client();
 
         // 获取女仆角色设定
         String characterSetting = getCharacterSetting(chatManager, maid);

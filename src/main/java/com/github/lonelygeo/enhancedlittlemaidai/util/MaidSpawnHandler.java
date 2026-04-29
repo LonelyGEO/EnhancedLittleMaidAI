@@ -43,11 +43,10 @@ public final class MaidSpawnHandler {
         if (!maid.isTame()) return;
         if (maid.isRemoved()) return;
 
+        if (!LLMUtil.isAvailable(maid)) return;
+
         MaidAIChatManager chatManager = maid.getAiChatManager();
-        var site = chatManager.getLLMSite();
-        if (site == null || !site.enabled()) return;
-        LLMClient client = site.client();
-        if (client == null) return;
+        LLMClient client = chatManager.getLLMSite().client();
 
         if (GREETED.contains(maid.getUUID())) return;
         GREETED.add(maid.getUUID());
