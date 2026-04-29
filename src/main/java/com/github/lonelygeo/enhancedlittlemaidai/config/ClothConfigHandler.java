@@ -1,7 +1,6 @@
 package com.github.lonelygeo.enhancedlittlemaidai.config;
 
 import com.github.lonelygeo.enhancedlittlemaidai.compat.MiningCompat;
-import com.github.lonelygeo.enhancedlittlemaidai.compat.StorageCompat;
 import com.github.tartaricacid.touhoulittlemaid.api.event.client.AddClothConfigEvent;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
@@ -339,6 +338,15 @@ public final class ClothConfigHandler {
                 .setDefaultValue("LLM")
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.decisionMode.tooltip"))
                 .setSaveConsumer(EnhancedConfig.INTER_MAID_DECISION_MODE::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.crossOwner"),
+                        EnhancedConfig.INTER_MAID_CROSS_OWNER.get())
+                .setDefaultValue(false)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.crossOwner.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_CROSS_OWNER::set)
                 .build());
 
         interMaidSub.add(entryBuilder

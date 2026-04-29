@@ -59,13 +59,15 @@ public final class InterMaidChatManager {
         UUID ownerUuid = self.getOwnerUUID();
         if (ownerUuid == null) return List.of();
 
+        boolean crossOwner = EnhancedConfig.INTER_MAID_CROSS_OWNER.get();
+
         AABB box = self.getBoundingBox().inflate(range);
         List<EntityMaid> list = self.level().getEntitiesOfClass(
                 EntityMaid.class, box,
                 e -> e.isAlive() && !e.isRemoved()
                         && e != self
                         && e.isTame()
-                        && ownerUuid.equals(e.getOwnerUUID())
+                        && (crossOwner || ownerUuid.equals(e.getOwnerUUID()))
                         && !BUSY.contains(e.getUUID())
         );
         list.sort(Comparator.comparingDouble(e -> e.distanceToSqr(self)));

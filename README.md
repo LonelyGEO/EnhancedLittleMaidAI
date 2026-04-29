@@ -44,6 +44,14 @@
 - MLM 采矿事件（发现矿石/背包满/缺火把）由 LLM 接管，基于女仆角色设定生成个性化对话
 - 替代原模组硬编码文本
 
+### 仓储感知 (Storage Awareness)
+
+- 与 [MaidStorageManager](https://github.com/LonelyGEO/MaidStorageManager) 联动
+- **库存上下文**：让 LLM 感知附近容器内容物（哪个箱子有什么、各有多少），作为 `inventory` 上下文按需注入
+- **储物记忆**：取物/存物操作完成后自动写入 MindPalace 记忆，关联空间位置，后续可召回
+- **自然语言取物**：LLM 可通过多步调用（`switch_work_task` → `get_storage` → `storage_fetch`）实现「帮我把钻石拿出来」的完整流程
+- 可选模组，未安装 MSM 时自动跳过
+
 ### 推理内容支持 (Reasoning Content)
 
 - 支持 DeepSeek 等模型的 `reasoning_content`（思考链）
@@ -86,10 +94,11 @@
 ├── ▸ 记忆系统             (5 项)
 ├── ▸ 主动聊天             (6 项)
 ├── ▸ 女仆社交             (17 项)
+├── ▸ 仓储感知             (4 项)     ← 仅 MSM 加载时显示
 └── ▸ 调试                 (1 项)
 ```
 
-### 配置项一览（共 33 项）
+### 配置项一览（共 38 项）
 
 #### 上下文感知
 
@@ -142,6 +151,15 @@
 | `socialStoreMaxSize` | 50 | 社交记忆存储上限 |
 | `socialMemoryCompressTrigger` | 40 | 社交记忆压缩阈值 |
 
+#### 仓储感知
+
+| 参数 | 默认值 | 说明 |
+|---|---|---|
+| `enableStorageMemory` | true | 储物操作自动写入 MindPalace |
+| `maxStoragePositions` | 10 | 附近存储最多显示位置数 (3-30) |
+| `maxItemsPerStorage` | 8 | 每个位置最多显示物品数 (3-20) |
+| `maxItemsSummary` | 15 | 库存摘要最多显示物品数 (5-50) |
+
 #### 调试
 
 | 参数 | 默认值 | 说明 |
@@ -157,7 +175,8 @@
 2. 安装父模组 **[Touhou Little Maid](https://github.com/TartaricAcid/TouhouLittleMaid)** 1.5.2+
 3. 将 `enhancedlittlemaidai-<version>.jar` 放入 `mods/` 文件夹
 4. （可选）安装 [MiningLittleMaid](https://github.com/LonelyGEO/MiningLittleMaid) 以启用采矿联动和采矿对话
-5. （可选）安装 Cloth Config 以获得游戏内配置界面
+5. （可选）安装 [MaidStorageManager](https://github.com/LonelyGEO/MaidStorageManager) 以启用仓储感知、储物记忆和自然语言取物
+6. （可选）安装 Cloth Config 以获得游戏内配置界面
 
 ---
 
@@ -185,6 +204,7 @@ cd EnhancedLittleMaidAI
 - 父模组 JAR 需放入 `libs/` 目录：
   - `touhoulittlemaid-1.5.2-neoforge+mc1.21.1.jar`（必需）
   - `mininglittlemaid-0.9.0-neoforge+mc1.21.1.jar`（可选，compileOnly）
+  - `maid_storage_manager-1.15.6-neoforge+mc1.21.1.jar`（可选，compileOnly）
   - `cloth-config-neoforge-15.0.140.jar`（可选，compileOnly）
 
 ---

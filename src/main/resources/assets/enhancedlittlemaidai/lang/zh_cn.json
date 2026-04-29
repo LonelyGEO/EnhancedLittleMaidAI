@@ -71,6 +71,8 @@
     "config.enhancedlittlemaidai.interMaid.cooldownTicks.tooltip": "同对女仆对话冷却时间，300 = 5 分钟",
     "config.enhancedlittlemaidai.interMaid.decisionMode": "接受决策方式",
     "config.enhancedlittlemaidai.interMaid.decisionMode.tooltip": "B接受提案的决策: LLM(基于社交记忆AI判断) WEIGHT(纯概率)",
+    "config.enhancedlittlemaidai.interMaid.crossOwner": "跨主人对话",
+    "config.enhancedlittlemaidai.interMaid.crossOwner.tooltip": "允许不同主人的女仆之间也触发对话",
     "config.enhancedlittlemaidai.interMaid.socialInjectChance": "社交记忆注入概率",
     "config.enhancedlittlemaidai.interMaid.socialInjectChance.tooltip": "主动聊天时注入社交记忆的概率",
     "config.enhancedlittlemaidai.interMaid.socialTopK": "社交记忆注入条数",
