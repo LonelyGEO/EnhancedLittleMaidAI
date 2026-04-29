@@ -78,7 +78,7 @@ dependencies {
     implementation files("libs/touhoulittlemaid-1.5.2-neoforge+mc1.21.1.jar")
 
     // MiningLittleMaid 联动（编译时引用 API，运行时 optional）
-    compileOnly files("libs/mininglittlemaid-0.10.0-neoforge+mc1.21.1.jar")
+    compileOnly files("libs/mininglittlemaid-1.0.0-neoforge+mc1.21.1.jar")
 
     // MaidStorageManager 联动（编译时引用 API，运行时 optional）
     compileOnly files("libs/1.21.1-maid_storage_manager-1.15.6.jar")
