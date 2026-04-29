@@ -80,6 +80,9 @@ dependencies {
     // MiningLittleMaid 联动（编译时引用 API，运行时 optional）
     compileOnly files("libs/mininglittlemaid-0.9.0-neoforge+mc1.21.1.jar")
 
+    // MaidStorageManager 联动（编译时引用 API，运行时 optional）
+    compileOnly files("libs/1.21.1-maid_storage_manager-1.15.6.jar")
+
     // Cloth Config 联动（编译+开发运行时，生产环境由 TLM 提供）
     implementation files("libs/cloth-config-neoforge-15.0.140.jar")
 
