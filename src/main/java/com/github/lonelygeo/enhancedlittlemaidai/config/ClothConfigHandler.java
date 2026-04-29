@@ -355,6 +355,15 @@ public final class ClothConfigHandler {
                 .build());
 
         interMaidSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.maxGroupSize"),
+                        EnhancedConfig.INTER_MAID_MAX_GROUP_SIZE.get(), 2, 5)
+                .setDefaultValue(3)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.maxGroupSize.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_MAX_GROUP_SIZE::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
                 .startDoubleField(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.socialInjectChance"),
                         EnhancedConfig.SOCIAL_MEMORY_INJECT_CHANCE.get())

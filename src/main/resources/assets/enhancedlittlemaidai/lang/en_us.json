@@ -73,6 +73,8 @@
     "config.enhancedlittlemaidai.interMaid.decisionMode.tooltip": "How maid B decides to accept: LLM(AI judgment via social memory) WEIGHT(probability only)",
     "config.enhancedlittlemaidai.interMaid.crossOwner": "Cross-Owner Chat",
     "config.enhancedlittlemaidai.interMaid.crossOwner.tooltip": "Allow maids owned by different players to chat with each other",
+    "config.enhancedlittlemaidai.interMaid.maxGroupSize": "Max Group Size",
+    "config.enhancedlittlemaidai.interMaid.maxGroupSize.tooltip": "Maximum number of maids in a single conversation (2-5)",
     "config.enhancedlittlemaidai.interMaid.socialInjectChance": "Social Memory Inject Chance",
     "config.enhancedlittlemaidai.interMaid.socialInjectChance.tooltip": "Probability of injecting social memories into proactive chat",
     "config.enhancedlittlemaidai.interMaid.socialTopK": "Social Memory Top-K",

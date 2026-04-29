@@ -299,21 +299,56 @@ public class InterMaidChatCallback extends LLMCallback {
         mgr.getLLMSite().client().chat(cb);
     }
 
-    /** 按距附近玩家距离排序，最近的先发言 */
-    private static List<EntityMaid> sortByPlayerDistance(EntityMaid a, EntityMaid b) {
-        double aDist = nearestPlayerDist(a);
-        double bDist = nearestPlayerDist(b);
-        return aDist <= bDist ? List.of(a, b) : List.of(b, a);
+    /**
+     * 启动多人女仆对话。参与者按距玩家距离排序，最近者先开口。
+     */
+    public static void startConversation(List<EntityMaid> participants, int maxRounds) {
+        if (participants.size() < 2) return;
+        participants = new ArrayList<>(participants);
+        participants.sort(Comparator.comparingDouble(InterMaidChatCallback::nearestPlayerDist));
+        EntityMaid first = participants.get(0);
+
+        if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.info(
+                    "InterMaidChat: Starting group conversation {} members, rounds={}",
+                    participants.size(), maxRounds);
+        }
+
+        String prompt = buildGroupPrompt(first, participants);
+        LLMMessage sysMsg = LLMMessage.systemChat(first, prompt);
+        LLMMessage userMsg = LLMMessage.userChat(first, "（女仆间对话）");
+        List<LLMMessage> msgs = List.of(sysMsg, userMsg);
+
+        MaidAIChatManager mgr = first.getAiChatManager();
+        mgr.getLLMSite().client().chat(
+                new InterMaidChatCallback(mgr, msgs, List.copyOf(participants), maxRounds));
+    }
+
+    private static String buildGroupPrompt(EntityMaid speaker, List<EntityMaid> all) {
+        List<EntityMaid> others = all.stream().filter(m -> m != speaker).toList();
+        StringBuilder sb = new StringBuilder(getCharacterSetting(speaker));
+        sb.append("\n\n你现在和");
+        for (int i = 0; i < others.size(); i++) {
+            if (i > 0) sb.append("、");
+            sb.append(others.get(i).getDisplayName().getString());
+        }
+        sb.append("在一起。请主动和她们聊几句。说一句简短自然的话。"
+                + "直接说话即可，不要加动作描写、括号注释或任何格式标记。");
+        return sb.toString();
     }
 
     private static double nearestPlayerDist(EntityMaid maid) {
         double dist = EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.get();
         AABB box = maid.getBoundingBox().inflate(dist);
-        List<ServerPlayer> players = maid.level().getEntitiesOfClass(
-                ServerPlayer.class, box, Player::isAlive);
-        return players.stream()
-                .mapToDouble(p -> p.distanceToSqr(maid))
-                .min().orElse(Double.MAX_VALUE);
+        return maid.level().getEntitiesOfClass(ServerPlayer.class, box, Player::isAlive)
+                .stream().mapToDouble(p -> p.distanceToSqr(maid)).min().orElse(Double.MAX_VALUE);
+    }
+
+    /** 按距附近玩家距离排序，最近的先发言 */
+    private static List<EntityMaid> sortByPlayerDistance(EntityMaid a, EntityMaid b) {
+        double aDist = nearestPlayerDist(a);
+        double bDist = nearestPlayerDist(b);
+        return aDist <= bDist ? List.of(a, b) : List.of(b, a);
     }
 
     private static String buildInitPrompt(EntityMaid speaker, EntityMaid other) {

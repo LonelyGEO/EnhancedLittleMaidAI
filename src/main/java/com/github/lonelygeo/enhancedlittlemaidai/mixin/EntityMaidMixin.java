@@ -169,12 +169,15 @@ public abstract class EntityMaidMixin {
             int interval = EnhancedConfig.INTER_MAID_SCAN_INTERVAL.get();
             if (gameTime % interval == Math.floorMod(uuid.hashCode(), interval)) {
                 if (InterMaidChatManager.canScan(maid, gameTime)) {
-                    EntityMaid partner = InterMaidChatManager.findPartner(maid);
-                    if (partner != null) {
-                        InterMaidChatManager.propose(uuid, partner.getUUID(), gameTime);
+                    int maxGroup = EnhancedConfig.INTER_MAID_MAX_GROUP_SIZE.get();
+                    List<EntityMaid> partners = InterMaidChatManager.findPartners(maid, maxGroup);
+                    if (!partners.isEmpty()) {
+                        List<UUID> targets = partners.stream()
+                                .map(EntityMaid::getUUID).toList();
+                        InterMaidChatManager.proposeGroup(uuid, targets, gameTime);
                         if (EnhancedConfig.debugLog()) {
                             EnhancedLittleMaidAI.LOGGER.info(
-                                    "InterMaidChat: Maid {} proposed to {}", uuid, partner.getUUID());
+                                    "InterMaidChat: Maid {} proposed to {} targets", uuid, targets.size());
                         }
                     }
                 }
@@ -229,7 +232,7 @@ public abstract class EntityMaidMixin {
     private static void handleProposal(EntityMaid b, UUID proposerUuid, long gameTime) {
         EntityMaid a = findMaidByUuid(b, proposerUuid);
         if (a == null || a.isRemoved()) {
-            InterMaidChatManager.clearProposal(b.getUUID());
+            InterMaidChatManager.rejectFromGroup(b.getUUID());
             return;
         }
 
@@ -255,16 +258,22 @@ public abstract class EntityMaidMixin {
         } else {
             // WEIGHT mode
             if (InterMaidChatManager.decideByWeight(b, a)) {
-                InterMaidChatManager.clearProposal(b.getUUID());
-                if (EnhancedConfig.debugLog()) {
-                    EnhancedLittleMaidAI.LOGGER.info(
-                            "InterMaidChat: WEIGHT accept {} ← {}", b.getUUID(), a.getUUID());
-                }
-                InterMaidChatCallback.startConversation(a, b,
-                        EnhancedConfig.INTER_MAID_MAX_ROUNDS.get());
+                acceptAndTryStart(b, a);
             } else {
                 InterMaidChatManager.markRejected(a.getUUID(), b.getUUID(), gameTime);
             }
+        }
+    }
+
+    /** B 接受提案 → 加入群组 → 足够人时启动对话 */
+    static void acceptAndTryStart(EntityMaid b, EntityMaid a) {
+        List<UUID> members = InterMaidChatManager.acceptIntoGroup(b.getUUID());
+        if (members != null) {
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.info(
+                        "InterMaidChat: Group accept {} → {} members ready", b.getUUID(), members.size());
+            }
+            InterMaidChatManager.tryStartConversation(members, b.level());
         }
     }
 

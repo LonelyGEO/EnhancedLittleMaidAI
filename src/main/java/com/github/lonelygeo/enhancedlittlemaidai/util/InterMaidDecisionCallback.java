@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.net.http.HttpRequest;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * B 接受提案的 LLM 决策回调。
@@ -56,14 +57,15 @@ public class InterMaidDecisionCallback extends LLMCallback {
     }
 
     private void accept() {
-        long gameTime = maidB.level().getGameTime();
         InterMaidChatManager.clearProposal(maidB.getUUID());
-        InterMaidChatCallback.startConversation(maidA, maidB,
-                EnhancedConfig.INTER_MAID_MAX_ROUNDS.get());
-        if (EnhancedConfig.debugLog()) {
-            EnhancedLittleMaidAI.LOGGER.info(
-                    "InterMaidChat: LLM decision ACCEPT: {} ← {}", 
-                    maidB.getUUID(), maidA.getUUID());
+        List<UUID> members = InterMaidChatManager.acceptIntoGroup(maidB.getUUID());
+        if (members != null) {
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.info(
+                        "InterMaidChat: LLM ACCEPT {} → {} members", 
+                        maidB.getUUID(), members.size());
+            }
+            InterMaidChatManager.tryStartConversation(members, maidB.level());
         }
     }
 

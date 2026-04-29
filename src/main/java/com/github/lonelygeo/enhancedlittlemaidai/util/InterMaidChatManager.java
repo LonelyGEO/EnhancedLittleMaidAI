@@ -32,6 +32,9 @@ public final class InterMaidChatManager {
     // pending proposals: toUUID → Proposal
     private static final Map<UUID, Proposal> PENDING_PROPOSALS =
             Collections.synchronizedMap(new HashMap<>());
+    // group proposals: initiator UUID → GroupProposal (pending acceptors)
+    private static final Map<UUID, GroupProposal> GROUP_PROPOSALS =
+            Collections.synchronizedMap(new HashMap<>());
     // busy set
     private static final Set<UUID> BUSY = Collections.synchronizedSet(new HashSet<>());
 
@@ -81,6 +84,79 @@ public final class InterMaidChatManager {
         if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.info("InterMaidChat: Proposal {} → {}", from, to);
         }
+    }
+
+    /** 创建群组提案：A 向多个 B 发起邀请 */
+    public static void proposeGroup(UUID from, List<UUID> targets, long gameTime) {
+        GROUP_PROPOSALS.put(from,
+                new GroupProposal(from, new LinkedHashSet<>(targets), gameTime));
+        for (UUID to : targets) {
+            PENDING_PROPOSALS.put(to, new Proposal(from, gameTime));
+        }
+    }
+
+    /** B 接受提案 → 加入群组。返回当前群组成员（含 A），不足 2 人时返回 null */
+    @Nullable
+    public static List<UUID> acceptIntoGroup(UUID acceptor) {
+        Proposal p = PENDING_PROPOSALS.remove(acceptor);
+        if (p == null) return null;
+        GroupProposal gp = GROUP_PROPOSALS.get(p.from);
+        if (gp == null) return null;
+        gp.accepted.add(acceptor);
+        gp.targets.remove(acceptor);
+
+        List<UUID> all = new ArrayList<>();
+        all.add(p.from); // A
+        all.addAll(gp.accepted); // all B's that accepted
+        return all.size() >= 2 ? List.copyOf(all) : null;
+    }
+
+    /** 提案被拒绝 → 从目标集移除 */
+    public static void rejectFromGroup(UUID rejected) {
+        Proposal p = PENDING_PROPOSALS.remove(rejected);
+        if (p == null) return;
+        GroupProposal gp = GROUP_PROPOSALS.get(p.from);
+        if (gp == null) return;
+        gp.targets.remove(rejected);
+        if (gp.targets.isEmpty() && gp.accepted.isEmpty()) {
+            GROUP_PROPOSALS.remove(p.from);
+        }
+    }
+
+    public static void cleanupGroup(UUID initiator) {
+        GROUP_PROPOSALS.remove(initiator);
+    }
+
+    /** 尝试启动群组对话 — 收集参与者实体并按距玩家排序后启动 */
+    public static void tryStartConversation(List<UUID> memberUuids, net.minecraft.world.level.Level level) {
+        List<EntityMaid> participants = new ArrayList<>();
+        for (UUID uid : memberUuids) {
+            double playerDist = EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.get();
+            for (EntityMaid m : level.getEntitiesOfClass(
+                    EntityMaid.class, new AABB(0, -64, 0, 30000000, 320, 30000000),
+                    e -> e.getUUID().equals(uid))) {
+                participants.add(m);
+                break;
+            }
+        }
+        if (participants.size() >= 2) {
+            participants.sort(Comparator.comparingDouble(m -> {
+                double dist = EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.get();
+                AABB box = m.getBoundingBox().inflate(dist);
+                return m.level().getEntitiesOfClass(ServerPlayer.class, box, Player::isAlive)
+                        .stream().mapToDouble(p -> p.distanceToSqr(m)).min().orElse(Double.MAX_VALUE);
+            }));
+            markBusy(participants);
+            UUID initiator = participants.get(0).getUUID();
+            cleanupGroup(initiator);
+            InterMaidChatCallback.startConversation(participants,
+                    EnhancedConfig.INTER_MAID_MAX_ROUNDS.get());
+        }
+    }
+
+    /** 标记多名女仆忙碌 */
+    public static void markBusy(List<EntityMaid> maids) {
+        for (EntityMaid m : maids) BUSY.add(m.getUUID());
     }
 
     @Nullable
@@ -276,6 +352,19 @@ public final class InterMaidChatManager {
     // ==================== 内部类型 ====================
 
     private record Proposal(UUID from, long time) {
+    }
+
+    private static final class GroupProposal {
+        final UUID initiator;
+        final Set<UUID> targets;
+        final Set<UUID> accepted = new LinkedHashSet<>();
+        final long time;
+
+        GroupProposal(UUID initiator, Set<UUID> targets, long time) {
+            this.initiator = initiator;
+            this.targets = targets;
+            this.time = time;
+        }
     }
 
     /** 未来 N 人扩展接口 */
