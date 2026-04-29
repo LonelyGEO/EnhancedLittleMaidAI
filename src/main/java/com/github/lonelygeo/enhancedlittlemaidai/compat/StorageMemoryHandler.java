@@ -41,7 +41,14 @@ public final class StorageMemoryHandler {
         try {
             String statusName = ((Enum<?>) event.getClass().getMethod("getStatus")
                     .invoke(event)).name();
-            if (!"END".equals(statusName)) return;
+            if (!"END".equals(statusName)) {
+                if (EnhancedConfig.debugLog()) {
+                    EnhancedLittleMaidAI.LOGGER.debug(
+                            "EnhancedLittleMaidAI: StorageMemoryHandler event status={} skipped",
+                            statusName);
+                }
+                return;
+            }
 
             EntityMaid maid = (EntityMaid) event.getClass().getMethod("getMaid")
                     .invoke(event);
@@ -97,14 +104,29 @@ public final class StorageMemoryHandler {
                     if (display != null && display.length() > 60) {
                         display = display.substring(0, 57) + "...";
                     }
+                    if (EnhancedConfig.debugLog()) {
+                        EnhancedLittleMaidAI.LOGGER.debug(
+                                "EnhancedLittleMaidAI: StorageMemoryHandler extracted item detail: {}",
+                                display);
+                    }
                     return display != null ? display : "物品";
                 }
             } catch (Exception ignored) {
+                if (EnhancedConfig.debugLog()) {
+                    EnhancedLittleMaidAI.LOGGER.debug(
+                            "EnhancedLittleMaidAI: StorageMemoryHandler RequestListItem detail unavailable, falling back");
+                }
             }
 
             // 回退：ItemStack 描述名
-            return (String) itemStackObj.getClass()
+            String fallback = (String) itemStackObj.getClass()
                     .getMethod("getDescriptionId").invoke(itemStackObj);
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "EnhancedLittleMaidAI: StorageMemoryHandler fallback item summary: {}",
+                        fallback);
+            }
+            return fallback;
         } catch (Exception e) {
             return "物品";
         }

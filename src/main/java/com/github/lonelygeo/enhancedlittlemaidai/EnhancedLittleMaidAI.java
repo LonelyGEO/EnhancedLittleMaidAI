@@ -50,6 +50,7 @@ public class EnhancedLittleMaidAI {
             Class<?> handlerClass = Class.forName(
                     "com.github.lonelygeo.enhancedlittlemaidai.compat.StorageMemoryHandler");
             handlerClass.getMethod("register").invoke(null);
+            LOGGER.info("EnhancedLittleMaidAI: StorageMemoryHandler registered");
         } catch (Exception e) {
             LOGGER.debug("EnhancedLittleMaidAI: StorageMemoryHandler not available");
         }

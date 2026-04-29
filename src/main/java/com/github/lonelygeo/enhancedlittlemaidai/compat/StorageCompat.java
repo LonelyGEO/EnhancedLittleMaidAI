@@ -1,5 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.compat;
 
+import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.mojang.logging.LogUtils;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
@@ -43,7 +45,14 @@ public final class StorageCompat {
             Object viewedInv = memUtilClass.getMethod("getViewedInventory",
                     Object.class).invoke(null, maid);
             if (viewedInv == null) return null;
-            return (List<Object>) viewedInv.getClass().getMethod("flatten").invoke(viewedInv);
+            List<Object> result = (List<Object>) viewedInv.getClass()
+                    .getMethod("flatten").invoke(viewedInv);
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "EnhancedLittleMaidAI: StorageCompat getFlattenedInventory {} items",
+                        result.size());
+            }
+            return result;
         } catch (Exception e) {
             LOGGER.warn("StorageCompat getFlattenedInventory failed: {}", e.getMessage());
             return null;
@@ -60,8 +69,14 @@ public final class StorageCompat {
             Object viewedInv = memUtilClass.getMethod("getViewedInventory",
                     Object.class).invoke(null, maid);
             if (viewedInv == null) return null;
-            return (Map<Object, Object>) viewedInv.getClass()
+            Map<Object, Object> result = (Map<Object, Object>) viewedInv.getClass()
                     .getMethod("positionFlatten").invoke(viewedInv);
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "EnhancedLittleMaidAI: StorageCompat getPositionFlattened {} positions",
+                        result.size());
+            }
+            return result;
         } catch (Exception e) {
             LOGGER.warn("StorageCompat getPositionFlattened failed: {}", e.getMessage());
             return null;
@@ -81,9 +96,16 @@ public final class StorageCompat {
                     "studio.fantasyit.maid_storage_manager.util.ItemStackUtil$MATCH_TYPE");
             Object sameItem = matchTypeEnum.getField("SAME_ITEM").get(null);
 
-            return (int) viewedInv.getClass()
+            int count = (int) viewedInv.getClass()
                     .getMethod("getItemCount", ItemStack.class, matchTypeEnum)
                     .invoke(viewedInv, itemStack, sameItem);
+
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "EnhancedLittleMaidAI: StorageCompat getItemCount for {}: count={}",
+                        itemStack.getDescriptionId(), count);
+            }
+            return count;
         } catch (Exception e) {
             LOGGER.warn("StorageCompat getItemCount failed: {}", e.getMessage());
             return -1;
