@@ -101,10 +101,10 @@ public final class BlockAwareContexts {
         public String getValue(EntityMaid maid) {
             BlockPos pos = maid.blockPosition();
             Level level = maid.level();
-            int light = level.getMaxLocalRawBrightness(pos, 0);
+            int light = level.getMaxLocalRawBrightness(pos);
             boolean skyVisible = level.canSeeSky(pos);
             boolean indoors = !skyVisible && light < 8;
-            boolean hasCeiling = level.getBlockState(pos.above(3)).isSolid();
+            boolean hasCeiling = level.getBlockState(pos.above(3)).canOcclude();
             int redstone = level.getBestNeighborSignal(pos);
 
             String result = String.format("light=%d, indoors=%b, sky_visible=%b, redstone_power=%d",
