@@ -101,7 +101,7 @@ public final class BlockAwareContexts {
         public String getValue(EntityMaid maid) {
             BlockPos pos = maid.blockPosition();
             Level level = maid.level();
-            int light = level.getMaxLocalRawBrightness(pos);
+            int light = level.getMaxLocalRawBrightness(pos, 0);
             boolean skyVisible = level.canSeeSky(pos);
             boolean indoors = !skyVisible && light < 8;
             boolean hasCeiling = level.getBlockState(pos.above(3)).isSolid();

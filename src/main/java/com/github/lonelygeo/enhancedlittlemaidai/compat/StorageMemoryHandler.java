@@ -36,6 +36,12 @@ public final class StorageMemoryHandler {
      */
     @SubscribeEvent
     public static void onRequestListStatusChange(Object event) {
+        if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.debug(
+                    "EnhancedLittleMaidAI: StorageMemoryHandler event recv class={}",
+                    event.getClass().getSimpleName());
+        }
+
         if (!EnhancedConfig.ENABLE_STORAGE_MEMORY.get()) return;
 
         try {
