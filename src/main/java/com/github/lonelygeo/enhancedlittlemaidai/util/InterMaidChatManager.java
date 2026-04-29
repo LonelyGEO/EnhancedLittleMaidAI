@@ -159,6 +159,14 @@ public final class InterMaidChatManager {
         for (EntityMaid m : maids) BUSY.add(m.getUUID());
     }
 
+    /** B 接受提案 → 加入群组，人数够时启动对话 */
+    public static void handleAcceptance(EntityMaid b) {
+        List<UUID> members = acceptIntoGroup(b.getUUID());
+        if (members != null && members.size() >= 2) {
+            tryStartConversation(members, b.level());
+        }
+    }
+
     @Nullable
     public static UUID getProposer(UUID maid) {
         Proposal p = PENDING_PROPOSALS.get(maid);

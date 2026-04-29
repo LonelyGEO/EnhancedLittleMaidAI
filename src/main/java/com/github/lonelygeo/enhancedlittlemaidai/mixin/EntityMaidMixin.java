@@ -267,15 +267,8 @@ public abstract class EntityMaidMixin {
     }
 
     /** B 接受提案 → 加入群组 → 足够人时启动对话 */
-    static void acceptAndTryStart(EntityMaid b, EntityMaid a) {
-        List<UUID> members = InterMaidChatManager.acceptIntoGroup(b.getUUID());
-        if (members != null) {
-            if (EnhancedConfig.debugLog()) {
-                EnhancedLittleMaidAI.LOGGER.info(
-                        "InterMaidChat: Group accept {} → {} members ready", b.getUUID(), members.size());
-            }
-            InterMaidChatManager.tryStartConversation(members, b.level());
-        }
+    private static void acceptAndTryStart(EntityMaid b, EntityMaid a) {
+        InterMaidChatManager.handleAcceptance(b);
     }
 
     @Nullable

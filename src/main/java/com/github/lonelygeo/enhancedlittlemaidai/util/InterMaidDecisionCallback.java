@@ -58,14 +58,10 @@ public class InterMaidDecisionCallback extends LLMCallback {
 
     private void accept() {
         InterMaidChatManager.clearProposal(maidB.getUUID());
-        List<UUID> members = InterMaidChatManager.acceptIntoGroup(maidB.getUUID());
-        if (members != null) {
-            if (EnhancedConfig.debugLog()) {
-                EnhancedLittleMaidAI.LOGGER.info(
-                        "InterMaidChat: LLM ACCEPT {} → {} members", 
-                        maidB.getUUID(), members.size());
-            }
-            InterMaidChatManager.tryStartConversation(members, maidB.level());
+        InterMaidChatManager.handleAcceptance(maidB);
+        if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.info(
+                    "InterMaidChat: LLM ACCEPT {}", maidB.getUUID());
         }
     }
 
