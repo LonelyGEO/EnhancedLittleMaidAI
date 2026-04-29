@@ -16,6 +16,7 @@ import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatMana
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,6 +34,34 @@ import java.util.concurrent.CompletableFuture;
  */
 @Mixin(value = EntityMaid.class, remap = false)
 public abstract class EntityMaidMixin {
+
+    // ==================== MindPalace 磁盘持久化 ====================
+
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"), remap = false)
+    private void enhanced$saveMindPalace(CompoundTag tag, CallbackInfo ci) {
+        EntityMaid maid = (EntityMaid) (Object) this;
+        MindPalace palace = MindPalace.get(maid.getUUID());
+        if (palace != null && palace.size() > 0) {
+            palace.writeToTag(tag);
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "EnhancedLittleMaidAI: Saved {} MindPalace memories for maid {}",
+                        palace.size(), maid.getUUID());
+            }
+        }
+    }
+
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"), remap = false)
+    private void enhanced$loadMindPalace(CompoundTag tag, CallbackInfo ci) {
+        EntityMaid maid = (EntityMaid) (Object) this;
+        MindPalace palace = MindPalace.getOrCreate(maid.getUUID());
+        palace.readFromTag(tag);
+        if (EnhancedConfig.debugLog() && palace.size() > 0) {
+            EnhancedLittleMaidAI.LOGGER.debug(
+                    "EnhancedLittleMaidAI: Loaded {} MindPalace memories for maid {}",
+                    palace.size(), maid.getUUID());
+        }
+    }
 
     /**
      * HEAD: 死亡时在 NBT 保存前写入死亡记忆。
