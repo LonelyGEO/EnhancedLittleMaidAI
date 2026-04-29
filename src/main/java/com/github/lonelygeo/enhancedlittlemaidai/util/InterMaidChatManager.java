@@ -59,18 +59,12 @@ public final class InterMaidChatManager {
      * 返回按距离排序的列表。内部方法，已返回 List 便于未来 N 人扩展。
      */
     private static List<EntityMaid> scanNearbyMaids(EntityMaid self, double range) {
-        UUID ownerUuid = self.getOwnerUUID();
-        if (ownerUuid == null) return List.of();
-
-        boolean crossOwner = EnhancedConfig.INTER_MAID_CROSS_OWNER.get();
-
         AABB box = self.getBoundingBox().inflate(range);
         List<EntityMaid> list = self.level().getEntitiesOfClass(
                 EntityMaid.class, box,
                 e -> e.isAlive() && !e.isRemoved()
                         && e != self
                         && e.isTame()
-                        && (crossOwner || ownerUuid.equals(e.getOwnerUUID()))
                         && !BUSY.contains(e.getUUID())
         );
         list.sort(Comparator.comparingDouble(e -> e.distanceToSqr(self)));

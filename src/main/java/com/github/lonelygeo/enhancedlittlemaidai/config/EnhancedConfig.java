@@ -45,7 +45,6 @@ public class EnhancedConfig {
     public static ModConfigSpec.IntValue INTER_MAID_MAX_GLOBAL_PER_DAY;
     public static ModConfigSpec.IntValue INTER_MAID_COOLDOWN_TICKS;
     public static ModConfigSpec.ConfigValue<String> INTER_MAID_DECISION_MODE;
-    public static ModConfigSpec.BooleanValue INTER_MAID_CROSS_OWNER;
     public static ModConfigSpec.IntValue INTER_MAID_MAX_GROUP_SIZE;
     public static ModConfigSpec.DoubleValue SOCIAL_MEMORY_INJECT_CHANCE;
     public static ModConfigSpec.IntValue SOCIAL_MEMORY_TOP_K;
@@ -214,10 +213,6 @@ public class EnhancedConfig {
         INTER_MAID_DECISION_MODE = builder
                 .comment("B接受提案的决策方式: LLM(基于社交记忆AI判断) WEIGHT(纯概率权重)")
                 .define("decisionMode", "LLM");
-
-        INTER_MAID_CROSS_OWNER = builder
-                .comment("是否允许不同主人的女仆之间也触发对话")
-                .define("crossOwner", false);
 
         INTER_MAID_MAX_GROUP_SIZE = builder
                 .comment("一次对话最多几个女仆参与")

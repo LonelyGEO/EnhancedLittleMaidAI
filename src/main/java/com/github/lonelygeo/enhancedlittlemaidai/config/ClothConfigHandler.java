@@ -355,15 +355,6 @@ public final class ClothConfigHandler {
                 .build());
 
         interMaidSub.add(entryBuilder
-                .startBooleanToggle(
-                        Component.translatable("config.enhancedlittlemaidai.interMaid.crossOwner"),
-                        EnhancedConfig.INTER_MAID_CROSS_OWNER.get())
-                .setDefaultValue(false)
-                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.crossOwner.tooltip"))
-                .setSaveConsumer(EnhancedConfig.INTER_MAID_CROSS_OWNER::set)
-                .build());
-
-        interMaidSub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.maxGroupSize"),
                         EnhancedConfig.INTER_MAID_MAX_GROUP_SIZE.get(), 2, 5)

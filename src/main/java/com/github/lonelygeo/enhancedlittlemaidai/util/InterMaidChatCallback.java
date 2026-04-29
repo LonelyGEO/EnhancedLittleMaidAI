@@ -9,7 +9,6 @@ import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
@@ -20,7 +19,7 @@ import java.util.*;
 
 /**
  * 多女仆对话 LLM 回调。支持 2-N 人链式多轮。
- * 每轮 single LLM call → display bubble + broadcast → next round。
+ * 每轮 single LLM call → 替换思考气泡 → next round。
  */
 public class InterMaidChatCallback extends LLMCallback {
 
@@ -30,25 +29,9 @@ public class InterMaidChatCallback extends LLMCallback {
     private final int totalRounds;
     private final Map<UUID, String> conversationHistory;
     private final MaidAIChatManager chatManager;
-    private final List<LLMMessage> baseMessages;
+    private long waitingBubbleId;
 
-    /**
-     * 2 人构造器。
-     */
     public InterMaidChatCallback(
-            MaidAIChatManager chatManager,
-            List<LLMMessage> messages,
-            EntityMaid maidA,
-            EntityMaid maidB,
-            int totalRounds
-    ) {
-        this(chatManager, messages, List.of(maidA, maidB), totalRounds);
-    }
-
-    /**
-     * N 人构造器（未来 2+ 版本直接使用）。
-     */
-    private InterMaidChatCallback(
             MaidAIChatManager chatManager,
             List<LLMMessage> messages,
             List<EntityMaid> participants,
@@ -57,12 +40,15 @@ public class InterMaidChatCallback extends LLMCallback {
         super(chatManager, messages, true);
         this.needAddTools = false;
         this.chatManager = chatManager;
-        this.baseMessages = messages;
         this.participants = participants;
         this.speakerIndex = 0;
         this.roundCount = 0;
         this.totalRounds = totalRounds;
         this.conversationHistory = new LinkedHashMap<>();
+    }
+
+    public void setWaitingBubbleId(long id) {
+        this.waitingBubbleId = id;
     }
 
     @Override
@@ -80,32 +66,27 @@ public class InterMaidChatCallback extends LLMCallback {
                 return;
             }
 
-            // 1. 显示气泡
-            speaker.getChatBubbleManager().addTextChatBubble(chatText);
+            if (waitingBubbleId > 0) {
+                speaker.getChatBubbleManager().addLLMChatText(chatText, waitingBubbleId);
+            } else {
+                speaker.getChatBubbleManager().addTextChatBubble(chatText);
+            }
 
-            // 2. 推送聊天栏给附近玩家
-            double playerDist = EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.get();
-            broadcastToNearbyPlayers(speaker, chatText, playerDist);
-
-            // 3. 记录对话历史
             conversationHistory.put(speaker.getUUID(), chatText);
             roundCount++;
 
-            // 4. 检查是否继续
             if (roundCount >= totalRounds || participants.size() < 2) {
                 finishConversation();
                 return;
             }
 
-            // 5. 发起下一轮
             speakerIndex++;
             sendNextRound();
 
             if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.info(
-                        "InterMaidChat: Round {} complete, speaker={}, next={}",
-                        roundCount, speaker.getDisplayName().getString(),
-                        currentSpeaker() != null ? currentSpeaker().getDisplayName().getString() : "none");
+                        "InterMaidChat: Round {} complete, speaker={}",
+                        roundCount, speaker.getDisplayName().getString());
             }
         } catch (Exception e) {
             EnhancedLittleMaidAI.LOGGER.warn("InterMaidChat: onSuccess error", e);
@@ -119,7 +100,6 @@ public class InterMaidChatCallback extends LLMCallback {
         finishConversation();
     }
 
-    /** 发起下一轮 LLM 调用 */
     private void sendNextRound() {
         EntityMaid speaker = currentSpeaker();
         if (speaker == null) {
@@ -138,17 +118,16 @@ public class InterMaidChatCallback extends LLMCallback {
         nextCb.speakerIndex = speakerIndex;
         nextCb.roundCount = roundCount;
         nextCb.conversationHistory.putAll(conversationHistory);
+        nextCb.setWaitingBubbleId(bubbleId);
         client.chat(nextCb);
     }
 
-    /** 对话结束清理 */
     private void finishConversation() {
         if (participants.size() >= 2) {
             EntityMaid a = participants.get(0);
             EntityMaid b = participants.get(1);
             long gameTime = a.level().getGameTime();
 
-            // 写入社交记忆
             for (Map.Entry<UUID, String> entry : conversationHistory.entrySet()) {
                 String speakerName = participants.stream()
                         .filter(m -> m.getUUID().equals(entry.getKey()))
@@ -181,8 +160,6 @@ public class InterMaidChatCallback extends LLMCallback {
         return participants.get(speakerIndex % participants.size());
     }
 
-    // ==================== Prompt 构建 ====================
-
     private String buildPromptForSpeaker(EntityMaid speaker) {
         String setting = getCharacterSetting(speaker);
         if (StringUtils.isBlank(setting)) return "";
@@ -203,20 +180,17 @@ public class InterMaidChatCallback extends LLMCallback {
             sb.append(others.get(i).getDisplayName().getString());
         }
         sb.append("在一起。请和");
-        if (others.size() == 1) {
-            sb.append("她");
-        } else {
-            sb.append("她们");
-        }
+        sb.append(others.size() == 1 ? "她" : "她们");
         sb.append("聊几句。说一句简短自然的话主动发起对话。"
-                + "直接说话即可，不要加动作描写、括号注释或任何格式标记。");
+                + "直接说话即可，不要加动作描写、括号注释或任何格式标记。" +
+                " 注意：游戏数据中的英文地名、物品名请转换为中文MC玩家熟知的名词。" +
+                " 偶尔可以使用颜文字增加趣味，但不要每句都用。");
         return sb.toString();
     }
 
     private String buildResponsePrompt(String setting, EntityMaid speaker, List<EntityMaid> others) {
         StringBuilder sb = new StringBuilder(setting);
         sb.append("\n\n");
-        // 累积的对话上下文
         for (Map.Entry<UUID, String> entry : conversationHistory.entrySet()) {
             String name = participants.stream()
                     .filter(m -> m.getUUID().equals(entry.getKey()))
@@ -226,7 +200,9 @@ public class InterMaidChatCallback extends LLMCallback {
             sb.append(name).append("说：").append(entry.getValue()).append("\n");
         }
         sb.append("\n现在轮到你了。请简短自然地回应。"
-                + "直接说话即可，不要加动作描写、括号注释或任何格式标记。");
+                + "直接说话即可，不要加动作描写、括号注释或任何格式标记。" +
+                " 注意：游戏数据中的英文地名、物品名请转换为中文MC玩家熟知的名词。" +
+                " 偶尔可以使用颜文字增加趣味，但不要每句都用。");
         return sb.toString();
     }
 
@@ -241,7 +217,7 @@ public class InterMaidChatCallback extends LLMCallback {
             if ("SUMMARY".equals(mode)) {
                 return custom.substring(0, Math.min(200, custom.length()));
             }
-            return custom; // FULL
+            return custom;
         }
 
         try {
@@ -259,49 +235,10 @@ public class InterMaidChatCallback extends LLMCallback {
         return maid.getDisplayName().getString() + "，一位女仆。";
     }
 
-    // ==================== 聊天栏推送 ====================
-
-    private static void broadcastToNearbyPlayers(EntityMaid speaker, String text, double range) {
-        AABB box = speaker.getBoundingBox().inflate(range);
-        List<ServerPlayer> players = speaker.level().getEntitiesOfClass(
-                ServerPlayer.class, box, Player::isAlive);
-        Component msg = Component.literal("<" + speaker.getDisplayName().getString() + "> " + text);
-        for (ServerPlayer p : players) {
-            p.sendSystemMessage(msg);
-        }
-    }
-
-    // ==================== 发起对话入口 ====================
-
-    /**
-     * 启动两女仆对话。由 EntityMaidMixin 调用。
-     */
     public static void startConversation(EntityMaid maidA, EntityMaid maidB, int maxRounds) {
-        if (EnhancedConfig.debugLog()) {
-            EnhancedLittleMaidAI.LOGGER.info(
-                    "InterMaidChat: Starting conversation {} ↔ {}, rounds={}",
-                    maidA.getUUID(), maidB.getUUID(), maxRounds);
-        }
-        List<EntityMaid> sorted = sortByPlayerDistance(maidA, maidB);
-        InterMaidChatManager.markBusy(sorted.get(0).getUUID(), sorted.get(1).getUUID());
-
-        EntityMaid first = sorted.get(0);
-        String prompt = buildInitPrompt(first, sorted.get(1));
-        LLMMessage sysMsg = LLMMessage.systemChat(first, prompt);
-        LLMMessage userMsg = LLMMessage.userChat(first, "（女仆间对话）");
-        List<LLMMessage> msgs = List.of(sysMsg, userMsg);
-
-        MaidAIChatManager mgr = first.getAiChatManager();
-        long bubbleId = first.getChatBubbleManager().addThinkingText("...");
-
-        InterMaidChatCallback cb = new InterMaidChatCallback(
-                mgr, msgs, sorted, maxRounds);
-        mgr.getLLMSite().client().chat(cb);
+        startConversation(List.of(maidA, maidB), maxRounds);
     }
 
-    /**
-     * 启动多人女仆对话。参与者按距玩家距离排序，最近者先开口。
-     */
     public static void startConversation(List<EntityMaid> participants, int maxRounds) {
         if (participants.size() < 2) return;
         participants = new ArrayList<>(participants);
@@ -310,7 +247,7 @@ public class InterMaidChatCallback extends LLMCallback {
 
         if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.info(
-                    "InterMaidChat: Starting group conversation {} members, rounds={}",
+                    "InterMaidChat: Starting conversation {} members, rounds={}",
                     participants.size(), maxRounds);
         }
 
@@ -320,8 +257,11 @@ public class InterMaidChatCallback extends LLMCallback {
         List<LLMMessage> msgs = List.of(sysMsg, userMsg);
 
         MaidAIChatManager mgr = first.getAiChatManager();
-        mgr.getLLMSite().client().chat(
-                new InterMaidChatCallback(mgr, msgs, List.copyOf(participants), maxRounds));
+        long bubbleId = first.getChatBubbleManager().addThinkingText("...");
+        InterMaidChatCallback cb = new InterMaidChatCallback(
+                mgr, msgs, List.copyOf(participants), maxRounds);
+        cb.setWaitingBubbleId(bubbleId);
+        mgr.getLLMSite().client().chat(cb);
     }
 
     private static String buildGroupPrompt(EntityMaid speaker, List<EntityMaid> all) {
@@ -342,21 +282,5 @@ public class InterMaidChatCallback extends LLMCallback {
         AABB box = maid.getBoundingBox().inflate(dist);
         return maid.level().getEntitiesOfClass(ServerPlayer.class, box, Player::isAlive)
                 .stream().mapToDouble(p -> p.distanceToSqr(maid)).min().orElse(Double.MAX_VALUE);
-    }
-
-    /** 按距附近玩家距离排序，最近的先发言 */
-    private static List<EntityMaid> sortByPlayerDistance(EntityMaid a, EntityMaid b) {
-        double aDist = nearestPlayerDist(a);
-        double bDist = nearestPlayerDist(b);
-        return aDist <= bDist ? List.of(a, b) : List.of(b, a);
-    }
-
-    private static String buildInitPrompt(EntityMaid speaker, EntityMaid other) {
-        String setting = getCharacterSetting(speaker);
-        return setting + "\n\n你看到了" + other.getDisplayName().getString()
-                + "。请和她聊几句。说一句简短自然的话主动发起对话。"
-                + "直接说话即可，不要加动作描写、括号注释或任何格式标记。" +
-                " 注意：游戏数据中的英文地名、物品名请转换为中文MC玩家熟知的名词。" +
-                " 偶尔可以使用颜文字增加趣味，但不要每句都用。";
     }
 }
