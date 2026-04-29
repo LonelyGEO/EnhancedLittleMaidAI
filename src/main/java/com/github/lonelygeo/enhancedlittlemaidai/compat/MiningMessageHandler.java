@@ -104,6 +104,7 @@ public final class MiningMessageHandler {
             case ORE_UNREACHABLE -> "发现了" + ore + "，但是无法到达。";
             case INVENTORY_FULL -> "背包已满，无法继续采矿。";
             case NO_TORCH -> "需要火把，但是已经没有火把了。";
+            case COMBAT_DETECTED -> "采矿时遭遇了敌对生物。";
         };
     }
 }
