@@ -179,7 +179,8 @@ public class ProactiveChatCallback extends LLMCallback {
 
                 可选话题：关心主人状态、评论环境或天气、分享你注意到的事情、询问是否需要帮助。
                 注意：你是在主动发起对话，不要回应任何人的话。
-                注意：游戏数据中的英文地名、物品名，请转换为中文Minecraft玩家熟知的名词。例如：wooded badlands → 繁茂的恶地，iron_ore → 铁矿石。""",
+                注意：游戏数据中的英文地名、物品名，请转换为中文Minecraft玩家熟知的名词。例如：wooded badlands → 繁茂的恶地，iron_ore → 铁矿石。
+                偶尔可以使用颜文字增加趣味，但不要每句都用。""",
                 characterSetting, biome, weather, timeOfDay, eventLine, memoryContext, socialMemoryContext);
     }
 
