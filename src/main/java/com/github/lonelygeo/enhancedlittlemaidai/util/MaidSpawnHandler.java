@@ -45,6 +45,11 @@ public final class MaidSpawnHandler {
 
         if (!LLMUtil.isAvailable(maid)) return;
 
+        if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.debug(
+                    "MaidSpawn: Maid {} joined, LLM available", maid.getUUID());
+        }
+
         MaidAIChatManager chatManager = maid.getAiChatManager();
         LLMClient client = chatManager.getLLMSite().client();
 
@@ -55,8 +60,16 @@ public final class MaidSpawnHandler {
                 || chatManager.getSetting().isPresent();
 
         if (hasSetting) {
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "MaidSpawn: Maid {} has existing setting, generating greeting", maid.getUUID());
+            }
             sendGreeting(chatManager, client, maid);
         } else {
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "MaidSpawn: Maid {} has no setting, auto-generating + greeting", maid.getUUID());
+            }
             genSetting(chatManager, client, maid, 0);
         }
     }
@@ -143,6 +156,11 @@ public final class MaidSpawnHandler {
                 if (StringUtils.isBlank(text)) return;
                 maid.getChatBubbleManager().addLLMChatText(text, bubbleId);
                 broadcastToPlayers(maid, text);
+                if (EnhancedConfig.debugLog()) {
+                    EnhancedLittleMaidAI.LOGGER.info(
+                            "MaidSpawn: Greeting delivered for maid {}: {}",
+                            maid.getUUID(), text.substring(0, Math.min(60, text.length())));
+                }
             }
 
             @Override
