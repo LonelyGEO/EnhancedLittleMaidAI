@@ -99,6 +99,9 @@
     "config.enhancedlittlemaidai.debug.debugLog": "Debug Log",
     "config.enhancedlittlemaidai.debug.debugLog.tooltip": "Enable detailed debug output to log file",
 
+    "config.enhancedlittlemaidai.debug.enableMaidGreeting": "Maid Spawn Greeting",
+    "config.enhancedlittlemaidai.debug.enableMaidGreeting.tooltip": "Auto-generate character setting and greet upon maid placement",
+
     "context.enhancedlittlemaidai.food": "Food Level",
     "context.enhancedlittlemaidai.tool_durability": "Tool Durability",
     "context.enhancedlittlemaidai.nearby_players": "Nearby Players"

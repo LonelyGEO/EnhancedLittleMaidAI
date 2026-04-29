@@ -61,6 +61,7 @@ public class EnhancedConfig {
     // === [debug] 调试 ===
     public static ModConfigSpec.BooleanValue DEBUG_LOG;
     public static ModConfigSpec.BooleanValue ENABLE_MINING_CHAT;
+    public static ModConfigSpec.BooleanValue ENABLE_MAID_GREETING;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -272,6 +273,10 @@ public class EnhancedConfig {
         ENABLE_MINING_CHAT = builder
                 .comment("启用 LLM 接管采矿消息（替代 MLM 硬编码文本，需 MiningLittleMaid 模组）")
                 .define("enableMiningChat", true);
+
+        ENABLE_MAID_GREETING = builder
+                .comment("女仆放置时如果LLM启用则自动生成角色设定并见面问候")
+                .define("enableMaidGreeting", true);
 
         builder.pop();
 

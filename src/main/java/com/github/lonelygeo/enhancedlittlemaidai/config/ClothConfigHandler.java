@@ -467,6 +467,15 @@ public final class ClothConfigHandler {
 
         debugSub.add(entryBuilder
                 .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.debug.enableMaidGreeting"),
+                        EnhancedConfig.ENABLE_MAID_GREETING.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.debug.enableMaidGreeting.tooltip"))
+                .setSaveConsumer(EnhancedConfig.ENABLE_MAID_GREETING::set)
+                .build());
+
+        debugSub.add(entryBuilder
+                .startBooleanToggle(
                         Component.translatable("config.enhancedlittlemaidai.debug.debugLog"),
                         EnhancedConfig.DEBUG_LOG.get())
                 .setDefaultValue(false)

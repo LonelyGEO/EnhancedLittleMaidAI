@@ -4,6 +4,7 @@ import com.github.lonelygeo.enhancedlittlemaidai.command.MindPalaceCommand;
 import com.github.lonelygeo.enhancedlittlemaidai.compat.MiningCompat;
 import com.github.lonelygeo.enhancedlittlemaidai.config.ClothConfigIntegration;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
+import com.github.lonelygeo.enhancedlittlemaidai.util.MaidSpawnHandler;
 import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -23,6 +24,7 @@ public class EnhancedLittleMaidAI {
         LOGGER.info("Enhanced Little Maid AI addon loaded.");
         modContainer.registerConfig(ModConfig.Type.COMMON, EnhancedConfig.SPEC);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
+        NeoForge.EVENT_BUS.register(MaidSpawnHandler.class);
         ClothConfigIntegration.registerIfAvailable();
         registerMiningMessageHandlerIfAvailable();
         registerStorageMemoryHandlerIfAvailable();

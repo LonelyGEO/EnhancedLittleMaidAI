@@ -99,6 +99,9 @@
     "config.enhancedlittlemaidai.debug.debugLog": "调试日志",
     "config.enhancedlittlemaidai.debug.debugLog.tooltip": "开启后输出详细运行信息到日志文件",
 
+    "config.enhancedlittlemaidai.debug.enableMaidGreeting": "女仆放置问候",
+    "config.enhancedlittlemaidai.debug.enableMaidGreeting.tooltip": "女仆放置时自动生成角色设定并发出见面问候",
+
     "context.enhancedlittlemaidai.food": "饥饿值",
     "context.enhancedlittlemaidai.tool_durability": "工具耐久",
     "context.enhancedlittlemaidai.nearby_players": "附近玩家"
