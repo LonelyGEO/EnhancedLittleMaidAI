@@ -7,7 +7,6 @@ import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
 import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidChatCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidDecisionCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatCallback;
-import com.github.lonelygeo.enhancedlittlemaidai.util.ReasoningContentStore;
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
@@ -68,9 +67,9 @@ public abstract class LLMCallbackMixin {
             Message choice, LLMClient client
     ) {
         String rawContent = StringUtils.defaultString(choice.getContent());
-        String reasoningContent = ReasoningContentStore.getFromMessage(choice);
-        target.addAssistantHistory(rawContent, toolCalls, reasoningContent);
-        setReasoningOnLastEntry(target, reasoningContent);
+        String reasoningContent = StringUtils.defaultString(choice.getReasoningContent());
+        target.addAssistantHistory(rawContent, toolCalls,
+                StringUtils.isNotBlank(reasoningContent) ? reasoningContent : null);
     }
 
     @Redirect(
@@ -90,23 +89,9 @@ public abstract class LLMCallbackMixin {
             Message choice, LLMClient client
     ) {
         String rawContent = StringUtils.defaultString(choice.getContent());
-        String reasoningContent = ReasoningContentStore.getFromMessage(choice);
-        LLMMessage result = LLMMessage.assistantChat(maid, rawContent, toolCalls, reasoningContent);
-        ReasoningContentStore.put(result, reasoningContent);
-        return result;
-    }
-
-    @Unique
-    private static void setReasoningOnLastEntry(MaidAIChatData chatData, String reasoningContent) {
-        if (StringUtils.isNotBlank(reasoningContent)) {
-            try {
-                LLMMessage lastMsg = chatData.getHistory().getDeque().peekLast();
-                if (lastMsg != null) {
-                    ReasoningContentStore.put(lastMsg, reasoningContent);
-                }
-            } catch (Exception ignored) {
-            }
-        }
+        String reasoningContent = StringUtils.defaultString(choice.getReasoningContent());
+        return LLMMessage.assistantChat(maid, rawContent, toolCalls,
+                StringUtils.isNotBlank(reasoningContent) ? reasoningContent : null);
     }
 
     // ==================== 记忆提取 ====================

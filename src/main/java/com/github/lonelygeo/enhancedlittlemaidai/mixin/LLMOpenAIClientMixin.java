@@ -1,7 +1,6 @@
 package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
 import com.github.lonelygeo.enhancedlittlemaidai.util.LLMResponseCache;
-import com.github.lonelygeo.enhancedlittlemaidai.util.ReasoningContentStore;
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
@@ -28,8 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * 为 LLMOpenAIClient 注入 reasoningContent 支持。
- * 不依赖 Mixin 字段 — 直接在 JSON 层面注入 reasoning_content。
+ * LLM 响应缓存 + reasoning_content JSON 注入。
+ * TLM 已内置 reasoningContent 存储（LLMMessage record 字段），此处仅负责 JSON 回传。
  */
 @Mixin(value = LLMOpenAIClient.class, remap = false)
 public abstract class LLMOpenAIClientMixin {
@@ -67,9 +66,6 @@ public abstract class LLMOpenAIClientMixin {
         }
     }
 
-    /**
-     * 拦截 Gson.toJson，JSON 序列化后注入 reasoning_content 字段。
-     */
     @Redirect(
             method = "chat",
             at = @At(value = "INVOKE", target = "Lcom/google/gson/Gson;toJson(Ljava/lang/Object;)Ljava/lang/String;"),
@@ -96,25 +92,18 @@ public abstract class LLMOpenAIClientMixin {
         }
     }
 
-    /**
-     * 在 onTextCall 中记录 reasoningContent 到历史。
-     */
     @Inject(method = "onTextCall", at = @At("HEAD"), remap = false)
     private void enhanced$onTextCall(ResponseCallback<ResponseChat> callback, Message firstChoice, CallbackInfo ci) {
         if (callback instanceof LLMCallback llmCallback && llmCallback.needAddTools) {
             String rawContent = StringUtils.defaultString(firstChoice.getContent());
-            String reasoningContent = ReasoningContentStore.getFromMessage(firstChoice);
-            llmCallback.getChatManager().addAssistantHistory(rawContent, reasoningContent);
-            storeReasoningContent(llmCallback, reasoningContent);
-            if (EnhancedConfig.debugLog() && reasoningContent != null) {
+            String reasoningContent = StringUtils.defaultString(firstChoice.getReasoningContent());
+            llmCallback.getChatManager().addAssistantHistory(rawContent, StringUtils.isNotBlank(reasoningContent) ? reasoningContent : null);
+            if (EnhancedConfig.debugLog() && StringUtils.isNotBlank(reasoningContent)) {
                 EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: Extracted reasoningContent from LLM response");
             }
         }
     }
 
-    /**
-     * 在 onTextCall 尾部，将 LLM 回复存入缓存供后续重用。
-     */
     @Inject(method = "onTextCall", at = @At("TAIL"), remap = false)
     private void enhanced$cacheOnTextCall(ResponseCallback<ResponseChat> callback, Message firstChoice,
                                            CallbackInfo ci) {
@@ -132,9 +121,6 @@ public abstract class LLMOpenAIClientMixin {
         }
     }
 
-    /**
-     * 在已有 JSON 的基础上，为 ASSISTANT 消息注入 reasoning_content 字段。
-     */
     @Unique
     private static String injectReasoningContent(String json, List<LLMMessage> llmMessages) {
         try {
@@ -157,8 +143,7 @@ public abstract class LLMOpenAIClientMixin {
                 String role = msgObj.has("role") ? msgObj.get("role").getAsString() : "";
 
                 if (llmMsg.role() == Role.ASSISTANT && "assistant".equals(role)) {
-                    String rc = ReasoningContentStore.get(llmMsg);
-                    if (rc == null) rc = llmMsg.reasoningContent();
+                    String rc = llmMsg.reasoningContent();
                     if (StringUtils.isNotBlank(rc)) {
                         msgObj.addProperty("reasoning_content", rc);
                     }
@@ -168,21 +153,7 @@ public abstract class LLMOpenAIClientMixin {
 
             return new Gson().toJson(root);
         } catch (Exception e) {
-            // Silently fall back to unmodified JSON
             return json;
-        }
-    }
-
-    @Unique
-    private static void storeReasoningContent(LLMCallback callback, String reasoningContent) {
-        if (StringUtils.isNotBlank(reasoningContent)) {
-            List<LLMMessage> messages = callback.getMessages();
-            if (!messages.isEmpty()) {
-                LLMMessage lastMsg = messages.get(messages.size() - 1);
-                if (lastMsg.role() == Role.ASSISTANT) {
-                    ReasoningContentStore.put(lastMsg, reasoningContent);
-                }
-            }
         }
     }
 }
