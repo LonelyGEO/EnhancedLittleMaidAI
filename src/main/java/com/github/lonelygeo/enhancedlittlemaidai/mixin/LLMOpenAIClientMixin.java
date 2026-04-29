@@ -158,6 +158,7 @@ public abstract class LLMOpenAIClientMixin {
 
                 if (llmMsg.role() == Role.ASSISTANT && "assistant".equals(role)) {
                     String rc = ReasoningContentStore.get(llmMsg);
+                    if (rc == null) rc = llmMsg.reasoningContent();
                     if (StringUtils.isNotBlank(rc)) {
                         msgObj.addProperty("reasoning_content", rc);
                     }
