@@ -14,6 +14,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -104,7 +105,29 @@ public final class MiningMessageHandler {
             case ORE_UNREACHABLE -> "发现了" + ore + "，但是无法到达。";
             case INVENTORY_FULL -> "背包已满，无法继续采矿。";
             case NO_TORCH -> "需要火把，但是已经没有火把了。";
-            case COMBAT_DETECTED -> "采矿时遭遇了敌对生物。";
+            case COMBAT_DETECTED -> buildCombatSituation(event);
         };
+    }
+
+    private static String buildCombatSituation(MiningMessageEvent event) {
+        String ore = event.getOreName();
+        Map<String, Object> ctx = event.getContext();
+
+        // 尝试从 context 中提取敌对生物信息
+        String mobInfo = "";
+        if (ctx != null) {
+            Object mobName = ctx.get("entity_name");
+            if (mobName != null) {
+                mobInfo = "，遇到了" + mobName;
+            } else {
+                Object mobType = ctx.get("entity_type");
+                if (mobType != null) mobInfo = "，遇到了" + mobType;
+            }
+        }
+
+        if (ore != null && !ore.isEmpty()) {
+            return "正在挖掘" + ore + "时遭遇了敌对生物" + mobInfo + "。";
+        }
+        return "采矿时遭遇了敌对生物" + mobInfo + "。";
     }
 }
