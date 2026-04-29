@@ -128,6 +128,8 @@ public abstract class EntityMaidMixin {
                     InterMaidChatManager.resetGlobalDayCount();
                 }
 
+                if (!isLLMAvailable(maid)) return;
+
                 int eventCount = EnvironmentEventDetector.getEventCount(uuid);
                 if (eventCount >= EnhancedConfig.EVENT_MAX_PER_DAY.get()) return;
                 if (!EnvironmentEventDetector.canTriggerEvent(uuid, gameTime,
@@ -150,6 +152,8 @@ public abstract class EntityMaidMixin {
             // ====== 多女仆对话 ======
             UUID uuid = maid.getUUID();
             long gameTime = maid.level().getGameTime();
+
+            if (!isLLMAvailable(maid)) return;
 
             // B 侧：检查 pending proposal
             UUID proposerUuid = InterMaidChatManager.getProposer(uuid);
@@ -272,6 +276,15 @@ public abstract class EntityMaidMixin {
             return e;
         }
         return null;
+    }
+
+    /** 检查女仆的 LLM 站点是否可用 */
+    private static boolean isLLMAvailable(EntityMaid maid) {
+        try {
+            return maid.getAiChatManager().getLLMSite().enabled();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     // === import for Nullable ===
