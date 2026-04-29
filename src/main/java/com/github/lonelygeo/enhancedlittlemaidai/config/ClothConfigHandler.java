@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.config;
 
 import com.github.lonelygeo.enhancedlittlemaidai.compat.MiningCompat;
+import com.github.lonelygeo.enhancedlittlemaidai.compat.StorageCompat;
 import com.github.tartaricacid.touhoulittlemaid.api.event.client.AddClothConfigEvent;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
@@ -387,6 +388,55 @@ public final class ClothConfigHandler {
                 .build());
 
         category.addEntry(interMaidSub.build());
+
+        // ========== 仓储感知（仅 MSM 加载时显示） ==========
+        if (StorageCompat.isLoaded()) {
+            SubCategoryBuilder storageSub = entryBuilder.startSubCategory(
+                    Component.translatable("config.enhancedlittlemaidai.sub.storage"));
+            storageSub.setExpanded(false);
+
+            storageSub.add(entryBuilder
+                    .startBooleanToggle(
+                            Component.translatable("config.enhancedlittlemaidai.storage.enableStorageMemory"),
+                            EnhancedConfig.ENABLE_STORAGE_MEMORY.get())
+                    .setDefaultValue(true)
+                    .setTooltip(Component.translatable(
+                            "config.enhancedlittlemaidai.storage.enableStorageMemory.tooltip"))
+                    .setSaveConsumer(EnhancedConfig.ENABLE_STORAGE_MEMORY::set)
+                    .build());
+
+            storageSub.add(entryBuilder
+                    .startIntSlider(
+                            Component.translatable("config.enhancedlittlemaidai.storage.maxStoragePositions"),
+                            EnhancedConfig.STORAGE_MAX_POSITIONS.get(), 3, 30)
+                    .setDefaultValue(10)
+                    .setTooltip(Component.translatable(
+                            "config.enhancedlittlemaidai.storage.maxStoragePositions.tooltip"))
+                    .setSaveConsumer(EnhancedConfig.STORAGE_MAX_POSITIONS::set)
+                    .build());
+
+            storageSub.add(entryBuilder
+                    .startIntSlider(
+                            Component.translatable("config.enhancedlittlemaidai.storage.maxItemsPerStorage"),
+                            EnhancedConfig.STORAGE_MAX_ITEMS_PER_POS.get(), 3, 20)
+                    .setDefaultValue(8)
+                    .setTooltip(Component.translatable(
+                            "config.enhancedlittlemaidai.storage.maxItemsPerStorage.tooltip"))
+                    .setSaveConsumer(EnhancedConfig.STORAGE_MAX_ITEMS_PER_POS::set)
+                    .build());
+
+            storageSub.add(entryBuilder
+                    .startIntSlider(
+                            Component.translatable("config.enhancedlittlemaidai.storage.maxItemsSummary"),
+                            EnhancedConfig.STORAGE_MAX_ITEMS_SUMMARY.get(), 5, 50)
+                    .setDefaultValue(15)
+                    .setTooltip(Component.translatable(
+                            "config.enhancedlittlemaidai.storage.maxItemsSummary.tooltip"))
+                    .setSaveConsumer(EnhancedConfig.STORAGE_MAX_ITEMS_SUMMARY::set)
+                    .build());
+
+            category.addEntry(storageSub.build());
+        }
 
         // ========== 调试 ==========
         SubCategoryBuilder debugSub = entryBuilder.startSubCategory(

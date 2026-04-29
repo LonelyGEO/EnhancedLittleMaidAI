@@ -25,6 +25,7 @@ public class EnhancedLittleMaidAI {
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
         ClothConfigIntegration.registerIfAvailable();
         registerMiningMessageHandlerIfAvailable();
+        registerStorageMemoryHandlerIfAvailable();
     }
 
     @SubscribeEvent
@@ -40,6 +41,17 @@ public class EnhancedLittleMaidAI {
             handlerClass.getMethod("register").invoke(null);
         } catch (Exception e) {
             LOGGER.debug("EnhancedLittleMaidAI: MiningMessageHandler not available");
+        }
+    }
+
+    private static void registerStorageMemoryHandlerIfAvailable() {
+        if (!com.github.lonelygeo.enhancedlittlemaidai.compat.StorageCompat.isLoaded()) return;
+        try {
+            Class<?> handlerClass = Class.forName(
+                    "com.github.lonelygeo.enhancedlittlemaidai.compat.StorageMemoryHandler");
+            handlerClass.getMethod("register").invoke(null);
+        } catch (Exception e) {
+            LOGGER.debug("EnhancedLittleMaidAI: StorageMemoryHandler not available");
         }
     }
 }

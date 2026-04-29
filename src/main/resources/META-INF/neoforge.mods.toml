@@ -41,3 +41,10 @@ issueTrackerURL = "https://github.com/TartaricAcid/TouhouLittleMaid/issues"
     versionRange = "[0.6.0,]"
     ordering = "AFTER"
     side = "BOTH"
+
+[[dependencies."${mod_id}"]]
+    modId = "maid_storage_manager"
+    type = "optional"
+    versionRange = "[1.15.0,]"
+    ordering = "AFTER"
+    side = "BOTH"

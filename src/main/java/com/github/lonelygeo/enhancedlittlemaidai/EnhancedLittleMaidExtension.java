@@ -1,9 +1,11 @@
 package com.github.lonelygeo.enhancedlittlemaidai;
 
 import com.github.lonelygeo.enhancedlittlemaidai.compat.MiningCompat;
+import com.github.lonelygeo.enhancedlittlemaidai.compat.StorageCompat;
 import com.github.lonelygeo.enhancedlittlemaidai.context.BlockAwareContexts;
 import com.github.lonelygeo.enhancedlittlemaidai.context.MiningContextProvider;
 import com.github.lonelygeo.enhancedlittlemaidai.context.ContextProviders;
+import com.github.lonelygeo.enhancedlittlemaidai.context.StorageContextProvider;
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.tartaricacid.touhoulittlemaid.api.ILittleMaid;
 import com.github.tartaricacid.touhoulittlemaid.api.LittleMaidExtension;
@@ -41,8 +43,19 @@ public class EnhancedLittleMaidExtension implements ILittleMaid {
             register.registerContext("mining_info", MiningContextProvider.createMiningStatusContext());
         }
 
+        if (StorageCompat.isLoaded()) {
+            register.registerCategory("inventory",
+                    "Storage inventory info: nearby containers and their contents",
+                    false);
+            register.registerContext("inventory",
+                    StorageContextProvider.createNearbyStorageContext());
+            register.registerContext("inventory",
+                    StorageContextProvider.createStorageSummaryContext());
+        }
+
         EnhancedLittleMaidAI.LOGGER.info(
-                "EnhancedLittleMaidAI: Registered context categories — nearby_blocks, environment_detail, nearby_entities{}",
-                MiningCompat.isLoaded() ? ", mining_info" : "");
+                "EnhancedLittleMaidAI: Registered context categories — nearby_blocks, environment_detail, nearby_entities{}{}",
+                MiningCompat.isLoaded() ? ", mining_info" : "",
+                StorageCompat.isLoaded() ? ", inventory" : "");
     }
 }
