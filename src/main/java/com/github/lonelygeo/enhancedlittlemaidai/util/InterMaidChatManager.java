@@ -9,6 +9,7 @@ import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -24,6 +25,8 @@ public final class InterMaidChatManager {
     // 同对冷却: key = "sorted_UUIDa|UUIDb"
     private static final Map<String, Long> PAIR_COOLDOWNS =
             Collections.synchronizedMap(new HashMap<>());
+    private static final Map<UUID, Long> INITIAL_SCAN_DELAYS =
+            new ConcurrentHashMap<>();
     // 每女仆每日计数
     private static final Map<UUID, Integer> DAY_COUNTS =
             Collections.synchronizedMap(new HashMap<>());
@@ -217,6 +220,11 @@ public final class InterMaidChatManager {
         if (BUSY.contains(maid.getUUID())) return false;
 
         UUID uuid = maid.getUUID();
+
+        // 启动抖动：首次放置后随机延迟 0-600 tick
+        long delay = INITIAL_SCAN_DELAYS.computeIfAbsent(uuid,
+                k -> gameTime + (long) (Math.random() * 600));
+        if (gameTime < delay) return false;
         if (DAY_COUNTS.getOrDefault(uuid, 0) >= EnhancedConfig.INTER_MAID_MAX_PER_DAY.get()) return false;
         if (globalDayCount.get() >= EnhancedConfig.INTER_MAID_MAX_GLOBAL_PER_DAY.get()) return false;
 
@@ -333,6 +341,7 @@ public final class InterMaidChatManager {
             return parts.length == 2 && (parts[0].equals(id) || parts[1].equals(id));
         });
         DAY_COUNTS.remove(uuid);
+        INITIAL_SCAN_DELAYS.remove(uuid);
         PENDING_PROPOSALS.remove(uuid);
         BUSY.remove(uuid);
     }

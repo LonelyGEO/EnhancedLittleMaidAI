@@ -166,9 +166,9 @@ public abstract class EntityMaidMixin {
                 }
             }
 
-            // A 侧：降频扫描附近女仆
+            // A 侧：降频概率扫描附近女仆
             int interval = EnhancedConfig.INTER_MAID_SCAN_INTERVAL.get();
-            if (gameTime % interval == Math.floorMod(uuid.hashCode(), interval)) {
+            if (gameTime % interval == 0 && Math.random() < 0.15) {
                 if (InterMaidChatManager.canScan(maid, gameTime)) {
                     int maxGroup = EnhancedConfig.INTER_MAID_MAX_GROUP_SIZE.get();
                     List<EntityMaid> partners = InterMaidChatManager.findPartners(maid, maxGroup);

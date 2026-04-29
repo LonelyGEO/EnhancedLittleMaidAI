@@ -36,7 +36,6 @@ public final class MaidSpawnHandler {
         Entity entity = event.getEntity();
         if (!(entity instanceof EntityMaid maid)) return;
         if (maid.level().isClientSide()) return;
-        if (!maid.isTame()) return;
         if (maid.isRemoved()) return;
 
         if (!LLMUtil.isAvailable(maid)) return;
