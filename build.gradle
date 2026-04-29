@@ -83,8 +83,8 @@ dependencies {
     // MaidStorageManager 联动（编译时引用 API，运行时 optional）
     compileOnly files("libs/1.21.1-maid_storage_manager-1.15.6.jar")
 
-    // Cloth Config 联动（编译+开发运行时，生产环境由 TLM 提供）
-    implementation files("libs/cloth-config-neoforge-15.0.140.jar")
+    // Cloth Config 联动（仅编译时，运行时由 TLM 提供）
+    compileOnly files("libs/cloth-config-neoforge-15.0.140.jar")
 
     // 单元测试
     testImplementation 'junit:junit:4.13.2'

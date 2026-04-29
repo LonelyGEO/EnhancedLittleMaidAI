@@ -8,6 +8,8 @@ import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import me.shedaniel.clothconfig2.impl.builders.SubCategoryBuilder;
 import net.minecraft.network.chat.Component;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
@@ -15,7 +17,9 @@ import net.neoforged.neoforge.common.NeoForge;
  * Cloth Config 实际事件处理器。
  * 仅在 cloth_config 已加载时由 ClothConfigIntegration 通过反射实例化。
  * 直接引用 Cloth Config API 类，避免主类 ClothConfigIntegration 因缺少 Cloth Config 类而加载失败。
+ * 仅客户端加载，纯服务端跳过。
  */
+@OnlyIn(Dist.CLIENT)
 public final class ClothConfigHandler {
 
     private ClothConfigHandler() {
