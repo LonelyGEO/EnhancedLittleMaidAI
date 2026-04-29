@@ -69,7 +69,7 @@ public abstract class LLMCallbackMixin {
     ) {
         String rawContent = StringUtils.defaultString(choice.getContent());
         String reasoningContent = ReasoningContentStore.getFromMessage(choice);
-        target.addAssistantHistory(rawContent, toolCalls);
+        target.addAssistantHistory(rawContent, toolCalls, reasoningContent);
         setReasoningOnLastEntry(target, reasoningContent);
     }
 
@@ -91,7 +91,7 @@ public abstract class LLMCallbackMixin {
     ) {
         String rawContent = StringUtils.defaultString(choice.getContent());
         String reasoningContent = ReasoningContentStore.getFromMessage(choice);
-        LLMMessage result = LLMMessage.assistantChat(maid, rawContent, toolCalls);
+        LLMMessage result = LLMMessage.assistantChat(maid, rawContent, toolCalls, reasoningContent);
         ReasoningContentStore.put(result, reasoningContent);
         return result;
     }
