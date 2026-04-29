@@ -8,11 +8,7 @@ import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import org.apache.commons.lang3.StringUtils;
@@ -145,8 +141,6 @@ public final class MaidSpawnHandler {
         LLMMessage userMsg = LLMMessage.userChat(maid, "（女仆苏醒问候）");
         List<LLMMessage> msgs = List.of(sysMsg, userMsg);
 
-        long bubbleId = maid.getChatBubbleManager().addThinkingText("...");
-
         client.chat(new LLMCallback(chatManager, msgs, true) {{
             needAddTools = false;
         }
@@ -154,8 +148,7 @@ public final class MaidSpawnHandler {
             public void onSuccess(ResponseChat responseChat) {
                 String text = responseChat.getChatText();
                 if (StringUtils.isBlank(text)) return;
-                maid.getChatBubbleManager().addLLMChatText(text, bubbleId);
-                broadcastToPlayers(maid, text);
+                maid.getChatBubbleManager().addTextChatBubble(text);
                 if (EnhancedConfig.debugLog()) {
                     EnhancedLittleMaidAI.LOGGER.info(
                             "MaidSpawn: Greeting delivered for maid {}: {}",
@@ -165,19 +158,10 @@ public final class MaidSpawnHandler {
 
             @Override
             public void onFailure(HttpRequest request, Throwable throwable, int errorCode) {
-                try {
-                    maid.getChatBubbleManager().removeChatBubble(bubbleId);
-                } catch (Exception ignored) {
-                }
+                EnhancedLittleMaidAI.LOGGER.warn(
+                        "MaidSpawn: Failed to greet maid {}", maid.getUUID());
             }
         });
-    }
-
-    private static String buildGreetingPrompt(EntityMaid maid) {
-        String setting = getCharacterSetting(maid);
-        return setting
-                + "\n\n[系统指令] 你刚刚苏醒，来到了一个新的世界。请用1句话向主人问候。直接说话即可。"
-                + " 偶尔可以使用颜文字增加趣味，但不要每句都用。";
     }
 
     private static String getCharacterSetting(EntityMaid maid) {
@@ -206,17 +190,10 @@ public final class MaidSpawnHandler {
         return maid.getDisplayName().getString() + "，一位女仆。";
     }
 
-    private static void broadcastToPlayers(EntityMaid maid, String text) {
-        try {
-            double range = EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.get();
-            AABB box = maid.getBoundingBox().inflate(range);
-            List<ServerPlayer> players = maid.level().getEntitiesOfClass(
-                    ServerPlayer.class, box, Player::isAlive);
-            Component msg = Component.literal("<" + maid.getDisplayName().getString() + "> " + text);
-            for (ServerPlayer p : players) {
-                p.sendSystemMessage(msg);
-            }
-        } catch (Exception ignored) {
-        }
+    private static String buildGreetingPrompt(EntityMaid maid) {
+        String setting = getCharacterSetting(maid);
+        return setting
+                + "\n\n[系统指令] 你刚刚苏醒，来到了一个新的世界。请用1句话向主人问候。"
+                + "只输出对话文本，严禁输出任何括号内的动作描述、旁白、心理活动。";
     }
 }

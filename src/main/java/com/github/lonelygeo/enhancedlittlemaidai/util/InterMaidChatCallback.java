@@ -29,7 +29,6 @@ public class InterMaidChatCallback extends LLMCallback {
     private final int totalRounds;
     private final Map<UUID, String> conversationHistory;
     private final MaidAIChatManager chatManager;
-    private long waitingBubbleId;
 
     public InterMaidChatCallback(
             MaidAIChatManager chatManager,
@@ -47,12 +46,7 @@ public class InterMaidChatCallback extends LLMCallback {
         this.conversationHistory = new LinkedHashMap<>();
     }
 
-    public void setWaitingBubbleId(long id) {
-        this.waitingBubbleId = id;
-    }
-
-    @Override
-    public void onSuccess(ResponseChat responseChat) {
+        public void onSuccess(ResponseChat responseChat) {
         try {
             String chatText = responseChat.getChatText();
             if (StringUtils.isBlank(chatText)) {
@@ -66,11 +60,7 @@ public class InterMaidChatCallback extends LLMCallback {
                 return;
             }
 
-            if (waitingBubbleId > 0) {
-                speaker.getChatBubbleManager().addLLMChatText(chatText, waitingBubbleId);
-            } else {
-                speaker.getChatBubbleManager().addTextChatBubble(chatText);
-            }
+            speaker.getChatBubbleManager().addTextChatBubble(chatText);
 
             conversationHistory.put(speaker.getUUID(), chatText);
             roundCount++;
@@ -81,7 +71,11 @@ public class InterMaidChatCallback extends LLMCallback {
             }
 
             speakerIndex++;
-            sendNextRound();
+            // 延迟下一轮，模拟自然对话节奏
+            new Thread(() -> {
+                try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+                sendNextRound();
+            }).start();
 
             if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.info(
@@ -111,14 +105,11 @@ public class InterMaidChatCallback extends LLMCallback {
         LLMMessage userMsg = LLMMessage.userChat(speaker, "（女仆间对话第" + (roundCount + 1) + "轮）");
         List<LLMMessage> msgs = List.of(sysMsg, userMsg);
 
-        long bubbleId = speaker.getChatBubbleManager().addThinkingText("...");
         LLMClient client = chatManager.getLLMSite().client();
         InterMaidChatCallback nextCb = new InterMaidChatCallback(
                 chatManager, msgs, participants, totalRounds);
         nextCb.speakerIndex = speakerIndex;
         nextCb.roundCount = roundCount;
-        nextCb.conversationHistory.putAll(conversationHistory);
-        nextCb.setWaitingBubbleId(bubbleId);
         client.chat(nextCb);
     }
 
@@ -184,7 +175,7 @@ public class InterMaidChatCallback extends LLMCallback {
         sb.append("聊几句。说一句简短自然的话主动发起对话。"
                 + "直接说话即可，不要加动作描写、括号注释或任何格式标记。" +
                 " 注意：游戏数据中的英文地名、物品名请转换为中文MC玩家熟知的名词。" +
-                " 偶尔可以使用颜文字增加趣味，但不要每句都用。");
+                " 只输出对话文本，严禁输出任何括号内的动作描述、旁白、心理活动。");
         return sb.toString();
     }
 
@@ -202,7 +193,7 @@ public class InterMaidChatCallback extends LLMCallback {
         sb.append("\n现在轮到你了。请简短自然地回应。"
                 + "直接说话即可，不要加动作描写、括号注释或任何格式标记。" +
                 " 注意：游戏数据中的英文地名、物品名请转换为中文MC玩家熟知的名词。" +
-                " 偶尔可以使用颜文字增加趣味，但不要每句都用。");
+                " 只输出对话文本，严禁输出任何括号内的动作描述、旁白、心理活动。");
         return sb.toString();
     }
 
@@ -257,10 +248,8 @@ public class InterMaidChatCallback extends LLMCallback {
         List<LLMMessage> msgs = List.of(sysMsg, userMsg);
 
         MaidAIChatManager mgr = first.getAiChatManager();
-        long bubbleId = first.getChatBubbleManager().addThinkingText("...");
         InterMaidChatCallback cb = new InterMaidChatCallback(
                 mgr, msgs, List.copyOf(participants), maxRounds);
-        cb.setWaitingBubbleId(bubbleId);
         mgr.getLLMSite().client().chat(cb);
     }
 
