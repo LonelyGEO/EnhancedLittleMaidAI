@@ -155,7 +155,6 @@ public class InterMaidChatCallback extends LLMCallback {
                         .findFirst().map(m -> m.getDisplayName().getString())
                         .orElse("某女仆");
 
-                // 双方都记录
                 MindPalace pa = MindPalace.getOrCreate(a.getUUID());
                 MindPalace pb = MindPalace.getOrCreate(b.getUUID());
                 String memA = "和" + b.getDisplayName().getString() + "聊天，"
@@ -168,6 +167,12 @@ public class InterMaidChatCallback extends LLMCallback {
 
             InterMaidChatManager.releaseBusy(a.getUUID(), b.getUUID());
             InterMaidChatManager.markTriggered(a.getUUID(), b.getUUID(), gameTime);
+
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.info(
+                        "InterMaidChat: Conversation finished {}↔{}, rounds completed={}/{}",
+                        a.getUUID(), b.getUUID(), roundCount, totalRounds);
+            }
         }
     }
 
@@ -272,6 +277,11 @@ public class InterMaidChatCallback extends LLMCallback {
      * 启动两女仆对话。由 EntityMaidMixin 调用。
      */
     public static void startConversation(EntityMaid maidA, EntityMaid maidB, int maxRounds) {
+        if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.info(
+                    "InterMaidChat: Starting conversation {} ↔ {}, rounds={}",
+                    maidA.getUUID(), maidB.getUUID(), maxRounds);
+        }
         List<EntityMaid> sorted = sortByPlayerDistance(maidA, maidB);
         InterMaidChatManager.markBusy(sorted.get(0).getUUID(), sorted.get(1).getUUID());
 

@@ -45,6 +45,7 @@ public final class ProactiveChatManager {
      * @return true 可以触发主动聊天
      */
     public static boolean canTrigger(EntityMaid maid) {
+        if (!EnhancedConfig.PROACTIVE_CHAT_ENABLED.get()) return false;
         if (maid.level().isClientSide()) return false;
         if (maid.isRemoved()) return false;
 

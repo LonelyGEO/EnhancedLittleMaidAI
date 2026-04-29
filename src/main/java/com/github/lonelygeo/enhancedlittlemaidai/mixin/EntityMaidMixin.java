@@ -236,6 +236,11 @@ public abstract class EntityMaidMixin {
 
         String decisionMode = EnhancedConfig.INTER_MAID_DECISION_MODE.get();
         if ("LLM".equals(decisionMode)) {
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.info(
+                        "InterMaidChat: B {} asking LLM to decide on proposal from {}",
+                        b.getUUID(), a.getUUID());
+            }
             String prompt = InterMaidDecisionCallback.buildDecisionPrompt(b, a);
             LLMMessage sysMsg = LLMMessage.systemChat(b, prompt);
             LLMMessage userMsg = LLMMessage.userChat(b, "（接受聊天请求）");
@@ -247,6 +252,10 @@ public abstract class EntityMaidMixin {
             // WEIGHT mode
             if (InterMaidChatManager.decideByWeight(b, a)) {
                 InterMaidChatManager.clearProposal(b.getUUID());
+                if (EnhancedConfig.debugLog()) {
+                    EnhancedLittleMaidAI.LOGGER.info(
+                            "InterMaidChat: WEIGHT accept {} ← {}", b.getUUID(), a.getUUID());
+                }
                 InterMaidChatCallback.startConversation(a, b,
                         EnhancedConfig.INTER_MAID_MAX_ROUNDS.get());
             } else {

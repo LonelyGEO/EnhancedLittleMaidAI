@@ -17,6 +17,7 @@ public class EnhancedConfig {
     public static ModConfigSpec.IntValue SEMANTIC_RETRIEVE_TOP_K;
 
     // === [proactive_chat] 主动聊天 ===
+    public static ModConfigSpec.BooleanValue PROACTIVE_CHAT_ENABLED;
     public static ModConfigSpec.IntValue COOLDOWN_TICKS;
     public static ModConfigSpec.DoubleValue TRIGGER_CHANCE_PER_TICK;
     public static ModConfigSpec.IntValue MAX_CHATS_PER_DAY;
@@ -47,6 +48,12 @@ public class EnhancedConfig {
     public static ModConfigSpec.IntValue SOCIAL_MEMORY_TOP_K;
     public static ModConfigSpec.IntValue SOCIAL_STORE_MAX_SIZE;
     public static ModConfigSpec.IntValue SOCIAL_MEMORY_COMPRESS_TRIGGER;
+
+    // === [storage_context] 存储感知 ===
+    public static ModConfigSpec.BooleanValue ENABLE_STORAGE_MEMORY;
+    public static ModConfigSpec.IntValue STORAGE_MAX_POSITIONS;
+    public static ModConfigSpec.IntValue STORAGE_MAX_ITEMS_PER_POS;
+    public static ModConfigSpec.IntValue STORAGE_MAX_ITEMS_SUMMARY;
 
     // === [debug] 调试 ===
     public static ModConfigSpec.BooleanValue DEBUG_LOG;
@@ -96,6 +103,10 @@ public class EnhancedConfig {
 
         // ========== proactive_chat ==========
         builder.push("proactive_chat");
+
+        PROACTIVE_CHAT_ENABLED = builder
+                .comment("是否启用女仆主动聊天")
+                .define("enabled", true);
 
         COOLDOWN_TICKS = builder
                 .comment("两次主动聊天之间的冷却时间（tick）")
@@ -211,6 +222,28 @@ public class EnhancedConfig {
         SOCIAL_MEMORY_COMPRESS_TRIGGER = builder
                 .comment("触发社交记忆压缩的阈值")
                 .defineInRange("socialMemoryCompressTrigger", 40, 10, 200);
+
+        builder.pop();
+
+        // ========== storage_context ==========
+        builder.push("storage_context");
+        builder.comment("仓储感知配置（需 MaidStorageManager 模组，无 MSM 时仅影响回退 BFS 扫描）");
+
+        ENABLE_STORAGE_MEMORY = builder
+                .comment("是否将储物操作自动写入 MindPalace 记忆")
+                .define("enableStorageMemory", true);
+
+        STORAGE_MAX_POSITIONS = builder
+                .comment("附近存储上下文最多显示的位置数")
+                .defineInRange("maxStoragePositions", 10, 3, 30);
+
+        STORAGE_MAX_ITEMS_PER_POS = builder
+                .comment("每个存储位置最多显示的物品种类数")
+                .defineInRange("maxItemsPerStorage", 8, 3, 20);
+
+        STORAGE_MAX_ITEMS_SUMMARY = builder
+                .comment("库存摘要最多显示的物品种类数")
+                .defineInRange("maxItemsSummary", 15, 5, 50);
 
         builder.pop();
 

@@ -5,6 +5,7 @@
     "config.enhancedlittlemaidai.sub.proactive": "主动聊天",
     "config.enhancedlittlemaidai.sub.context": "上下文感知",
     "config.enhancedlittlemaidai.sub.interMaid": "女仆社交",
+    "config.enhancedlittlemaidai.sub.storage": "仓储感知",
     "config.enhancedlittlemaidai.sub.debug": "调试",
 
     "config.enhancedlittlemaidai.memory.maxMemories": "最大记忆数量",
@@ -18,6 +19,8 @@
     "config.enhancedlittlemaidai.memory.targetSummaries": "压缩摘要上限",
     "config.enhancedlittlemaidai.memory.targetSummaries.tooltip": "压缩后 LLM 最多生成的摘要数量",
 
+    "config.enhancedlittlemaidai.proactive.enabled": "启用主动聊天",
+    "config.enhancedlittlemaidai.proactive.enabled.tooltip": "关闭后女仆不会主动发起对话",
     "config.enhancedlittlemaidai.proactive.cooldownTicks": "冷却时间 (秒)",
     "config.enhancedlittlemaidai.proactive.cooldownTicks.tooltip": "两次主动聊天之间的最小间隔，600 = 10 分钟",
     "config.enhancedlittlemaidai.proactive.triggerChance": "触发概率 (每 tick)",
@@ -77,6 +80,14 @@
     "config.enhancedlittlemaidai.interMaid.socialCompressTrigger": "社交记忆压缩阈值",
     "config.enhancedlittlemaidai.interMaid.socialCompressTrigger.tooltip": "社交记忆数量达到此值时触发压缩",
 
+    "config.enhancedlittlemaidai.storage.enableStorageMemory": "储物记忆写入",
+    "config.enhancedlittlemaidai.storage.enableStorageMemory.tooltip": "女仆取物/存物完成后自动写入 MindPalace 记忆",
+    "config.enhancedlittlemaidai.storage.maxStoragePositions": "最大存储位置数",
+    "config.enhancedlittlemaidai.storage.maxStoragePositions.tooltip": "附近存储上下文中最多显示多少个容器位置",
+    "config.enhancedlittlemaidai.storage.maxItemsPerStorage": "每个位置最大物品数",
+    "config.enhancedlittlemaidai.storage.maxItemsPerStorage.tooltip": "每个存储位置最多显示多少种物品",
+    "config.enhancedlittlemaidai.storage.maxItemsSummary": "摘要最大物品数",
+    "config.enhancedlittlemaidai.storage.maxItemsSummary.tooltip": "库存摘要中最多显示多少种物品",
 
     "config.enhancedlittlemaidai.debug.debugLog": "调试日志",
     "config.enhancedlittlemaidai.debug.debugLog.tooltip": "开启后输出详细运行信息到日志文件",

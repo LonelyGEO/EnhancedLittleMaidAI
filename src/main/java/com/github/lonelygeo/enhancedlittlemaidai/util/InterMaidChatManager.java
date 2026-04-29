@@ -1,5 +1,6 @@
 package com.github.lonelygeo.enhancedlittlemaidai.util;
 
+import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.server.level.ServerPlayer;
@@ -75,6 +76,9 @@ public final class InterMaidChatManager {
 
     public static void propose(UUID from, UUID to, long gameTime) {
         PENDING_PROPOSALS.put(to, new Proposal(from, gameTime));
+        if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.info("InterMaidChat: Proposal {} → {}", from, to);
+        }
     }
 
     @Nullable
@@ -209,11 +213,19 @@ public final class InterMaidChatManager {
         DAY_COUNTS.merge(a, 1, Integer::sum);
         DAY_COUNTS.merge(b, 1, Integer::sum);
         globalDayCount.incrementAndGet();
+        if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.info(
+                    "InterMaidChat: Triggered {}↔{}, dayCount={}, globalCount={}",
+                    a, b, getDayCount(a), getGlobalDayCount());
+        }
     }
 
     public static void markRejected(UUID a, UUID b, long gameTime) {
         PAIR_COOLDOWNS.put(pairKey(a, b), gameTime);
         clearProposal(b);
+        if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.info("InterMaidChat: Rejected {} → {}", a, b);
+        }
     }
 
     static String pairKey(UUID a, UUID b) {

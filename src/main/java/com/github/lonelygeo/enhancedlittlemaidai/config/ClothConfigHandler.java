@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.config;
 
 import com.github.lonelygeo.enhancedlittlemaidai.compat.MiningCompat;
+import com.github.lonelygeo.enhancedlittlemaidai.compat.StorageCompat;
 import com.github.tartaricacid.touhoulittlemaid.api.event.client.AddClothConfigEvent;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
