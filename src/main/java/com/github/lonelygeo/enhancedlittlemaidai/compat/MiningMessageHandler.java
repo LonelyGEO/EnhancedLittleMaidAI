@@ -57,8 +57,9 @@ public final class MiningMessageHandler {
         String situation = buildSituation(event);
         String prompt = characterSetting
                 + "\n\n[系统指令] 刚才发生了以下情况：" + situation
-                + "\n请用1-2句简短自然的话告诉主人。直接说话即可，不要加动作描写或格式标记。" +
-                " 注意：英文地名、物品名请转换为中文MC玩家熟知的名词。" +
+                + "\n请用1-2句简短自然的话告诉主人。" +
+                " 只输出纯对话，严格禁止：（...）或*...*等任何动作描写。"
+                + " 注意：英文地名、物品名请转换为中文MC玩家熟知的名词。" +
                 " 偶尔可以使用颜文字增加趣味，但不要每句都用。";
 
         LLMMessage sysMsg = LLMMessage.systemChat(maid, prompt);

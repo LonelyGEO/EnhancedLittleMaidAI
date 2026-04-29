@@ -125,12 +125,14 @@ public class InterMaidChatCallback extends LLMCallback {
                         .findFirst().map(m -> m.getDisplayName().getString())
                         .orElse("某女仆");
 
+                String cleanText = stripDescription(entry.getValue());
+
                 MindPalace pa = MindPalace.getOrCreate(a.getUUID());
                 MindPalace pb = MindPalace.getOrCreate(b.getUUID());
                 String memA = "和" + b.getDisplayName().getString() + "聊天，"
-                        + speakerName + "说：" + entry.getValue();
+                        + speakerName + "说：" + cleanText;
                 String memB = "和" + a.getDisplayName().getString() + "聊天，"
-                        + speakerName + "说：" + entry.getValue();
+                        + speakerName + "说：" + cleanText;
                 pa.addSocialMemory(memA, gameTime);
                 pb.addSocialMemory(memB, gameTime);
             }
@@ -173,9 +175,8 @@ public class InterMaidChatCallback extends LLMCallback {
         sb.append("在一起。请和");
         sb.append(others.size() == 1 ? "她" : "她们");
         sb.append("聊几句。说一句简短自然的话主动发起对话。"
-                + "直接说话即可，不要加动作描写、括号注释或任何格式标记。" +
-                " 注意：游戏数据中的英文地名、物品名请转换为中文MC玩家熟知的名词。" +
-                " 只输出对话文本，严禁输出任何括号内的动作描述、旁白、心理活动。");
+                + " 只输出一句纯对话，严格禁止：（...）或*...*等任何动作描写、旁白、心理活动。"
+                + " 注意：英文地名物品名请转换为中文Minecraft玩家熟知的名词。");
         return sb.toString();
     }
 
@@ -191,9 +192,8 @@ public class InterMaidChatCallback extends LLMCallback {
             sb.append(name).append("说：").append(entry.getValue()).append("\n");
         }
         sb.append("\n现在轮到你了。请简短自然地回应。"
-                + "直接说话即可，不要加动作描写、括号注释或任何格式标记。" +
-                " 注意：游戏数据中的英文地名、物品名请转换为中文MC玩家熟知的名词。" +
-                " 只输出对话文本，严禁输出任何括号内的动作描述、旁白、心理活动。");
+                + " 只输出一句纯对话，严格禁止：（...）或*...*等任何动作描写、旁白、心理活动。"
+                + " 注意：英文地名物品名请转换为中文Minecraft玩家熟知的名词。");
         return sb.toString();
     }
 
@@ -262,8 +262,23 @@ public class InterMaidChatCallback extends LLMCallback {
             sb.append(others.get(i).getDisplayName().getString());
         }
         sb.append("在一起。请主动和她们聊几句。说一句简短自然的话。"
-                + "直接说话即可，不要加动作描写、括号注释或任何格式标记。");
+                + " 只输出一句纯对话，严格禁止：（...）或*...*等任何动作描写、旁白、心理活动。");
         return sb.toString();
+    }
+
+    /** 剥离描述文本（括号内容、动作描写），仅保留纯对话 */
+    private static String stripDescription(String text) {
+        if (StringUtils.isBlank(text)) return text;
+        // 移除中文括号（...）
+        text = text.replaceAll("（[^）]*）", "");
+        // 移除英文括号 (...)
+        text = text.replaceAll("\\([^)]*\\)", "");
+        // 移除 *动作描写* 
+        text = text.replaceAll("\\*[^*]*\\*", "");
+        // 合并多余空格
+        text = text.replaceAll("\\s{2,}", " ").trim();
+        if (text.isEmpty()) return "...";
+        return text;
     }
 
     private static double nearestPlayerDist(EntityMaid maid) {
