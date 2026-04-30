@@ -31,6 +31,7 @@ docs/WorkingPlan.md
 # decompiled class files (root-level only)
 /com/
 /net/
+/libs/com/
 # temporary decompile artifacts
 .temp_decompile/
 temp_decompile/
