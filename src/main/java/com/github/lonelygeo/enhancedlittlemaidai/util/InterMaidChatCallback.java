@@ -66,7 +66,16 @@ public class InterMaidChatCallback extends LLMCallback {
                 return;
             }
 
-            if (waitingBubbleId >= 0) {
+            net.minecraft.server.MinecraftServer server = speaker.getServer();
+            if (server != null) {
+                server.submit(() -> {
+                    if (waitingBubbleId >= 0) {
+                        speaker.getChatBubbleManager().addLLMChatText(chatText, waitingBubbleId);
+                    } else {
+                        speaker.getChatBubbleManager().addTextChatBubble(chatText);
+                    }
+                });
+            } else if (waitingBubbleId >= 0) {
                 speaker.getChatBubbleManager().addLLMChatText(chatText, waitingBubbleId);
             } else {
                 speaker.getChatBubbleManager().addTextChatBubble(chatText);
@@ -131,9 +140,18 @@ public class InterMaidChatCallback extends LLMCallback {
 
         new Thread(() -> {
             try { Thread.sleep(delayMs); } catch (InterruptedException ignored) {}
-            long bubbleId = speaker.getChatBubbleManager().addThinkingText("少女们商量中...");
-            nextCb.setWaitingBubbleId(bubbleId);
-            client.chat(nextCb);
+            net.minecraft.server.MinecraftServer server = speaker.getServer();
+            if (server != null) {
+                server.submit(() -> {
+                    long bubbleId = speaker.getChatBubbleManager().addThinkingText("少女们商量中...");
+                    nextCb.setWaitingBubbleId(bubbleId);
+                    client.chat(nextCb);
+                });
+            } else {
+                long bubbleId = speaker.getChatBubbleManager().addThinkingText("少女们商量中...");
+                nextCb.setWaitingBubbleId(bubbleId);
+                client.chat(nextCb);
+            }
         }).start();
     }
 
@@ -285,9 +303,18 @@ public class InterMaidChatCallback extends LLMCallback {
         MaidAIChatManager mgr = first.getAiChatManager();
         InterMaidChatCallback cb = new InterMaidChatCallback(
                 mgr, msgs, List.copyOf(participants), maxRounds);
-        long bubbleId = first.getChatBubbleManager().addThinkingText("少女们商量中...");
-        cb.setWaitingBubbleId(bubbleId);
-        mgr.getLLMSite().client().chat(cb);
+        net.minecraft.server.MinecraftServer server = first.getServer();
+        if (server != null) {
+            server.submit(() -> {
+                long bubbleId = first.getChatBubbleManager().addThinkingText("少女们商量中...");
+                cb.setWaitingBubbleId(bubbleId);
+                mgr.getLLMSite().client().chat(cb);
+            });
+        } else {
+            long bubbleId = first.getChatBubbleManager().addThinkingText("少女们商量中...");
+            cb.setWaitingBubbleId(bubbleId);
+            mgr.getLLMSite().client().chat(cb);
+        }
     }
 
     private static String buildGroupPrompt(EntityMaid speaker, List<EntityMaid> all) {

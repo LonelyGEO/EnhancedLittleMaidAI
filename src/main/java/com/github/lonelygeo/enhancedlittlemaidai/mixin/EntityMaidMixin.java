@@ -279,8 +279,13 @@ public abstract class EntityMaidMixin {
             return;
         }
 
+        if (InterMaidChatManager.isDeciding(b.getUUID())) {
+            return;
+        }
+
         String decisionMode = EnhancedConfig.INTER_MAID_DECISION_MODE.get();
         if ("LLM".equals(decisionMode)) {
+            InterMaidChatManager.startDeciding(b.getUUID());
             if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.info(
                         "InterMaidChat: B {} asking LLM to decide on proposal from {}",

@@ -40,6 +40,8 @@ public final class InterMaidChatManager {
             Collections.synchronizedMap(new HashMap<>());
     // busy set
     private static final Set<UUID> BUSY = Collections.synchronizedSet(new HashSet<>());
+    // deciding set: B 正在等 LLM 决策，防止每个 tick 重复触发请求
+    private static final Set<UUID> DECIDING = Collections.synchronizedSet(new HashSet<>());
 
     private InterMaidChatManager() {
     }
@@ -362,6 +364,20 @@ public final class InterMaidChatManager {
 
     public static int getBusyCount() {
         return BUSY.size();
+    }
+
+    // ==================== 决策互斥 ====================
+
+    public static boolean isDeciding(UUID uuid) {
+        return DECIDING.contains(uuid);
+    }
+
+    public static void startDeciding(UUID uuid) {
+        DECIDING.add(uuid);
+    }
+
+    public static void finishDeciding(UUID uuid) {
+        DECIDING.remove(uuid);
     }
 
     // ==================== 内部类型 ====================

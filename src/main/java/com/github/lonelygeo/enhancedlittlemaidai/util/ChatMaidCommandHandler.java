@@ -27,10 +27,6 @@ public final class ChatMaidCommandHandler {
     private ChatMaidCommandHandler() {
     }
 
-    static {
-        EnhancedLittleMaidAI.LOGGER.info("EnhancedLittleMaidAI: ChatMaidCommandHandler loaded");
-    }
-
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("maid")
                 .then(Commands.argument("message", StringArgumentType.greedyString())

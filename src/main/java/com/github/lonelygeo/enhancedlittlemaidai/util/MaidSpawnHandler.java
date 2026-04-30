@@ -77,13 +77,16 @@ public final class MaidSpawnHandler {
         LLMMessage msg = LLMMessage.userChat(maid, prompt);
         List<LLMMessage> msgs = List.of(msg);
 
+        long bubbleId = maid.getChatBubbleManager().addThinkingText("少女思考中...");
+
         client.chat(new LLMCallback(chatManager, msgs, true) {{
             needAddTools = false;
-        } 
+        }
             @Override
             public void onSuccess(ResponseChat responseChat) {
                 String result = responseChat.getChatText();
                 if (StringUtils.isBlank(result)) {
+                    maid.getChatBubbleManager().removeChatBubble(bubbleId);
                     if (retry < 1) genSetting(chatManager, client, maid, retry + 1);
                     return;
                 }
@@ -103,6 +106,7 @@ public final class MaidSpawnHandler {
             public void onFailure(HttpRequest request, Throwable throwable, int errorCode) {
                 EnhancedLittleMaidAI.LOGGER.warn(
                         "MaidSpawn: Failed to gen setting for maid {}", maid.getUUID());
+                maid.getChatBubbleManager().removeChatBubble(bubbleId);
             }
         });
     }

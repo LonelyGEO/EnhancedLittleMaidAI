@@ -11,13 +11,16 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.net.http.HttpRequest;
 import java.util.List;
-import java.util.UUID;
+import java.util.regex.Pattern;
 
 /**
  * B 接受提案的 LLM 决策回调。
- * LLM 基于社交记忆判断是否接受对话。
+ * onSuccess 在完整文本中搜索 ACCEPT/REJECT，兼容推理模型的角色扮演输出。
  */
 public class InterMaidDecisionCallback extends LLMCallback {
+
+    private static final Pattern PAREN_CONTENT = Pattern.compile("[（(][^）)]*[）)]");
+    private static final Pattern STAR_CONTENT = Pattern.compile("\\*[^*]*\\*");
 
     private final EntityMaid maidA;
     private final EntityMaid maidB;
@@ -43,8 +46,16 @@ public class InterMaidDecisionCallback extends LLMCallback {
         }
 
         String upper = text.trim().toUpperCase();
-        String firstWord = upper.split("[\\s,.!?;:]+")[0];
-        if ("ACCEPT".equals(firstWord)) {
+        if ("ACCEPT".equals(upper) || "REJECT".equals(upper)) {
+            if ("ACCEPT".equals(upper)) { accept(); } else { reject(); }
+            return;
+        }
+
+        String cleaned = PAREN_CONTENT.matcher(upper).replaceAll("");
+        cleaned = STAR_CONTENT.matcher(cleaned).replaceAll("");
+        cleaned = cleaned.replaceAll("[\\s,.!?;:\"]+", " ").trim();
+
+        if (cleaned.contains("ACCEPT")) {
             accept();
         } else {
             reject();
@@ -59,6 +70,7 @@ public class InterMaidDecisionCallback extends LLMCallback {
     private void accept() {
         InterMaidChatManager.clearProposal(maidB.getUUID());
         InterMaidChatManager.handleAcceptance(maidB);
+        InterMaidChatManager.finishDeciding(maidB.getUUID());
         if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.info(
                     "InterMaidChat: LLM ACCEPT {}", maidB.getUUID());
@@ -68,25 +80,26 @@ public class InterMaidDecisionCallback extends LLMCallback {
     private void reject() {
         long gameTime = maidB.level().getGameTime();
         InterMaidChatManager.markRejected(maidA.getUUID(), maidB.getUUID(), gameTime);
+        InterMaidChatManager.finishDeciding(maidB.getUUID());
         if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.info(
-                    "InterMaidChat: LLM decision REJECT: {} ← {}", 
+                    "InterMaidChat: LLM decision REJECT: {} ← {}",
                     maidB.getUUID(), maidA.getUUID());
         }
     }
 
-    /** 构建决策 prompt */
+    /** 构建决策 prompt。指令前置，角色设定后置，防止推理模型角色淹没指令。 */
     public static String buildDecisionPrompt(EntityMaid b, EntityMaid a) {
-        StringBuilder sb = new StringBuilder();
+        String aName = a.getDisplayName().getString();
         String setting = b.getAiChatManager().customSetting;
         if (StringUtils.isBlank(setting)) {
             setting = b.getDisplayName().getString() + "，一位女仆。";
         }
-        sb.append(setting);
-        sb.append("\n\n你看到了").append(a.getDisplayName().getString())
-                .append("，她想和你聊几句。");
-        sb.append("\n请根据你的性格判断是否愿意和她聊天。");
-        sb.append("\n只回答 ACCEPT 或 REJECT，不要多说任何话。");
-        return sb.toString();
+
+        return "[系统指令] 做出简单决定。只输出一个单词：ACCEPT 或 REJECT。"
+                + "\n严格禁止：输出任何中文、日文、英文句子、动作描写、想法、表情、括号、（）、*...*、标点。"
+                + "\n违反会导致系统错误。"
+                + "\n\n" + setting
+                + "\n\n刚才" + aName + "邀请你聊天。只输出 ACCEPT 或 REJECT。";
     }
 }
