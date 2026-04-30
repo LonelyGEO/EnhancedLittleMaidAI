@@ -30,6 +30,8 @@ src/generated/resources/.cache
 docs/WorkingPlan.md
 # decompiled class files (root-level only)
 /com/
+# temporary decompile artifacts
+.temp_decompile/
 
 # Files from Forge MDK
 forge*changelog.txt
