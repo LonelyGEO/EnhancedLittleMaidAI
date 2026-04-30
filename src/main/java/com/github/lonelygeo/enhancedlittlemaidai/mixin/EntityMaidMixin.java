@@ -146,6 +146,9 @@ public abstract class EntityMaidMixin {
             if (maid.level().isClientSide()) return;
             if (maid.isRemoved()) return;
 
+            // ====== MaidSpawnHandler 延迟重试 ======
+            MaidSpawnHandler.retryMaid(maid);
+
             // ====== 环境事件优先 ======
             EnvironmentEventDetector.EventType event = EnvironmentEventDetector.detect(maid);
             if (event != null) {

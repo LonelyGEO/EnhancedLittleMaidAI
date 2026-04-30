@@ -69,7 +69,14 @@ public class InterMaidDecisionCallback extends LLMCallback {
 
     private void accept() {
         InterMaidChatManager.releaseDecisionSlot();
-        InterMaidChatManager.handleAcceptance(maidB);
+        // handleAcceptance → tryStartConversation 需要访问 Level.getEntitiesOfClass()
+        // 必须运行在 server thread 上
+        net.minecraft.server.MinecraftServer server = maidB.getServer();
+        if (server != null) {
+            server.submit(() -> InterMaidChatManager.handleAcceptance(maidB));
+        } else {
+            InterMaidChatManager.handleAcceptance(maidB);
+        }
         InterMaidChatManager.finishDeciding(maidB.getUUID());
         if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.info(

@@ -43,6 +43,13 @@ public abstract class MaidAIChatManagerMixin {
             if (end < 0) return original;
             String contextPart = original.substring(0, end + endMarker.length());
             String userPart = original.substring(end + endMarker.length()).trim();
+
+            // 修正天气：全局 isRaining() 但当前生物群系无降水 → 替换为 Clear
+            if (maid.level().isRaining()
+                    && !maid.level().getBiome(maid.blockPosition()).value().hasPrecipitation()) {
+                contextPart = contextPart.replace("Weather: Raining", "Weather: Clear");
+            }
+
             return "[请优先回应此消息] " + userPart + "\n\n" + contextPart;
         } catch (Exception e) {
             return UserPromptContexts.addContext(maid, userMsg);

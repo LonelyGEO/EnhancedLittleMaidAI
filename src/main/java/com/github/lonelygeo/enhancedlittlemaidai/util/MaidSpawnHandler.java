@@ -17,8 +17,10 @@ import java.net.http.HttpRequest;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 女仆放置时自动生成角色设定 + 见面问候。
@@ -26,6 +28,8 @@ import java.util.UUID;
 public final class MaidSpawnHandler {
 
     private static final Set<UUID> GREETED = Collections.synchronizedSet(new HashSet<>());
+    private static final Map<UUID, Long> PENDING_AUTOGEN = new ConcurrentHashMap<>();
+    private static final long RETRY_INTERVAL = 60; // 3 秒后重试
 
     private MaidSpawnHandler() {
     }
@@ -43,9 +47,10 @@ public final class MaidSpawnHandler {
         if (maid.isRemoved()) return;
 
         if (!LLMUtil.isAvailable(maid)) {
+            PENDING_AUTOGEN.put(maid.getUUID(), maid.level().getGameTime());
             if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.debug(
-                        "MaidSpawn: LLM site not configured for maid {}", maid.getUUID());
+                        "MaidSpawn: LLM not ready for maid {}, queued for retry", maid.getUUID());
             }
             return;
         }
@@ -203,5 +208,48 @@ public final class MaidSpawnHandler {
         return setting
                 + "\n\n[系统指令] 你刚刚苏醒，来到了一个新的世界。请用1句话向主人问候。"
                 + "只输出对话文本，严禁输出任何括号内的动作描述、旁白、心理活动。";
+    }
+
+    // ==================== 延迟重试 ====================
+
+    /**
+     * 重试 PENDING_AUTOGEN 队列中的女仆。
+     * 由 EntityMaidMixin.tick() 每 tick 调用。
+     */
+    public static void retryPending() {
+        if (PENDING_AUTOGEN.isEmpty()) return;
+        long now = System.currentTimeMillis(); // 用 wall clock 避免 gameTime 依赖
+        Set<UUID> toRetry = new HashSet<>();
+        for (Map.Entry<UUID, Long> entry : PENDING_AUTOGEN.entrySet()) {
+            if (now - entry.getValue() > RETRY_INTERVAL * 50) { // ticks → ms 近似
+                toRetry.add(entry.getKey());
+            }
+        }
+        for (UUID uuid : toRetry) {
+            PENDING_AUTOGEN.remove(uuid);
+            // 在 server thread 上通过 EntityMaidMixin 会传 maid 引用
+        }
+    }
+
+    /** 由 EntityMaidMixin.tick 调用，尝试重试指定女仆 */
+    public static void retryMaid(EntityMaid maid) {
+        if (!PENDING_AUTOGEN.containsKey(maid.getUUID())) return;
+        if (!LLMUtil.isAvailable(maid)) return; // 仍未就绪，继续等
+        PENDING_AUTOGEN.remove(maid.getUUID());
+
+        MaidAIChatManager chatManager = maid.getAiChatManager();
+        boolean hasSetting = StringUtils.isNotBlank(chatManager.customSetting)
+                || chatManager.getSetting().isPresent();
+        if (hasSetting) return;
+
+        if (GREETED.contains(maid.getUUID())) return;
+        GREETED.add(maid.getUUID());
+
+        LLMClient client = chatManager.getLLMSite().client();
+        if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.debug(
+                    "MaidSpawn: Retry autogen for maid {}", maid.getUUID());
+        }
+        genSetting(chatManager, client, maid, 0);
     }
 }
