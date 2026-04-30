@@ -2,90 +2,85 @@ package com.github.lonelygeo.enhancedlittlemaidai.util;
 
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
+import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.ChatClientInfo;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.ServerChatEvent;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Comparator;
 import java.util.List;
 
 /**
- * 聊天栏 /maid 命令处理器。
- * 玩家在聊天栏输入 "/maid [名字] 消息" → 匹配最近女仆 → 发起 LLM 对话。
- * 消息不显示在公共聊天栏。
+ * 聊天栏 /maid 命令。
+ * 格式: /maid <消息> 或 /maid <名字> <消息>
+ * 匹配最近的女仆并路由到 LLM 对话。
  */
 public final class ChatMaidCommandHandler {
 
     private ChatMaidCommandHandler() {
     }
 
-    public static void register() {
-        NeoForge.EVENT_BUS.register(ChatMaidCommandHandler.class);
-        EnhancedLittleMaidAI.LOGGER.info("EnhancedLittleMaidAI: ChatMaidCommandHandler registered");
+    static {
+        EnhancedLittleMaidAI.LOGGER.info("EnhancedLittleMaidAI: ChatMaidCommandHandler loaded");
     }
 
-    @SubscribeEvent
-    public static void onServerChat(ServerChatEvent event) {
-        String message = event.getMessage().getString();
-        if (StringUtils.isBlank(message)) return;
+    public static LiteralArgumentBuilder<CommandSourceStack> register() {
+        return Commands.literal("maid")
+                .then(Commands.argument("message", StringArgumentType.greedyString())
+                        .executes(ctx -> handle(ctx.getSource(),
+                                StringArgumentType.getString(ctx, "message"))));
+    }
 
-        String trimmed = message.trim();
-        if (!trimmed.startsWith("/maid") || trimmed.length() <= "/maid".length()) return;
+    private static int handle(CommandSourceStack src, String fullMessage) {
+        if (StringUtils.isBlank(fullMessage)) return 0;
 
-        String afterPrefix = trimmed.substring("/maid".length()).trim();
-        if (afterPrefix.isEmpty()) return;
+        ServerPlayer player = src.getPlayer();
+        if (player == null) return 0;
 
-        ServerPlayer player = event.getPlayer();
-        if (player == null) return;
+        String trimmed = fullMessage.trim();
 
-        // 解析可选名字和消息
-        String maidName;
+        // 解析：第一个词尝试作为名字，余下作为消息
+        int firstSpace = trimmed.indexOf(' ');
+        String nameHint;
         String chatMessage;
-        int firstSpace = afterPrefix.indexOf(' ');
+
         if (firstSpace < 0) {
-            // 只有名字，没有消息 → 忽略
-            return;
-        }
-        // "/maid 灵梦 你好" → maidName="灵梦", chatMessage="你好"
-        // "/maid 你好" → maidName="你好", chatMessage="" (first word is the message, ignore)
-        // 简单策略：取第一个词作为候选名字，后面作为消息
-        maidName = afterPrefix.substring(0, firstSpace);
-        chatMessage = afterPrefix.substring(firstSpace + 1).trim();
-        if (chatMessage.isEmpty()) {
-            // "/maid 灵梦" — 可能是名字也可能是短语，忽略没有消息的情况
-            return;
-        }
-
-        // 找到最近的女仆
-        EntityMaid target = findNearestMaid(player, maidName);
-        if (target == null) {
-            if (EnhancedConfig.debugLog()) {
-                EnhancedLittleMaidAI.LOGGER.debug(
-                        "ChatMaid: No matching maid for player {}, name={}",
-                        player.getUUID(), maidName);
+            // /maid 你好 → 没有名字，全文是消息
+            nameHint = "";
+            chatMessage = trimmed;
+        } else {
+            // /maid 灵梦 你好 → 第一个词是名字，后面是消息
+            nameHint = trimmed.substring(0, firstSpace);
+            chatMessage = trimmed.substring(firstSpace + 1).trim();
+            if (chatMessage.isEmpty()) {
+                chatMessage = trimmed;
+                nameHint = "";
             }
-            return;
         }
 
-        // 取消公共聊天栏显示
-        event.setCanceled(true);
+        EntityMaid target = findNearestMaid(player, nameHint);
+        if (target == null) {
+            src.sendFailure(Component.literal("附近没有找到匹配的女仆"));
+            return 0;
+        }
 
         if (!LLMUtil.isAvailable(target)) {
-            player.sendSystemMessage(Component.literal("女仆的 LLM 服务不可用，请检查配置"));
-            return;
+            src.sendFailure(Component.literal("女仆的 LLM 服务不可用，请检查配置"));
+            return 0;
         }
 
         MaidAIChatManager chatManager = target.getAiChatManager();
         try {
-            // 构建 server-side ChatClientInfo
             String lang = player.getLanguage();
             if (StringUtils.isBlank(lang)) lang = "zh_cn";
-            var clientInfo = new com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.ChatClientInfo(
+            ChatClientInfo clientInfo = new ChatClientInfo(
                     lang,
                     target.getDisplayName().getString(),
                     List.of()
@@ -99,13 +94,12 @@ public final class ChatMaidCommandHandler {
             }
         } catch (Exception e) {
             EnhancedLittleMaidAI.LOGGER.warn("ChatMaid: Failed to route chat to maid", e);
+            src.sendFailure(Component.literal("发送消息到女仆时出错"));
         }
+
+        return 1;
     }
 
-    /**
-     * 找到玩家附近最近的一只女仆。
-     * 如果提供了名字，优先精确匹配，其次前缀匹配，最后模糊包含。
-     */
     private static EntityMaid findNearestMaid(ServerPlayer player, String nameHint) {
         double range = EnhancedConfig.CHAT_MAID_DISTANCE.get();
         List<EntityMaid> maids = player.level().getEntitiesOfClass(
@@ -118,24 +112,20 @@ public final class ChatMaidCommandHandler {
         );
         if (maids.isEmpty()) return null;
 
-        // 如果只有一个女仆，不管名字直接返回
-        if (maids.size() == 1) return maids.get(0);
-
-        // 按距离排序
         maids.sort(Comparator.comparingDouble(m -> m.distanceToSqr(player)));
 
+        if (nameHint.isEmpty()) return maids.get(0);
+
         String hint = nameHint.toLowerCase();
-        // 尝试精确匹配
+        // 精确匹配
         for (EntityMaid m : maids) {
-            String displayName = m.getDisplayName().getString();
-            if (displayName.equalsIgnoreCase(nameHint)) return m;
+            if (m.getDisplayName().getString().equalsIgnoreCase(nameHint)) return m;
         }
-        // 尝试前缀匹配
+        // 前缀匹配
         for (EntityMaid m : maids) {
-            String displayName = m.getDisplayName().getString();
-            if (displayName.toLowerCase().startsWith(hint)) return m;
+            if (m.getDisplayName().getString().toLowerCase().startsWith(hint)) return m;
         }
-        // 回退到最近的女仆
+        // 回退到最近
         return maids.get(0);
     }
 }

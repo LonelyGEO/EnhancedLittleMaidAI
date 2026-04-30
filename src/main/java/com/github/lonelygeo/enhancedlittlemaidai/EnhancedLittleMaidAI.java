@@ -29,12 +29,12 @@ public class EnhancedLittleMaidAI {
         ClothConfigIntegration.registerIfAvailable();
         registerMiningMessageHandlerIfAvailable();
         registerStorageMemoryHandlerIfAvailable();
-        ChatMaidCommandHandler.register();
     }
 
     @SubscribeEvent
     private void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(MindPalaceCommand.register());
+        event.getDispatcher().register(ChatMaidCommandHandler.register());
     }
 
     private static void registerMiningMessageHandlerIfAvailable() {
