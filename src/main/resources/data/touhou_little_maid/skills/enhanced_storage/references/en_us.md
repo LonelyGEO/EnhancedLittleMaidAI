@@ -109,41 +109,15 @@ When the owner asks "where is X" or "how much Y":
 
 ---
 
-## 5. Common Item IDs
+## 5. Item ID Lookup
 
-Format: "minecraft:item_name" (lowercase, underscores)
+Format: "minecraft:item_name" (lowercase, underscores).
 
-| Item | Item ID |
-|------|---------|
-| Diamond | minecraft:diamond |
-| Iron Ingot | minecraft:iron_ingot |
-| Iron Ore | minecraft:iron_ore |
-| Gold Ingot | minecraft:gold_ingot |
-| Redstone | minecraft:redstone |
-| Coal | minecraft:coal |
-| Lapis Lazuli | minecraft:lapis_lazuli |
-| Emerald | minecraft:emerald |
-| Nether Quartz | minecraft:quartz |
-| Oak Log | minecraft:oak_log |
-| Oak Planks | minecraft:oak_planks |
-| Stick | minecraft:stick |
-| Crafting Table | minecraft:crafting_table |
-| Furnace | minecraft:furnace |
-| Chest | minecraft:chest |
-| Iron Pickaxe | minecraft:iron_pickaxe |
-| Diamond Pickaxe | minecraft:diamond_pickaxe |
-| Apple | minecraft:apple |
-| Bread | minecraft:bread |
-| Torch | minecraft:torch |
-| Bucket | minecraft:bucket |
-| Bow | minecraft:bow |
-| Arrow | minecraft:arrow |
-| Iron Sword | minecraft:iron_sword |
-| Diamond Sword | minecraft:diamond_sword |
-| Shield | minecraft:shield |
-| Enchanted Book | minecraft:enchanted_book |
+**Do not hardcode item IDs.** When you don't know an item's ID:
+1. Call get_storage(filter="item name") before fetching — it matches names and returns the correct ID
+2. Or call query_game_context(inventory) first — extract the ID from returned item descriptions
 
-Other item IDs can be obtained from get_storage() results.
+Common examples: Diamond=minecraft:diamond, Iron Ingot=minecraft:iron_ingot, Crafting Table=minecraft:crafting_table
 
 ---
 

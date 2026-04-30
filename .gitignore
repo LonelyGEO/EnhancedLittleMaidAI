@@ -32,6 +32,8 @@ docs/WorkingPlan.md
 /com/
 # temporary decompile artifacts
 .temp_decompile/
+# extracted JAR files (not part of source)
+/data/
 
 # Files from Forge MDK
 forge*changelog.txt

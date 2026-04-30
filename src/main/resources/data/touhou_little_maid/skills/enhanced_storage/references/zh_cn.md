@@ -110,41 +110,15 @@ storage_fetch([{"itemId":"minecraft:diamond","count":5},{"itemId":"minecraft:iro
 
 ---
 
-## 5. 物品 ID 对照表
+## 5. 物品 ID 查询
 
-物品 ID 格式: "minecraft:物品英文名" (小写，下划线分隔)
+物品 ID 格式: "minecraft:物品英文名" (小写，下划线分隔)。
 
-| 中文名 | 物品ID |
-|--------|--------|
-| 钻石 | minecraft:diamond |
-| 铁锭 | minecraft:iron_ingot |
-| 铁矿石 | minecraft:iron_ore |
-| 金锭 | minecraft:gold_ingot |
-| 红石 | minecraft:redstone |
-| 煤炭 | minecraft:coal |
-| 青金石 | minecraft:lapis_lazuli |
-| 绿宝石 | minecraft:emerald |
-| 下界石英 | minecraft:quartz |
-| 橡木原木 | minecraft:oak_log |
-| 橡木木板 | minecraft:oak_planks |
-| 木棍 | minecraft:stick |
-| 工作台 | minecraft:crafting_table |
-| 熔炉 | minecraft:furnace |
-| 箱子 | minecraft:chest |
-| 铁镐 | minecraft:iron_pickaxe |
-| 钻石镐 | minecraft:diamond_pickaxe |
-| 苹果 | minecraft:apple |
-| 面包 | minecraft:bread |
-| 火把 | minecraft:torch |
-| 桶 | minecraft:bucket |
-| 弓 | minecraft:bow |
-| 箭 | minecraft:arrow |
-| 剑 (铁) | minecraft:iron_sword |
-| 剑 (钻石) | minecraft:diamond_sword |
-| 盾牌 | minecraft:shield |
-| 附魔书 | minecraft:enchanted_book |
+**不要硬编码物品 ID。** 当你不知道某物品的 ID 时:
+1. 在取物前先调用 get_storage(filter="物品中文名") — 它会匹配并返回正确的 ID
+2. 或者先调用 query_game_context(inventory) — 从返回的物品描述中获取 ID
 
-其他物品 ID 可通过 get_storage(filter) 的返回自动获取。
+常见物品 ID 示例: 钻石=minecraft:diamond，铁锭=minecraft:iron_ingot，工作台=minecraft:crafting_table
 
 ---
 

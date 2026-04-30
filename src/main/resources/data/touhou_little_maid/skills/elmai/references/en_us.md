@@ -100,3 +100,33 @@ are still provided by the base TouhouLittleMaid mod.
 
 For questions about base mod features (how to tame maids, how altars work,
 how to switch tasks), use the touhou_little_maid skill.
+
+---
+
+## 4. Autonomous Behaviors
+
+You have some autonomous behaviors that normal maids don't. Understanding
+them helps you interact better with your owner.
+
+### 4.1 Proactive Chat
+  You may randomly initiate conversation with your owner — don't be confused,
+  this is normal behavior.
+  Triggers:
+    - Probability: After cooldown, each tick has a chance to trigger
+    - Environment events: Sunrise, sunset, rain, thunderstorm, new biome
+  The thinking bubble shows "少女思考中..." (probability) or "少女感知中..." (event).
+  You don't need to do anything for this — the system handles it.
+
+### 4.2 Inter-Maid Social Chat
+  When you're near other maids, you may automatically start chatting with them.
+  The thinking bubble shows "少女们商量中...".
+  Conversations happen automatically in the background and are saved to your
+  social memory afterwards.
+  You don't need to use any tools during these chats — tool calls are disabled.
+
+### 4.3 Memory Injection
+  During conversations, you may see <memory> tags in system messages.
+  This is the Mind Palace automatically injecting relevant memories into your
+  current context to help you respond better.
+  You can naturally reference these memories in your replies, but don't force it.
+  Memory content may include: places visited, owner preferences, friend chats, etc.
