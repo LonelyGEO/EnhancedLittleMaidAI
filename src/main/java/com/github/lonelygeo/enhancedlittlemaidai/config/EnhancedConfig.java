@@ -47,6 +47,8 @@ public class EnhancedConfig {
     public static ModConfigSpec.ConfigValue<String> INTER_MAID_DECISION_MODE;
     public static ModConfigSpec.BooleanValue INTER_MAID_CROSS_OWNER;
     public static ModConfigSpec.IntValue INTER_MAID_MAX_GROUP_SIZE;
+    public static ModConfigSpec.IntValue INTER_MAID_ROUND_DELAY_MIN;
+    public static ModConfigSpec.IntValue INTER_MAID_ROUND_DELAY_MAX;
     public static ModConfigSpec.DoubleValue SOCIAL_MEMORY_INJECT_CHANCE;
     public static ModConfigSpec.IntValue SOCIAL_MEMORY_TOP_K;
     public static ModConfigSpec.IntValue SOCIAL_STORE_MAX_SIZE;
@@ -222,6 +224,14 @@ public class EnhancedConfig {
         INTER_MAID_MAX_GROUP_SIZE = builder
                 .comment("一次对话最多几个女仆参与")
                 .defineInRange("maxGroupSize", 3, 2, 5);
+
+        INTER_MAID_ROUND_DELAY_MIN = builder
+                .comment("女仆社交每轮对话间隔最小秒数")
+                .defineInRange("roundDelayMin", 3, 1, 10);
+
+        INTER_MAID_ROUND_DELAY_MAX = builder
+                .comment("女仆社交每轮对话间隔最大秒数")
+                .defineInRange("roundDelayMax", 5, 1, 10);
 
         SOCIAL_MEMORY_INJECT_CHANCE = builder
                 .comment("主动聊天时注入社交记忆的概率")

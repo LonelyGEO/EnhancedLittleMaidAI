@@ -373,6 +373,24 @@ public final class ClothConfigHandler {
                 .build());
 
         interMaidSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.roundDelayMin"),
+                        EnhancedConfig.INTER_MAID_ROUND_DELAY_MIN.get(), 1, 10)
+                .setDefaultValue(3)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.roundDelayMin.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_ROUND_DELAY_MIN::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.roundDelayMax"),
+                        EnhancedConfig.INTER_MAID_ROUND_DELAY_MAX.get(), 1, 10)
+                .setDefaultValue(5)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.roundDelayMax.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_ROUND_DELAY_MAX::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
                 .startDoubleField(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.socialInjectChance"),
                         EnhancedConfig.SOCIAL_MEMORY_INJECT_CHANCE.get())

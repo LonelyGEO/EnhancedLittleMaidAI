@@ -29,6 +29,7 @@ public class InterMaidChatCallback extends LLMCallback {
     private final int totalRounds;
     private final Map<UUID, String> conversationHistory;
     private final MaidAIChatManager chatManager;
+    private long waitingBubbleId = -1;
 
     public InterMaidChatCallback(
             MaidAIChatManager chatManager,
@@ -46,7 +47,12 @@ public class InterMaidChatCallback extends LLMCallback {
         this.conversationHistory = new LinkedHashMap<>();
     }
 
-        public void onSuccess(ResponseChat responseChat) {
+    public void setWaitingBubbleId(long id) {
+        this.waitingBubbleId = id;
+    }
+
+    @Override
+    public void onSuccess(ResponseChat responseChat) {
         try {
             String chatText = responseChat.getChatText();
             if (StringUtils.isBlank(chatText)) {
@@ -60,7 +66,11 @@ public class InterMaidChatCallback extends LLMCallback {
                 return;
             }
 
-            speaker.getChatBubbleManager().addTextChatBubble(chatText);
+            if (waitingBubbleId >= 0) {
+                speaker.getChatBubbleManager().addLLMChatText(chatText, waitingBubbleId);
+            } else {
+                speaker.getChatBubbleManager().addTextChatBubble(chatText);
+            }
 
             conversationHistory.put(speaker.getUUID(), chatText);
             roundCount++;
@@ -91,6 +101,13 @@ public class InterMaidChatCallback extends LLMCallback {
     @Override
     public void onFailure(HttpRequest request, Throwable throwable, int errorCode) {
         EnhancedLittleMaidAI.LOGGER.warn("InterMaidChat: LLM call failed (round {})", roundCount);
+        EntityMaid speaker = currentSpeaker();
+        if (speaker != null && waitingBubbleId >= 0) {
+            try {
+                speaker.getChatBubbleManager().removeChatBubble(waitingBubbleId);
+            } catch (Exception ignored) {
+            }
+        }
         finishConversation();
     }
 
@@ -110,7 +127,17 @@ public class InterMaidChatCallback extends LLMCallback {
                 chatManager, msgs, participants, totalRounds);
         nextCb.speakerIndex = speakerIndex;
         nextCb.roundCount = roundCount;
-        client.chat(nextCb);
+
+        int minSec = EnhancedConfig.INTER_MAID_ROUND_DELAY_MIN.get();
+        int maxSec = EnhancedConfig.INTER_MAID_ROUND_DELAY_MAX.get();
+        int delayMs = minSec * 1000 + (int)(Math.random() * (maxSec - minSec + 1) * 1000);
+
+        new Thread(() -> {
+            try { Thread.sleep(delayMs); } catch (InterruptedException ignored) {}
+            long bubbleId = speaker.getChatBubbleManager().addThinkingText("少女们商量中...");
+            nextCb.setWaitingBubbleId(bubbleId);
+            client.chat(nextCb);
+        }).start();
     }
 
     private void finishConversation() {
@@ -250,6 +277,8 @@ public class InterMaidChatCallback extends LLMCallback {
         MaidAIChatManager mgr = first.getAiChatManager();
         InterMaidChatCallback cb = new InterMaidChatCallback(
                 mgr, msgs, List.copyOf(participants), maxRounds);
+        long bubbleId = first.getChatBubbleManager().addThinkingText("少女们商量中...");
+        cb.setWaitingBubbleId(bubbleId);
         mgr.getLLMSite().client().chat(cb);
     }
 

@@ -167,7 +167,7 @@ public abstract class EntityMaidMixin {
 
                 String eventDesc = EnvironmentEventDetector.toDescription(event, maid);
                 String systemPrompt = ProactiveChatCallback.buildProactivePrompt(maid, eventDesc);
-                if (triggerProactiveChat(maid, systemPrompt)) {
+                if (triggerProactiveChat(maid, systemPrompt, "少女感知中...")) {
                     EnvironmentEventDetector.markTriggered(uuid, gameTime);
                     ProactiveChatManager.markTriggered(uuid, gameTime);
                     if (EnhancedConfig.debugLog()) {
@@ -217,7 +217,7 @@ public abstract class EntityMaidMixin {
             if (!ProactiveChatManager.canTrigger(maid)) return;
 
             String systemPrompt = ProactiveChatCallback.buildProactivePrompt(maid);
-            if (triggerProactiveChat(maid, systemPrompt)) {
+            if (triggerProactiveChat(maid, systemPrompt, "少女思考中...")) {
                 ProactiveChatManager.markTriggered(maid.getUUID(), maid.level().getGameTime());
                 if (EnhancedConfig.debugLog()) {
                     EnhancedLittleMaidAI.LOGGER.info(
@@ -233,7 +233,7 @@ public abstract class EntityMaidMixin {
     /**
      * 执行一次主动聊天 LLM 调用。返回 true 表示发送成功。
      */
-    private static boolean triggerProactiveChat(EntityMaid maid, String systemPrompt) {
+    private static boolean triggerProactiveChat(EntityMaid maid, String systemPrompt, String thinkingText) {
         try {
             MaidAIChatManager chatManager = maid.getAiChatManager();
             LLMClient client = chatManager.getLLMSite().client();
@@ -242,7 +242,7 @@ public abstract class EntityMaidMixin {
             LLMMessage userMsg = LLMMessage.userChat(maid, "（主动发起对话）");
             List<LLMMessage> messages = List.of(sysMsg, userMsg);
 
-            long waitingBubbleId = maid.getChatBubbleManager().addThinkingText("...");
+            long waitingBubbleId = maid.getChatBubbleManager().addThinkingText(thinkingText);
 
             CompletableFuture<String> future = new CompletableFuture<>();
             ProactiveChatCallback callback = new ProactiveChatCallback(chatManager, messages, future);
