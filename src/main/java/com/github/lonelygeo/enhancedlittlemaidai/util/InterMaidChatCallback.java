@@ -80,12 +80,8 @@ public class InterMaidChatCallback extends LLMCallback {
                 return;
             }
 
-            speakerIndex++;
-            // 延迟下一轮，模拟自然对话节奏
-            new Thread(() -> {
-                try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
-                sendNextRound();
-            }).start();
+            speakerIndex = pickNextSpeaker();
+            sendNextRound();
 
             if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.info(
@@ -127,6 +123,7 @@ public class InterMaidChatCallback extends LLMCallback {
                 chatManager, msgs, participants, totalRounds);
         nextCb.speakerIndex = speakerIndex;
         nextCb.roundCount = roundCount;
+        nextCb.conversationHistory.putAll(this.conversationHistory);
 
         int minSec = EnhancedConfig.INTER_MAID_ROUND_DELAY_MIN.get();
         int maxSec = EnhancedConfig.INTER_MAID_ROUND_DELAY_MAX.get();
@@ -178,6 +175,17 @@ public class InterMaidChatCallback extends LLMCallback {
     private EntityMaid currentSpeaker() {
         if (participants.isEmpty()) return null;
         return participants.get(speakerIndex % participants.size());
+    }
+
+    private int pickNextSpeaker() {
+        int current = speakerIndex % participants.size();
+        int size = participants.size();
+        if (size <= 1) return current;
+        int next;
+        do {
+            next = (int)(Math.random() * size);
+        } while (next == current);
+        return next;
     }
 
     private String buildPromptForSpeaker(EntityMaid speaker) {

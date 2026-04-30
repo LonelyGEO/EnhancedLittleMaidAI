@@ -195,13 +195,16 @@ public abstract class EntityMaidMixin {
                 }
             }
 
-            // A 侧：降频概率扫描附近女仆
+            // A 侧：降频扫描附近女仆（密度感知，避免女仆密集时触发过频）
             int interval = EnhancedConfig.INTER_MAID_SCAN_INTERVAL.get();
-            if (gameTime % interval == 0 && Math.random() < 0.15) {
-                if (InterMaidChatManager.canScan(maid, gameTime)) {
-                    int maxGroup = EnhancedConfig.INTER_MAID_MAX_GROUP_SIZE.get();
-                    List<EntityMaid> partners = InterMaidChatManager.findPartners(maid, maxGroup);
-                    if (!partners.isEmpty()) {
+            if (gameTime % interval == 0 && InterMaidChatManager.canScan(maid, gameTime)) {
+                int maxGroup = EnhancedConfig.INTER_MAID_MAX_GROUP_SIZE.get();
+                List<EntityMaid> partners = InterMaidChatManager.findPartners(maid, maxGroup);
+                if (!partners.isEmpty()) {
+                    // 密度感知: 附近女仆越多，单个女仆触发概率越低
+                    // partners=1 → scale=1.0  partners=4 → 0.4  partners=9 → 0.2
+                    double densityScale = 2.0 / (partners.size() + 1);
+                    if (Math.random() <= densityScale) {
                         List<UUID> targets = partners.stream()
                                 .map(EntityMaid::getUUID).toList();
                         InterMaidChatManager.proposeGroup(uuid, targets, gameTime);
@@ -209,6 +212,9 @@ public abstract class EntityMaidMixin {
                             EnhancedLittleMaidAI.LOGGER.info(
                                     "InterMaidChat: Maid {} proposed to {} targets", uuid, targets.size());
                         }
+                    } else if (EnhancedConfig.debugLog()) {
+                        EnhancedLittleMaidAI.LOGGER.debug(
+                                "InterMaidChat: density skip, partners={}", partners.size());
                     }
                 }
             }
