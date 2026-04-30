@@ -84,7 +84,8 @@ public abstract class LLMOpenAIClientMixin {
                     target = "Lorg/apache/logging/log4j/Logger;info(Ljava/lang/String;)V"),
             remap = false, require = 0)
     private void enhanced$suppressRequestDump(Logger logger, String msg) {
-        // swallowed — ELMAI 自己在 interceptJson 中记录截断版
+        if (EnhancedConfig.SUPPRESS_PARENT_JSON_DUMP.get()) return;
+        logger.info(msg);
     }
 
     /**
@@ -96,7 +97,8 @@ public abstract class LLMOpenAIClientMixin {
                     target = "Lorg/apache/logging/log4j/Logger;info(Ljava/lang/String;)V"),
             remap = false, require = 0)
     private void enhanced$suppressResponseDump(Logger logger, String msg) {
-        // swallowed
+        if (EnhancedConfig.SUPPRESS_PARENT_JSON_DUMP.get()) return;
+        logger.info(msg);
     }
 
     @Redirect(

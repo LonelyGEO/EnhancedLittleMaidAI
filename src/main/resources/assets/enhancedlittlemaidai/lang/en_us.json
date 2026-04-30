@@ -111,6 +111,8 @@
 
     "config.enhancedlittlemaidai.debug.debugLog": "Debug Log",
     "config.enhancedlittlemaidai.debug.debugLog.tooltip": "Enable detailed debug output to log file",
+    "config.enhancedlittlemaidai.debug.suppressParentJsonDump": "Suppress Parent JSON Dump",
+    "config.enhancedlittlemaidai.debug.suppressParentJsonDump.tooltip": "Suppress TouhouLittleMaid parent mod's LLM request/response JSON dump logs. Disable to see raw console output",
 
     "config.enhancedlittlemaidai.debug.enableMaidGreeting": "Maid Spawn Greeting",
     "config.enhancedlittlemaidai.debug.enableMaidGreeting.tooltip": "Auto-generate character setting and greet upon maid placement",

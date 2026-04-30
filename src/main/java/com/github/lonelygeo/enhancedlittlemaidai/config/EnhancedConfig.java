@@ -66,6 +66,7 @@ public class EnhancedConfig {
     public static ModConfigSpec.BooleanValue ENABLE_MINING_CHAT;
     public static ModConfigSpec.BooleanValue ENABLE_MAID_GREETING;
     public static ModConfigSpec.BooleanValue OVERRIDE_TTS_DISABLED;
+    public static ModConfigSpec.BooleanValue SUPPRESS_PARENT_JSON_DUMP;
     public static ModConfigSpec.DoubleValue CHAT_MAID_DISTANCE;
 
     static {
@@ -298,6 +299,10 @@ public class EnhancedConfig {
         OVERRIDE_TTS_DISABLED = builder
                 .comment("全局禁用女仆 TTS 语音输出（即使父模组配置了站点也不播放）")
                 .define("overrideTTSDisabled", false);
+
+        SUPPRESS_PARENT_JSON_DUMP = builder
+                .comment("抑制父模组 TouhouLittleMaid 的 LLM 请求/响应 JSON dump 日志")
+                .define("suppressParentJsonDump", true);
 
         CHAT_MAID_DISTANCE = builder
                 .comment("/maid 命令匹配女仆的距离范围（格）")

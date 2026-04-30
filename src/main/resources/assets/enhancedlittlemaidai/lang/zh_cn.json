@@ -111,6 +111,8 @@
 
     "config.enhancedlittlemaidai.debug.debugLog": "调试日志",
     "config.enhancedlittlemaidai.debug.debugLog.tooltip": "开启后输出详细运行信息到日志文件",
+    "config.enhancedlittlemaidai.debug.suppressParentJsonDump": "抑制父模组 JSON dump",
+    "config.enhancedlittlemaidai.debug.suppressParentJsonDump.tooltip": "抑制 TouhouLittleMaid 父模组的 LLM 请求/响应 JSON 日志输出（洗屏数据）。关闭可看到原始控制台日志",
 
     "config.enhancedlittlemaidai.debug.enableMaidGreeting": "女仆放置问候",
     "config.enhancedlittlemaidai.debug.enableMaidGreeting.tooltip": "女仆放置时自动生成角色设定并发出见面问候",

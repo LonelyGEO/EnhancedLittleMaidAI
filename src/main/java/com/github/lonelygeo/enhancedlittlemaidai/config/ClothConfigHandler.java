@@ -547,6 +547,15 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.DEBUG_LOG::set)
                 .build());
 
+        debugSub.add(entryBuilder
+                .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.debug.suppressParentJsonDump"),
+                        EnhancedConfig.SUPPRESS_PARENT_JSON_DUMP.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.debug.suppressParentJsonDump.tooltip"))
+                .setSaveConsumer(EnhancedConfig.SUPPRESS_PARENT_JSON_DUMP::set)
+                .build());
+
         category.addEntry(debugSub.build());
     }
 }
