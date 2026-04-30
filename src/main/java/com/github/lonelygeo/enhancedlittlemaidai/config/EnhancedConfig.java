@@ -24,6 +24,7 @@ public class EnhancedConfig {
     public static ModConfigSpec.DoubleValue MIN_PLAYER_DISTANCE;
     public static ModConfigSpec.IntValue EVENT_COOLDOWN_TICKS;
     public static ModConfigSpec.IntValue EVENT_MAX_PER_DAY;
+    public static ModConfigSpec.IntValue EVENT_RANGE_BLOCKS;
     public static ModConfigSpec.ConfigValue<String> PROACTIVE_PROMPT_MODE;
 
     // === [context] 上下文感知 ===
@@ -139,6 +140,10 @@ public class EnhancedConfig {
         EVENT_MAX_PER_DAY = builder
                 .comment("每天凌晨时环境事件主动聊天的最大触发次数（日出清零）")
                 .defineInRange("eventMaxPerDay", 5, 1, 30);
+
+        EVENT_RANGE_BLOCKS = builder
+                .comment("环境事件范围冷却半径（格）。范围内有女仆刚触发过事件则其他女仆不重复触发，防止同一场雨/日出多女仆同时说话")
+                .defineInRange("eventRangeBlocks", 64, 16, 128);
 
         PROACTIVE_PROMPT_MODE = builder
                 .comment("主动聊天角色设定长度: FULL(完整) SUMMARY(前200字) MINIMAL(仅名字)")

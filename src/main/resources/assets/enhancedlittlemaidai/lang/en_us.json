@@ -41,6 +41,9 @@
     "config.enhancedlittlemaidai.proactive.eventMaxPerSession": "Max Event Triggers Per Day",
     "config.enhancedlittlemaidai.proactive.eventMaxPerSession.tooltip": "Maximum environment event chat triggers per Minecraft day (reset at sunrise)",
 
+    "config.enhancedlittlemaidai.proactive.eventRangeBlocks": "Event Range Cooldown (blocks)",
+    "config.enhancedlittlemaidai.proactive.eventRangeBlocks.tooltip": "When a maid triggers an environment event, nearby maids within this range are blocked from triggering simultaneously. 16=short range, 128=entire dimension",
+
     "config.enhancedlittlemaidai.proactive.promptMode": "Proactive Prompt Mode",
     "config.enhancedlittlemaidai.proactive.promptMode.tooltip": "Character setting length: FULL(complete) SUMMARY(first 200 chars) MINIMAL(name only)",
 

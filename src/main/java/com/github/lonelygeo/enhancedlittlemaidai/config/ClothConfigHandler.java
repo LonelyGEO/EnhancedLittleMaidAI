@@ -253,6 +253,15 @@ public final class ClothConfigHandler {
                 .build());
 
         proactiveSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.proactive.eventRangeBlocks"),
+                        EnhancedConfig.EVENT_RANGE_BLOCKS.get(), 16, 128)
+                .setDefaultValue(64)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.proactive.eventRangeBlocks.tooltip"))
+                .setSaveConsumer(EnhancedConfig.EVENT_RANGE_BLOCKS::set)
+                .build());
+
+        proactiveSub.add(entryBuilder
                 .startStrField(
                         Component.translatable("config.enhancedlittlemaidai.proactive.promptMode"),
                         EnhancedConfig.PROACTIVE_PROMPT_MODE.get())

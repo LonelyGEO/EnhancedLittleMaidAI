@@ -41,6 +41,9 @@
     "config.enhancedlittlemaidai.proactive.eventMaxPerSession": "每日环境事件上限",
     "config.enhancedlittlemaidai.proactive.eventMaxPerSession.tooltip": "每个 Minecraft 日环境事件最大触发次数（日出清零）",
 
+    "config.enhancedlittlemaidai.proactive.eventRangeBlocks": "环境事件范围冷却 (格)",
+    "config.enhancedlittlemaidai.proactive.eventRangeBlocks.tooltip": "范围内有女仆刚触发过环境事件则其他女仆不重复触发，防止同一事件多女仆同时说话。16=近距离, 128=全维度",
+
     "config.enhancedlittlemaidai.proactive.promptMode": "主动聊天提示词模式",
     "config.enhancedlittlemaidai.proactive.promptMode.tooltip": "角色设定长度: FULL(完整) SUMMARY(前200字) MINIMAL(仅名字)",
 

@@ -1,10 +1,13 @@
 package com.github.lonelygeo.enhancedlittlemaidai.util;
 
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 环境事件检测器。
  * 比较女仆当前环境状态与上一 tick 快照，检测日出、日落、天气变化、生物群系切换。
- * 事件触发独立于概率性主动聊天，有单独的冷却和次数上限。
+ * 范围冷却：同维度 64 格内女仆触发事件后，范围内其他女仆不会同时触发。
  */
 public final class EnvironmentEventDetector {
 
@@ -22,11 +25,12 @@ public final class EnvironmentEventDetector {
             Collections.synchronizedMap(new HashMap<>());
     private static final Map<UUID, Integer> DAY_EVENT_COUNT =
             Collections.synchronizedMap(new HashMap<>());
-    // 全局冷却：防止多女仆同时触发同一事件
-    private static long lastGlobalEventTime = -1;
-    private static final long GLOBAL_COOLDOWN_TICKS = 200; // 10 秒
     // 每女仆启动抖动：世界加载后随机延迟 0-400 tick 再开始检测
     private static final Map<UUID, Long> STARTUP_DELAYS = new ConcurrentHashMap<>();
+    // 范围冷却：记录最近触发事件的位置+时间，同维度内附近女仆不重复触发
+    private static final Map<EventLocation, Long> RECENT_EVENTS = new ConcurrentHashMap<>();
+    private static final long RANGE_COOLDOWN_TICKS = 200;
+    private static long lastCleanupTick = 0;
 
     private EnvironmentEventDetector() {
     }
@@ -106,18 +110,39 @@ public final class EnvironmentEventDetector {
         };
     }
 
-    /** 检查事件冷却是否已过 */
-    public static boolean canTriggerEvent(UUID uuid, long gameTime, long cooldownTicks) {
-        if ((gameTime - lastGlobalEventTime) < GLOBAL_COOLDOWN_TICKS) return false;
+    /** 检查事件冷却是否已过。范围冷却：同维度范围内有其他女仆刚触发过则阻塞。 */
+    public static boolean canTriggerEvent(UUID uuid, long gameTime, long cooldownTicks,
+                                           BlockPos maidPos, ResourceLocation maidDim) {
+        // 惰性清理过期条目 + 范围检查
+        long expiredBefore = gameTime - RANGE_COOLDOWN_TICKS;
+        double rangeSq = EnhancedConfig.EVENT_RANGE_BLOCKS.get();
+        rangeSq *= rangeSq;
+        for (Iterator<Map.Entry<EventLocation, Long>> it = RECENT_EVENTS.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<EventLocation, Long> entry = it.next();
+            if (entry.getValue() < expiredBefore) {
+                it.remove();
+            } else if (entry.getKey().dimension().equals(maidDim)
+                    && entry.getKey().pos().distSqr(maidPos) <= rangeSq) {
+                return false;
+            }
+        }
+
         Long last = LAST_EVENT_TIME.get(uuid);
         return last == null || (gameTime - last) >= cooldownTicks;
     }
 
     /** 标记事件已触发 */
-    public static void markTriggered(UUID uuid, long gameTime) {
+    public static void markTriggered(UUID uuid, long gameTime, BlockPos pos, ResourceLocation dim) {
         LAST_EVENT_TIME.put(uuid, gameTime);
-        lastGlobalEventTime = gameTime;
+        RECENT_EVENTS.put(new EventLocation(dim, pos), gameTime);
         DAY_EVENT_COUNT.merge(uuid, 1, Integer::sum);
+
+        // 低频主动清理
+        if (gameTime - lastCleanupTick > 100) {
+            long expiredBefore = gameTime - RANGE_COOLDOWN_TICKS;
+            RECENT_EVENTS.values().removeIf(t -> t < expiredBefore);
+            lastCleanupTick = gameTime;
+        }
     }
 
     /** 本日事件触发次数 */
@@ -138,5 +163,8 @@ public final class EnvironmentEventDetector {
     }
 
     private record Snapshot(boolean raining, boolean thundering, int dayPhase, ResourceLocation biome) {
+    }
+
+    private record EventLocation(ResourceLocation dimension, BlockPos pos) {
     }
 }

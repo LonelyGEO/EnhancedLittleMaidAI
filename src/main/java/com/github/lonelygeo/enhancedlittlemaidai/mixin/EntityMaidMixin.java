@@ -165,12 +165,14 @@ public abstract class EntityMaidMixin {
                 int eventCount = EnvironmentEventDetector.getEventCount(uuid);
                 if (eventCount >= EnhancedConfig.EVENT_MAX_PER_DAY.get()) return;
                 if (!EnvironmentEventDetector.canTriggerEvent(uuid, gameTime,
-                        EnhancedConfig.EVENT_COOLDOWN_TICKS.get())) return;
+                        EnhancedConfig.EVENT_COOLDOWN_TICKS.get(),
+                        maid.blockPosition(), maid.level().dimension().location())) return;
 
                 String eventDesc = EnvironmentEventDetector.toDescription(event, maid);
                 String systemPrompt = ProactiveChatCallback.buildProactivePrompt(maid, eventDesc);
                 if (triggerProactiveChat(maid, systemPrompt, "少女感知中...")) {
-                    EnvironmentEventDetector.markTriggered(uuid, gameTime);
+                    EnvironmentEventDetector.markTriggered(uuid, gameTime,
+                            maid.blockPosition(), maid.level().dimension().location());
                     ProactiveChatManager.markTriggered(uuid, gameTime);
                     if (EnhancedConfig.debugLog()) {
                         EnhancedLittleMaidAI.LOGGER.info(
