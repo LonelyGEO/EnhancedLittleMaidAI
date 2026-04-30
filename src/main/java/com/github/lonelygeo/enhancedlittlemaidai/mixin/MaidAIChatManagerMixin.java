@@ -24,8 +24,8 @@ import java.util.List;
 public abstract class MaidAIChatManagerMixin {
 
     /**
-     * 交换 UserPromptContexts.addContext() 的输出顺序：
-     * 原格式 "&lt;context&gt;状态&lt;/context&gt;\n用户提问" → "用户提问\n\n&lt;context&gt;状态&lt;/context&gt;"
+     * 交换 UserPromptContexts.addContext() 的输出顺序并添加优先级标记：
+     * 原格式 "&lt;context&gt;状态&lt;/context&gt;\n用户提问" → "[请优先回应此消息] 用户提问\n\n&lt;context&gt;状态&lt;/context&gt;"
      * 让 LLM 优先响应用户实际提问，而非被状态数据（如饥饿度）劫持对话。
      */
     @Redirect(method = "normalChat", at = @At(value = "INVOKE",
@@ -41,7 +41,7 @@ public abstract class MaidAIChatManagerMixin {
             if (end < 0) return original;
             String contextPart = original.substring(0, end + endMarker.length());
             String userPart = original.substring(end + endMarker.length()).trim();
-            return userPart + "\n\n" + contextPart;
+            return "[请优先回应此消息] " + userPart + "\n\n" + contextPart;
         } catch (Exception e) {
             return UserPromptContexts.addContext(maid, userMsg);
         }
