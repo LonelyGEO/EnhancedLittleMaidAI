@@ -42,6 +42,9 @@ public final class InterMaidChatManager {
     private static final Set<UUID> BUSY = Collections.synchronizedSet(new HashSet<>());
     // deciding set: B 正在等 LLM 决策，防止每个 tick 重复触发请求
     private static final Set<UUID> DECIDING = Collections.synchronizedSet(new HashSet<>());
+    // 全局并发决策计数，防止多对女仆同时向 LLM 发起决策请求
+    private static final AtomicInteger DECIDING_COUNT = new AtomicInteger(0);
+    private static final int MAX_DECIDING = 2;
 
     private InterMaidChatManager() {
     }
@@ -378,6 +381,19 @@ public final class InterMaidChatManager {
 
     public static void finishDeciding(UUID uuid) {
         DECIDING.remove(uuid);
+    }
+
+    public static boolean tryAcquireDecisionSlot() {
+        int current = DECIDING_COUNT.get();
+        if (current >= MAX_DECIDING) {
+            return false;
+        }
+        return DECIDING_COUNT.compareAndSet(current, current + 1)
+                || tryAcquireDecisionSlot();
+    }
+
+    public static void releaseDecisionSlot() {
+        DECIDING_COUNT.decrementAndGet();
     }
 
     // ==================== 内部类型 ====================

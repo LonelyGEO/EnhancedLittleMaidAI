@@ -68,6 +68,7 @@ public class InterMaidDecisionCallback extends LLMCallback {
     }
 
     private void accept() {
+        InterMaidChatManager.releaseDecisionSlot();
         InterMaidChatManager.handleAcceptance(maidB);
         InterMaidChatManager.finishDeciding(maidB.getUUID());
         if (EnhancedConfig.debugLog()) {
@@ -77,6 +78,7 @@ public class InterMaidDecisionCallback extends LLMCallback {
     }
 
     private void reject() {
+        InterMaidChatManager.releaseDecisionSlot();
         long gameTime = maidB.level().getGameTime();
         InterMaidChatManager.markRejected(maidA.getUUID(), maidB.getUUID(), gameTime);
         InterMaidChatManager.finishDeciding(maidB.getUUID());

@@ -281,7 +281,16 @@ public abstract class EntityMaidMixin {
             return;
         }
 
-        if (InterMaidChatManager.isDeciding(b.getUUID())) {
+        if (InterMaidChatManager.isDeciding(b.getUUID()) || InterMaidChatManager.isDeciding(a.getUUID())) {
+            return;
+        }
+
+        if (!InterMaidChatManager.tryAcquireDecisionSlot()) {
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "InterMaidChat: Decision slot full, delaying {} ← {}",
+                        b.getUUID(), a.getUUID());
+            }
             return;
         }
 
