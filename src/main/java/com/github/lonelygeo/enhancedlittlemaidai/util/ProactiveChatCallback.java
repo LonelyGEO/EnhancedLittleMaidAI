@@ -117,7 +117,8 @@ public class ProactiveChatCallback extends LLMCallback {
 
         String weather = "未知";
         try {
-            if (maid.level().isRaining()) {
+            boolean hasPrecip = maid.level().getBiome(maid.blockPosition()).value().hasPrecipitation();
+            if (maid.level().isRaining() && hasPrecip) {
                 weather = maid.level().isThundering() ? "雷雨" : "下雨";
             } else {
                 weather = "晴朗";

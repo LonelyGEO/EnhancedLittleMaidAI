@@ -68,7 +68,6 @@ public class InterMaidDecisionCallback extends LLMCallback {
     }
 
     private void accept() {
-        InterMaidChatManager.clearProposal(maidB.getUUID());
         InterMaidChatManager.handleAcceptance(maidB);
         InterMaidChatManager.finishDeciding(maidB.getUUID());
         if (EnhancedConfig.debugLog()) {

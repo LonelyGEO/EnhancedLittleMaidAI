@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 环境事件检测器。
@@ -21,6 +22,11 @@ public final class EnvironmentEventDetector {
             Collections.synchronizedMap(new HashMap<>());
     private static final Map<UUID, Integer> DAY_EVENT_COUNT =
             Collections.synchronizedMap(new HashMap<>());
+    // 全局冷却：防止多女仆同时触发同一事件
+    private static long lastGlobalEventTime = -1;
+    private static final long GLOBAL_COOLDOWN_TICKS = 200; // 10 秒
+    // 每女仆启动抖动：世界加载后随机延迟 0-400 tick 再开始检测
+    private static final Map<UUID, Long> STARTUP_DELAYS = new ConcurrentHashMap<>();
 
     private EnvironmentEventDetector() {
     }
@@ -37,8 +43,16 @@ public final class EnvironmentEventDetector {
     public static EventType detect(EntityMaid maid) {
         try {
             UUID uuid = maid.getUUID();
-            boolean raining = maid.level().isRaining();
-            boolean thundering = maid.level().isThundering();
+            long gameTime = maid.level().getGameTime();
+
+            // 启动抖动：世界加载后延迟检测
+            long startupDelay = STARTUP_DELAYS.computeIfAbsent(uuid,
+                    k -> gameTime + (long)(Math.random() * 400));
+            if (gameTime < startupDelay) return null;
+
+            boolean hasPrecip = maid.level().getBiome(maid.blockPosition()).value().hasPrecipitation();
+            boolean raining = maid.level().isRaining() && hasPrecip;
+            boolean thundering = maid.level().isThundering() && hasPrecip;
             int dayPhase = getDayPhase(maid.level().getDayTime() % 24000);
             ResourceLocation biome = maid.level().getBiome(maid.blockPosition()).unwrapKey()
                     .map(k -> k.location()).orElse(null);
@@ -94,6 +108,7 @@ public final class EnvironmentEventDetector {
 
     /** 检查事件冷却是否已过 */
     public static boolean canTriggerEvent(UUID uuid, long gameTime, long cooldownTicks) {
+        if ((gameTime - lastGlobalEventTime) < GLOBAL_COOLDOWN_TICKS) return false;
         Long last = LAST_EVENT_TIME.get(uuid);
         return last == null || (gameTime - last) >= cooldownTicks;
     }
@@ -101,6 +116,7 @@ public final class EnvironmentEventDetector {
     /** 标记事件已触发 */
     public static void markTriggered(UUID uuid, long gameTime) {
         LAST_EVENT_TIME.put(uuid, gameTime);
+        lastGlobalEventTime = gameTime;
         DAY_EVENT_COUNT.merge(uuid, 1, Integer::sum);
     }
 
