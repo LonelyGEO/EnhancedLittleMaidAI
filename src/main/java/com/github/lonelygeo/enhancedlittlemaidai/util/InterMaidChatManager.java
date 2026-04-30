@@ -145,6 +145,11 @@ public final class InterMaidChatManager {
                 break;
             }
         }
+        if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.debug(
+                    "InterMaidChat: tryStartConversation found {}/{} entities",
+                    participants.size(), memberUuids.size());
+        }
         if (participants.size() >= 2) {
             participants.sort(Comparator.comparingDouble(m -> {
                 double dist = EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.get();
@@ -184,7 +189,13 @@ public final class InterMaidChatManager {
     /** 在 server thread 上完成接受：加入群组 → 人数够时启动对话 */
     public static void finalizeAcceptance(EntityMaid b, UUID proposerUuid) {
         GroupProposal gp = GROUP_PROPOSALS.get(proposerUuid);
-        if (gp == null) return;
+        if (gp == null) {
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "InterMaidChat: finalizeAcceptance no group found for proposer {}", proposerUuid);
+            }
+            return;
+        }
         gp.accepted.add(b.getUUID());
         gp.targets.remove(b.getUUID());
 
@@ -192,7 +203,14 @@ public final class InterMaidChatManager {
         all.add(proposerUuid);
         all.addAll(gp.accepted);
         if (all.size() >= 2) {
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "InterMaidChat: finalizeAcceptance starting, group: {} members", all.size());
+            }
             tryStartConversation(List.copyOf(all), b.level());
+        } else if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.debug(
+                    "InterMaidChat: finalizeAcceptance group too small: {} members", all.size());
         }
     }
 

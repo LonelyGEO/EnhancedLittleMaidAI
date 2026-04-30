@@ -75,6 +75,10 @@ public class InterMaidDecisionCallback extends LLMCallback {
         UUID proposerUuid = InterMaidChatManager.claimProposal(maidB.getUUID());
         if (proposerUuid == null) {
             InterMaidChatManager.finishDeciding(maidB.getUUID());
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "InterMaidChat: claimProposal returned null for {}, proposal expired", maidB.getUUID());
+            }
             return; // proposal 已过期或被覆盖，静默放弃
         }
 
