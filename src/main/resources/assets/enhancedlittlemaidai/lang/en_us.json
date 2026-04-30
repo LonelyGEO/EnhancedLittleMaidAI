@@ -22,8 +22,8 @@
     "config.enhancedlittlemaidai.memory.spatialRecallRadius.tooltip": "How far (blocks) around a memory location the maid recalls related memories",
     "config.enhancedlittlemaidai.memory.semanticRetrieveTopK": "Semantic Retrieve Top-K",
     "config.enhancedlittlemaidai.memory.semanticRetrieveTopK.tooltip": "How many of the most relevant memories to inject into each conversation",
-    "config.enhancedlittlemaidai.memory.maxAgeHours": "Memory Retention (hours)",
-    "config.enhancedlittlemaidai.memory.maxAgeHours.tooltip": "Memories begin to fade after this time; older memories are evicted first",
+    "config.enhancedlittlemaidai.memory.maxFreshAgeHours": "Memory Freshness Window (hours)",
+    "config.enhancedlittlemaidai.memory.maxFreshAgeHours.tooltip": "Memories stay fresh within this time window; beyond it they rely on importance score",
 
     "config.enhancedlittlemaidai.proactive.enabled": "Enable Proactive Chat",
     "config.enhancedlittlemaidai.proactive.enabled.tooltip": "When disabled, maids will not initiate conversations",

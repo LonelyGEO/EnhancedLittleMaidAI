@@ -167,10 +167,10 @@ public final class ClothConfigHandler {
 
         memorySub.add(entryBuilder
                 .startIntSlider(
-                        Component.translatable("config.enhancedlittlemaidai.memory.maxAgeHours"),
+                        Component.translatable("config.enhancedlittlemaidai.memory.maxFreshAgeHours"),
                         EnhancedConfig.MAX_AGE_TICKS.get() / 72000, 1, 100)
                 .setDefaultValue(10)
-                .setTooltip(Component.translatable("config.enhancedlittlemaidai.memory.maxAgeHours.tooltip"))
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.memory.maxFreshAgeHours.tooltip"))
                 .setSaveConsumer(val -> EnhancedConfig.MAX_AGE_TICKS.set(val * 72000))
                 .build());
 

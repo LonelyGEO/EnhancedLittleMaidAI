@@ -22,8 +22,8 @@
     "config.enhancedlittlemaidai.memory.spatialRecallRadius.tooltip": "女仆回到记忆地点时，多大范围内想起相关记忆（格）",
     "config.enhancedlittlemaidai.memory.semanticRetrieveTopK": "语义检索条数",
     "config.enhancedlittlemaidai.memory.semanticRetrieveTopK.tooltip": "每次对话注入多少条与话题最相关的记忆",
-    "config.enhancedlittlemaidai.memory.maxAgeHours": "记忆保留时长 (小时)",
-    "config.enhancedlittlemaidai.memory.maxAgeHours.tooltip": "记忆经过此时长后开始逐渐淡忘，更久远的记忆优先淘汰",
+    "config.enhancedlittlemaidai.memory.maxFreshAgeHours": "记忆新鲜窗口 (小时)",
+    "config.enhancedlittlemaidai.memory.maxFreshAgeHours.tooltip": "记忆在此时间窗口内保持新鲜，超过后仅依赖重要性评分",
 
     "config.enhancedlittlemaidai.proactive.enabled": "启用主动聊天",
     "config.enhancedlittlemaidai.proactive.enabled.tooltip": "关闭后女仆不会主动发起对话",
