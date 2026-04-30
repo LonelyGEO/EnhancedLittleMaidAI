@@ -49,8 +49,9 @@ public class MindPalace {
     }
 
     /**
-     * 构建 `<memory>` XML 片段，用于注入到 LLM 消息列表。
-     * 包含：语义检索 Top-K + 空间召回（如果女仆在记忆位置附近）。
+     * 构建记忆上下文文本，用于注入到 LLM 消息列表。
+     * 包含：语义检索 Top-K + 空间召回。
+     * 格式：[类别] (x,y,z) 内容
      */
     public String buildMemoryContext(String userMessage, BlockPos maidPos) {
         List<MemoryItem> semanticResults = store.retrieve(userMessage, EnhancedConfig.SEMANTIC_RETRIEVE_TOP_K.get());
@@ -62,19 +63,17 @@ public class MindPalace {
         if (merged.isEmpty()) return "";
 
         StringBuilder sb = new StringBuilder();
-        sb.append("<memory>\n");
         for (MemoryItem m : merged) {
-            sb.append("  <item");
+            String tag = m.category().displayName();
+            sb.append("[").append(tag).append("]");
             if (m.location().isPresent()) {
                 BlockPos loc = m.location().get();
-                sb.append(" location=\"").append(loc.getX())
+                sb.append(" (").append(loc.getX())
                         .append(",").append(loc.getY())
-                        .append(",").append(loc.getZ()).append("\"");
+                        .append(",").append(loc.getZ()).append(")");
             }
-            sb.append(" category=\"").append(m.category().name().toLowerCase()).append("\"");
-            sb.append(">").append(m.content()).append("</item>\n");
+            sb.append(" ").append(m.content()).append("\n");
         }
-        sb.append("</memory>");
         return sb.toString();
     }
 

@@ -210,8 +210,8 @@ public class InterMaidChatCallback extends LLMCallback {
         sb.append("在一起。请和");
         sb.append(others.size() == 1 ? "她" : "她们");
         sb.append("聊几句。说一句简短自然的话主动发起对话。"
-                + " 只输出一句纯对话，严格禁止：（...）或*...*等任何动作描写、旁白、心理活动。"
-                + " 注意：英文地名物品名请转换为中文Minecraft玩家熟知的名词。");
+                + " " + PromptConstants.NO_ACTION_DESCRIPTION
+                + " " + PromptConstants.TRANSLATE_ENGLISH_NAMES);
         return sb.toString();
     }
 
@@ -227,8 +227,8 @@ public class InterMaidChatCallback extends LLMCallback {
             sb.append(name).append("说：").append(entry.getValue()).append("\n");
         }
         sb.append("\n现在轮到你了。请简短自然地回应。"
-                + " 只输出一句纯对话，严格禁止：（...）或*...*等任何动作描写、旁白、心理活动。"
-                + " 注意：英文地名物品名请转换为中文Minecraft玩家熟知的名词。");
+                + " " + PromptConstants.NO_ACTION_DESCRIPTION
+                + " " + PromptConstants.TRANSLATE_ENGLISH_NAMES);
         return sb.toString();
     }
 
@@ -299,7 +299,7 @@ public class InterMaidChatCallback extends LLMCallback {
             sb.append(others.get(i).getDisplayName().getString());
         }
         sb.append("在一起。请主动和她们聊几句。说一句简短自然的话。"
-                + " 只输出一句纯对话，严格禁止：（...）或*...*等任何动作描写、旁白、心理活动。");
+                + " " + PromptConstants.NO_ACTION_DESCRIPTION + "");
         return sb.toString();
     }
 

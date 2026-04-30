@@ -6,6 +6,7 @@ import com.github.tartaricacid.touhoulittlemaid.ai.agent.context.GameContextRegi
 import com.github.tartaricacid.touhoulittlemaid.ai.agent.context.IMaidContext;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.TamableAnimal;
@@ -69,7 +70,7 @@ public final class BlockAwareContexts {
             counts.entrySet().stream()
                     .sorted(Map.Entry.<Block, Integer>comparingByValue().reversed())
                     .limit(15)
-                    .forEach(e -> sb.append(e.getKey().getDescriptionId())
+                    .forEach(e -> sb.append(Component.translatable(e.getKey().getDescriptionId()).getString())
                             .append(" x").append(e.getValue()).append("; "));
             String result = sb.isEmpty() ? "none" : sb.toString();
             if (EnhancedConfig.debugLog()) {

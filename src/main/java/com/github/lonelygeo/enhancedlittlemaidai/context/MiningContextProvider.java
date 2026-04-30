@@ -6,6 +6,7 @@ import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.agent.context.IMaidContext;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -64,7 +65,7 @@ public final class MiningContextProvider {
                 StringBuilder sb = new StringBuilder();
                 oreCounts.entrySet().stream()
                         .sorted(Map.Entry.<Block, Integer>comparingByValue().reversed())
-                        .forEach(e -> sb.append(e.getKey().getDescriptionId())
+                        .forEach(e -> sb.append(Component.translatable(e.getKey().getDescriptionId()).getString())
                                 .append(" x").append(e.getValue()).append("; "));
                 sb.append("| sniff_radius=").append(sniffRadius);
                 String result = sb.toString();

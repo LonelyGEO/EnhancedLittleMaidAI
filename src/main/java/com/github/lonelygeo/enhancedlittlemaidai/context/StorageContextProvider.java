@@ -6,6 +6,7 @@ import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.agent.context.IMaidContext;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -73,8 +74,8 @@ public final class StorageContextProvider {
                                             .getMethod("item").invoke(ic);
                                     int count = (int) ic.getClass()
                                             .getMethod("count").invoke(ic);
-                                    sb.append(stack.getDescriptionId())
-                                            .append("x").append(count).append(", ");
+                                    sb.append(Component.translatable(stack.getDescriptionId()).getString())
+                                            .append(" x").append(count).append(", ");
                                 } catch (Exception ignored) {
                                 }
                                 itemCount++;
@@ -139,8 +140,8 @@ public final class StorageContextProvider {
 
                         if (shownItems < maxItems) {
                             if (stack != null) {
-                                sb.append(stack.getDescriptionId())
-                                        .append("x").append(count).append(", ");
+                                sb.append(Component.translatable(stack.getDescriptionId()).getString())
+                                        .append(" x").append(count).append(", ");
                             }
                             shownItems++;
                         }

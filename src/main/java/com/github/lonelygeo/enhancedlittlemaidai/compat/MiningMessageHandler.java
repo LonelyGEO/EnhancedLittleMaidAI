@@ -2,6 +2,7 @@ package com.github.lonelygeo.enhancedlittlemaidai.compat;
 
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
+import com.github.lonelygeo.enhancedlittlemaidai.util.PromptConstants;
 import com.github.lonelygeo.enhancedlittlemaidai.util.LLMUtil;
 import com.github.lonelygeo.mininglittlemaid.api.event.MiningMessageEvent;
 import com.github.lonelygeo.mininglittlemaid.api.event.MiningMessageType;
@@ -58,9 +59,9 @@ public final class MiningMessageHandler {
         String prompt = characterSetting
                 + "\n\n[系统指令] 刚才发生了以下情况：" + situation
                 + "\n请用1-2句简短自然的话告诉主人。" +
-                " 只输出纯对话，严格禁止：（...）或*...*等任何动作描写。"
-                + " 注意：英文地名、物品名请转换为中文MC玩家熟知的名词。" +
-                " 偶尔可以使用颜文字增加趣味，但不要每句都用。";
+                " " + PromptConstants.NO_ACTION_DESCRIPTION
+                + " " + PromptConstants.TRANSLATE_ENGLISH_NAMES
+                + " 偶尔可以使用颜文字增加趣味，但不要每句都用。";
 
         LLMMessage sysMsg = LLMMessage.systemChat(maid, prompt);
         LLMMessage userMsg = LLMMessage.userChat(maid, "（采矿事件触发对话）");
