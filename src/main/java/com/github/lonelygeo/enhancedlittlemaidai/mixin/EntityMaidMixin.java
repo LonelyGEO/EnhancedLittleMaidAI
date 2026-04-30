@@ -312,8 +312,10 @@ public abstract class EntityMaidMixin {
         } else {
             // WEIGHT mode
             if (InterMaidChatManager.decideByWeight(b, a)) {
+                InterMaidChatManager.releaseDecisionSlot();
                 acceptAndTryStart(b, a);
             } else {
+                InterMaidChatManager.releaseDecisionSlot();
                 InterMaidChatManager.markRejected(a.getUUID(), b.getUUID(), gameTime);
             }
         }

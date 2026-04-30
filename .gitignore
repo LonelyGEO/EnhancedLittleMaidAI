@@ -38,6 +38,7 @@ temp_decompile/
 # extracted JAR files (not part of source)
 /data/
 temp_extract/
+temp_extracted_class/
 
 # Files from Forge MDK
 forge*changelog.txt
