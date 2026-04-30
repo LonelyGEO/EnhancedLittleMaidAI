@@ -143,12 +143,12 @@ public class InterMaidChatCallback extends LLMCallback {
             net.minecraft.server.MinecraftServer server = speaker.getServer();
             if (server != null) {
                 server.submit(() -> {
-                    long bubbleId = speaker.getChatBubbleManager().addThinkingText("少女们商量中...");
+                    long bubbleId = speaker.getChatBubbleManager().addThinkingText("**少女们商量中...**");
                     nextCb.setWaitingBubbleId(bubbleId);
                     client.chat(nextCb);
                 });
             } else {
-                long bubbleId = speaker.getChatBubbleManager().addThinkingText("少女们商量中...");
+                long bubbleId = speaker.getChatBubbleManager().addThinkingText("**少女们商量中...**");
                 nextCb.setWaitingBubbleId(bubbleId);
                 client.chat(nextCb);
             }
@@ -306,12 +306,12 @@ public class InterMaidChatCallback extends LLMCallback {
         net.minecraft.server.MinecraftServer server = first.getServer();
         if (server != null) {
             server.submit(() -> {
-                long bubbleId = first.getChatBubbleManager().addThinkingText("少女们商量中...");
+                long bubbleId = first.getChatBubbleManager().addThinkingText("**少女们商量中...**");
                 cb.setWaitingBubbleId(bubbleId);
                 mgr.getLLMSite().client().chat(cb);
             });
         } else {
-            long bubbleId = first.getChatBubbleManager().addThinkingText("少女们商量中...");
+            long bubbleId = first.getChatBubbleManager().addThinkingText("**少女们商量中...**");
             cb.setWaitingBubbleId(bubbleId);
             mgr.getLLMSite().client().chat(cb);
         }

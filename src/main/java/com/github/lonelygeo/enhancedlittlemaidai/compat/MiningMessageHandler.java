@@ -67,7 +67,7 @@ public final class MiningMessageHandler {
         LLMMessage userMsg = LLMMessage.userChat(maid, "（采矿事件触发对话）");
         List<LLMMessage> messages = List.of(sysMsg, userMsg);
 
-        long bubbleId = maid.getChatBubbleManager().addThinkingText("少女分析中...");
+        long bubbleId = maid.getChatBubbleManager().addThinkingText("**少女分析中...**");
 
         MiningChatCallback callback = new MiningChatCallback(chatManager, messages, bubbleId);
         client.chat(callback);
