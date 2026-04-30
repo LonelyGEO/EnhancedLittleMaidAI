@@ -10,6 +10,7 @@ import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidChatCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidChatManager;
 import com.github.lonelygeo.enhancedlittlemaidai.util.InterMaidDecisionCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.LLMUtil;
+import com.github.lonelygeo.enhancedlittlemaidai.util.MaidSpawnHandler;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatCallback;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ProactiveChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
@@ -130,6 +131,7 @@ public abstract class EntityMaidMixin {
         ProactiveChatManager.reset(uuid);
         EnvironmentEventDetector.reset(uuid);
         InterMaidChatManager.reset(uuid);
+        MaidSpawnHandler.clearGreeted(uuid);
     }
 
     // ==================== 主动聊天 ====================

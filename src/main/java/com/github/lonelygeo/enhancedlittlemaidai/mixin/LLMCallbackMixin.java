@@ -103,6 +103,11 @@ public abstract class LLMCallbackMixin {
     )
     private void enhanced$extractMemoriesOnSuccess(ResponseChat responseChat, CallbackInfo ci) {
         try {
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "EnhancedLittleMaidAI: LLM onSuccess ENTER, cb={}",
+                        this.getClass().getSimpleName());
+            }
             // 防递归：MemoryExtractionCallback/ProactiveChatCallback 自身触发不做提取
             if ((Object) this instanceof MemoryExtractionCallback) return;
             if ((Object) this instanceof ProactiveChatCallback) return;

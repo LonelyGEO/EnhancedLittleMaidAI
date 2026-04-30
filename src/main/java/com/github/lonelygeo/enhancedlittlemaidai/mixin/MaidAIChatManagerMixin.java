@@ -6,6 +6,7 @@ import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.UserPromptContexts;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.tts.TTSSite;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import com.github.tartaricacid.touhoulittlemaid.util.CappedQueue;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
@@ -79,6 +81,18 @@ public abstract class MaidAIChatManagerMixin {
             }
         } catch (Exception e) {
             // 记忆注入失败不中断正常聊天
+        }
+    }
+
+    /**
+     * 全局 TTS 禁用拦截。
+     * 注入到 MaidAIChatManager.tts() HEAD，当 ELMAI 配置开关启用时阻止所有 TTS API 调用。
+     * 不影响聊天气泡的文字显示——仅阻止语音合成请求。
+     */
+    @Inject(method = "tts", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
+    private void enhanced$cancelTts(TTSSite site, String lang, String text, long timestamp, CallbackInfo ci) {
+        if (EnhancedConfig.OVERRIDE_TTS_DISABLED.get()) {
+            ci.cancel();
         }
     }
 }

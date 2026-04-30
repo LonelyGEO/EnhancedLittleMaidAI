@@ -30,6 +30,10 @@ public final class MaidSpawnHandler {
     private MaidSpawnHandler() {
     }
 
+    public static void clearGreeted(UUID uuid) {
+        GREETED.remove(uuid);
+    }
+
     @SubscribeEvent
     public static void onEntityJoin(EntityJoinLevelEvent event) {
         if (!EnhancedConfig.ENABLE_MAID_GREETING.get()) return;
@@ -46,17 +50,16 @@ public final class MaidSpawnHandler {
         }
 
         MaidAIChatManager chatManager = maid.getAiChatManager();
-        LLMClient client = chatManager.getLLMSite().client();
-
-        if (GREETED.contains(maid.getUUID())) return;
-        GREETED.add(maid.getUUID());
 
         boolean hasSetting = StringUtils.isNotBlank(chatManager.customSetting)
                 || chatManager.getSetting().isPresent();
 
-        if (hasSetting) {
-            return;
-        }
+        if (hasSetting) return;
+
+        if (GREETED.contains(maid.getUUID())) return;
+        GREETED.add(maid.getUUID());
+
+        LLMClient client = chatManager.getLLMSite().client();
 
         if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.debug(

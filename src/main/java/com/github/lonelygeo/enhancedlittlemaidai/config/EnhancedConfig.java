@@ -64,6 +64,7 @@ public class EnhancedConfig {
     public static ModConfigSpec.BooleanValue DEBUG_LOG;
     public static ModConfigSpec.BooleanValue ENABLE_MINING_CHAT;
     public static ModConfigSpec.BooleanValue ENABLE_MAID_GREETING;
+    public static ModConfigSpec.BooleanValue OVERRIDE_TTS_DISABLED;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -287,6 +288,10 @@ public class EnhancedConfig {
         ENABLE_MAID_GREETING = builder
                 .comment("女仆放置时如果LLM启用则自动生成角色设定并见面问候")
                 .define("enableMaidGreeting", true);
+
+        OVERRIDE_TTS_DISABLED = builder
+                .comment("全局禁用女仆 TTS 语音输出（即使父模组配置了站点也不播放）")
+                .define("overrideTTSDisabled", false);
 
         builder.pop();
 

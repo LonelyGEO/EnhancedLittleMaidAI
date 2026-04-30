@@ -43,6 +43,13 @@ public abstract class LLMOpenAIClientMixin {
     private void enhanced$captureCallback(LLMCallback callback, CallbackInfo ci) {
         enhanced$currentCallback.set(callback);
 
+        if (EnhancedConfig.debugLog()) {
+            int msgCount = callback.getMessages().size();
+            EnhancedLittleMaidAI.LOGGER.debug(
+                    "EnhancedLittleMaidAI: LLM request ENTER cb={} msgs={}",
+                    callback.getClass().getSimpleName(), msgCount);
+        }
+
         if (LLMResponseCache.shouldCache(callback)) {
             String key = LLMResponseCache.computeKey(callback);
             if (key != null) {
@@ -51,11 +58,12 @@ public abstract class LLMOpenAIClientMixin {
                 ResponseChat cached = LLMResponseCache.get(key, ttl);
                 if (cached != null) {
                     ci.cancel();
-                    callback.onSuccess(cached);
                     if (EnhancedConfig.debugLog()) {
                         EnhancedLittleMaidAI.LOGGER.debug(
-                                "EnhancedLittleMaidAI: Cache hit for callback {}", callback.getClass().getSimpleName());
+                                "EnhancedLittleMaidAI: LLM cache HIT, skipping HTTP for {}",
+                                callback.getClass().getSimpleName());
                     }
+                    callback.onSuccess(cached);
                     return;
                 }
             }
@@ -82,9 +90,10 @@ public abstract class LLMOpenAIClientMixin {
             if (callback != null) {
                 json = injectReasoningContent(json, callback.getMessages());
                 enhanced$currentCallback.remove();
-                if (EnhancedConfig.debugLog()) {
-                    EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: ReasoningContent injected into JSON");
-                }
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: ReasoningContent injected into JSON, {} chars",
+                        json.length());
+            }
             }
             return json;
         } finally {
@@ -94,6 +103,10 @@ public abstract class LLMOpenAIClientMixin {
 
     @Inject(method = "onTextCall", at = @At("HEAD"), remap = false)
     private void enhanced$onTextCall(ResponseCallback<ResponseChat> callback, Message firstChoice, CallbackInfo ci) {
+        if (EnhancedConfig.debugLog()) {
+            String role = firstChoice.getRole() != null ? firstChoice.getRole() : "unknown";
+            EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM response RECEIVED, role={}", role);
+        }
         if (callback instanceof LLMCallback llmCallback && llmCallback.needAddTools) {
             String rawContent = StringUtils.defaultString(firstChoice.getContent());
             String reasoningContent = StringUtils.defaultString(firstChoice.getReasoningContent());
