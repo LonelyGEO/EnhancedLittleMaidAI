@@ -219,6 +219,7 @@ public abstract class EntityMaidMixin {
                             EnhancedLittleMaidAI.LOGGER.info(
                                     "InterMaidChat: Maid {} proposed to {} targets", uuid, targets.size());
                         }
+                        maid.getChatBubbleManager().addTextChatBubble("**少女寻友中...**");
                     } else if (EnhancedConfig.debugLog()) {
                         EnhancedLittleMaidAI.LOGGER.debug(
                                 "InterMaidChat: density skip, partners={}", partners.size());
