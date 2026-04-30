@@ -2,7 +2,9 @@ package com.github.lonelygeo.enhancedlittlemaidai.command;
 
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MemoryItem;
 import com.github.lonelygeo.enhancedlittlemaidai.memory.MindPalace;
+import com.github.lonelygeo.enhancedlittlemaidai.util.bm25.Bm25Index;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -10,17 +12,13 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 public final class MindPalaceCommand {
     private MindPalaceCommand() {}
 
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("mindpalace")
-            .requires(ctx -> ctx.hasPermission(2))
             .then(Commands.literal("list")
                 .then(Commands.argument("maid", EntityArgument.entity())
                     .executes(ctx -> listMemories(ctx.getSource(), EntityArgument.getEntity(ctx, "maid")))))
@@ -29,7 +27,13 @@ public final class MindPalaceCommand {
                     .executes(ctx -> clearMemories(ctx.getSource(), EntityArgument.getEntity(ctx, "maid")))))
             .then(Commands.literal("stats")
                 .then(Commands.argument("maid", EntityArgument.entity())
-                    .executes(ctx -> showStats(ctx.getSource(), EntityArgument.getEntity(ctx, "maid")))));
+                    .executes(ctx -> showStats(ctx.getSource(), EntityArgument.getEntity(ctx, "maid")))))
+            .then(Commands.literal("search")
+                .then(Commands.argument("maid", EntityArgument.entity())
+                    .then(Commands.argument("keyword", StringArgumentType.word())
+                        .executes(ctx -> searchMemories(ctx.getSource(),
+                                EntityArgument.getEntity(ctx, "maid"),
+                                StringArgumentType.getString(ctx, "keyword"))))));
     }
 
     private static int listMemories(CommandSourceStack src, net.minecraft.world.entity.Entity entity) {
@@ -75,6 +79,44 @@ public final class MindPalaceCommand {
 
             src.sendSuccess(() -> Component.literal(line.toString()), false);
             src.sendSuccess(() -> Component.literal(meta.toString()), false);
+        }
+        return 1;
+    }
+
+    private static int searchMemories(CommandSourceStack src, net.minecraft.world.entity.Entity entity,
+                                        String keyword) {
+        if (!(entity instanceof EntityMaid maid)) {
+            src.sendFailure(Component.literal("目标不是女仆"));
+            return 0;
+        }
+        MindPalace palace = MindPalace.get(maid.getUUID());
+        if (palace == null || palace.size() == 0) {
+            src.sendSuccess(() -> Component.literal(
+                    maid.getDisplayName().getString() + " 没有记忆"), false);
+            return 1;
+        }
+
+        List<MemoryItem> items = palace.getStore().retrieve(keyword, 5);
+        if (items.isEmpty()) {
+            src.sendSuccess(() -> Component.literal(
+                    maid.getDisplayName().getString() + " 搜索 \"" + keyword + "\": 无结果"), false);
+            return 1;
+        }
+
+        String header = maid.getDisplayName().getString() + " 搜索 \"" + keyword
+                + "\" 结果 (前 " + items.size() + " 条):";
+        src.sendSuccess(() -> Component.literal(header), false);
+
+        for (MemoryItem m : items) {
+            StringBuilder line = new StringBuilder();
+            line.append("  [").append(categoryName(m.category())).append("] ")
+                    .append(m.content());
+            m.location().ifPresent(loc ->
+                    line.append(" (").append(loc.getX()).append(",")
+                            .append(loc.getY()).append(",")
+                            .append(loc.getZ()).append(")"));
+
+            src.sendSuccess(() -> Component.literal(line.toString()), false);
         }
         return 1;
     }

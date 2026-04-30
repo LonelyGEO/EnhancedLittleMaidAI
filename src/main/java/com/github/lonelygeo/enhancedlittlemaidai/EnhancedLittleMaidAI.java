@@ -1,6 +1,8 @@
 package com.github.lonelygeo.enhancedlittlemaidai;
 
 import com.github.lonelygeo.enhancedlittlemaidai.command.MindPalaceCommand;
+import com.github.lonelygeo.enhancedlittlemaidai.command.ElmaStatusCommand;
+import com.github.lonelygeo.enhancedlittlemaidai.command.ElmaConfigCommand;
 import com.github.lonelygeo.enhancedlittlemaidai.compat.MiningCompat;
 import com.github.lonelygeo.enhancedlittlemaidai.config.ClothConfigIntegration;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
@@ -14,6 +16,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.minecraft.commands.Commands;
 import org.slf4j.Logger;
 
 @Mod(EnhancedLittleMaidAI.MOD_ID)
@@ -33,7 +36,12 @@ public class EnhancedLittleMaidAI {
 
     @SubscribeEvent
     private void registerCommands(RegisterCommandsEvent event) {
-        event.getDispatcher().register(MindPalaceCommand.register());
+        event.getDispatcher().register(
+                Commands.literal("elmai")
+                        .then(MindPalaceCommand.register())
+                        .then(ElmaStatusCommand.register())
+                        .then(ElmaConfigCommand.register())
+        );
         event.getDispatcher().register(ChatMaidCommandHandler.register());
     }
 

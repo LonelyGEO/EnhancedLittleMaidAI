@@ -86,6 +86,11 @@ public final class ProactiveChatManager {
         return dayChatCount.getOrDefault(uuid, 0);
     }
 
+    /** 获取上次主动聊天时间（调试用） */
+    public static Long getLastTime(UUID uuid) {
+        return lastChatTime.get(uuid);
+    }
+
     /** 日出时清零本日计数 */
     public static void resetDayCounts(UUID uuid) {
         dayChatCount.remove(uuid);

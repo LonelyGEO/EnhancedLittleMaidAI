@@ -150,6 +150,11 @@ public final class EnvironmentEventDetector {
         return DAY_EVENT_COUNT.getOrDefault(uuid, 0);
     }
 
+    /** 上次事件触发时间（调试用） */
+    public static Long getLastEventTime(UUID uuid) {
+        return LAST_EVENT_TIME.get(uuid);
+    }
+
     /** 日出时清零本日事件计数 */
     public static void resetDayCounts(UUID uuid) {
         DAY_EVENT_COUNT.remove(uuid);
