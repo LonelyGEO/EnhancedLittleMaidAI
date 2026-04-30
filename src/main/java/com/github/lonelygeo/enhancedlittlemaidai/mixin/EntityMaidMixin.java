@@ -218,17 +218,17 @@ public abstract class EntityMaidMixin {
                         if (EnhancedConfig.debugLog()) {
                             EnhancedLittleMaidAI.LOGGER.info(
                                     "InterMaidChat: Maid {} proposed to {} targets", uuid, targets.size());
+                            long scanBubbleId = maid.getChatBubbleManager()
+                                    .addTextChatBubble("**少女寻友中...**");
+                            new Thread(() -> {
+                                try { Thread.sleep(5000); } catch (InterruptedException ignored) {}
+                                net.minecraft.server.MinecraftServer srv = maid.getServer();
+                                if (srv != null && !maid.isRemoved()) {
+                                    srv.submit(() -> maid.getChatBubbleManager()
+                                            .removeChatBubble(scanBubbleId));
+                                }
+                            }).start();
                         }
-                        long scanBubbleId = maid.getChatBubbleManager()
-                                .addTextChatBubble("**少女寻友中...**");
-                        new Thread(() -> {
-                            try { Thread.sleep(5000); } catch (InterruptedException ignored) {}
-                            net.minecraft.server.MinecraftServer srv = maid.getServer();
-                            if (srv != null && !maid.isRemoved()) {
-                                srv.submit(() -> maid.getChatBubbleManager()
-                                        .removeChatBubble(scanBubbleId));
-                            }
-                        }).start();
                     } else if (EnhancedConfig.debugLog()) {
                         EnhancedLittleMaidAI.LOGGER.debug(
                                 "InterMaidChat: density skip, partners={}", partners.size());
