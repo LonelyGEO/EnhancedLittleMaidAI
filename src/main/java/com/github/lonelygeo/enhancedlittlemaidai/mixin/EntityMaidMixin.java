@@ -290,7 +290,16 @@ public abstract class EntityMaidMixin {
         }
 
         if (!InterMaidChatManager.canAccept(b, a, gameTime)) {
-            InterMaidChatManager.markRejected(a.getUUID(), b.getUUID(), gameTime);
+            // LLM 不可用导致拒绝时不写 pair cooldown，避免阻塞后续正常对话
+            if (LLMUtil.isAvailable(b)) {
+                InterMaidChatManager.markRejected(a.getUUID(), b.getUUID(), gameTime);
+            } else {
+                InterMaidChatManager.rejectFromGroup(b.getUUID());
+                if (EnhancedConfig.debugLog()) {
+                    EnhancedLittleMaidAI.LOGGER.debug(
+                            "InterMaidChat: LLM unavailable for {}, soft reject", b.getUUID());
+                }
+            }
             return;
         }
 

@@ -202,8 +202,8 @@ public class EnhancedConfig {
                 .defineInRange("idleChance", 0.0005, 0.0001, 1.0);
 
         INTER_MAID_SCAN_INTERVAL = builder
-                .comment("女仆扫描附近同伴的间隔（tick），40=2秒")
-                .defineInRange("scanInterval", 40, 10, 200);
+                .comment("女仆扫描附近同伴的间隔（tick），120=6秒")
+                .defineInRange("scanInterval", 120, 10, 200);
 
         INTER_MAID_PLAYER_DISTANCE = builder
                 .comment("玩家感知范围，玩家在此范围内才能触发对话")

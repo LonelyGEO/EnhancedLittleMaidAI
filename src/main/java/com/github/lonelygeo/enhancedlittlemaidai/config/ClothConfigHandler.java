@@ -348,7 +348,7 @@ public final class ClothConfigHandler {
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.scanInterval"),
                         EnhancedConfig.INTER_MAID_SCAN_INTERVAL.get(), 10, 200)
-                .setDefaultValue(40)
+                .setDefaultValue(120)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.scanInterval.tooltip"))
                 .setSaveConsumer(EnhancedConfig.INTER_MAID_SCAN_INTERVAL::set)
                 .build());
