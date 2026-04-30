@@ -173,6 +173,29 @@ public final class InterMaidChatManager {
         }
     }
 
+    /** 原子抢出 proposal（forkJoin 线程安全），返回 proposer UUID 或 null */
+    @Nullable
+    public static UUID claimProposal(UUID acceptor) {
+        Proposal p = PENDING_PROPOSALS.remove(acceptor);
+        if (p == null) return null;
+        return p.from;
+    }
+
+    /** 在 server thread 上完成接受：加入群组 → 人数够时启动对话 */
+    public static void finalizeAcceptance(EntityMaid b, UUID proposerUuid) {
+        GroupProposal gp = GROUP_PROPOSALS.get(proposerUuid);
+        if (gp == null) return;
+        gp.accepted.add(b.getUUID());
+        gp.targets.remove(b.getUUID());
+
+        List<UUID> all = new ArrayList<>();
+        all.add(proposerUuid);
+        all.addAll(gp.accepted);
+        if (all.size() >= 2) {
+            tryStartConversation(List.copyOf(all), b.level());
+        }
+    }
+
     @Nullable
     public static UUID getProposer(UUID maid) {
         Proposal p = PENDING_PROPOSALS.get(maid);

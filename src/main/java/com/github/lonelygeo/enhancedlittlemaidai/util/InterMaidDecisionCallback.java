@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.net.http.HttpRequest;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
@@ -69,18 +70,20 @@ public class InterMaidDecisionCallback extends LLMCallback {
 
     private void accept() {
         InterMaidChatManager.releaseDecisionSlot();
-        // handleAcceptance → tryStartConversation 需要访问 Level.getEntitiesOfClass()
-        // 必须运行在 server thread 上
+
+        // 在异步提交前原子抢出 proposal，防止被 A 侧扫描覆盖
+        UUID proposerUuid = InterMaidChatManager.claimProposal(maidB.getUUID());
+        if (proposerUuid == null) {
+            InterMaidChatManager.finishDeciding(maidB.getUUID());
+            return; // proposal 已过期或被覆盖，静默放弃
+        }
+
+        // finalizeAcceptance 需要 Level.getEntitiesOfClass —— 必须在 server thread
         net.minecraft.server.MinecraftServer server = maidB.getServer();
         if (server != null) {
-            server.submit(() -> InterMaidChatManager.handleAcceptance(maidB));
-            if (EnhancedConfig.debugLog()) {
-                EnhancedLittleMaidAI.LOGGER.debug(
-                        "InterMaidChat: handleAcceptance submitted to server thread for maid {}",
-                        maidB.getUUID());
-            }
+            server.submit(() -> InterMaidChatManager.finalizeAcceptance(maidB, proposerUuid));
         } else {
-            InterMaidChatManager.handleAcceptance(maidB);
+            InterMaidChatManager.finalizeAcceptance(maidB, proposerUuid);
         }
         InterMaidChatManager.finishDeciding(maidB.getUUID());
         if (EnhancedConfig.debugLog()) {

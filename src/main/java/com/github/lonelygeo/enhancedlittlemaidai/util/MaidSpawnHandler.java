@@ -88,7 +88,7 @@ public final class MaidSpawnHandler {
         LLMMessage msg = LLMMessage.userChat(maid, prompt);
         List<LLMMessage> msgs = List.of(msg);
 
-        long bubbleId = maid.getChatBubbleManager().addThinkingText("少女思考中...");
+        long bubbleId = maid.getChatBubbleManager().addThinkingText("少女苏醒中...");
         if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.debug(
                     "MaidSpawn: genSetting bubble={} for maid {}, retry={}",
