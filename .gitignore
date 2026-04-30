@@ -30,6 +30,7 @@ src/generated/resources/.cache
 docs/WorkingPlan.md
 # decompiled class files (root-level only)
 /com/
+/net/
 # temporary decompile artifacts
 .temp_decompile/
 # extracted JAR files (not part of source)
