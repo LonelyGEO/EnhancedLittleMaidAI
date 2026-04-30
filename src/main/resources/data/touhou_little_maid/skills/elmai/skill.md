@@ -1,5 +1,5 @@
 ---
-name: elma
+name: elmai
 description: >
   Enhanced Little Maid AI capabilities: how to query the world context
   (nearby blocks, environment, entities, hunger, tool durability, mining info,
