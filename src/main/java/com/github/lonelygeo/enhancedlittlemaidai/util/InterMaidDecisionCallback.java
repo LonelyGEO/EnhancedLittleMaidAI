@@ -74,6 +74,11 @@ public class InterMaidDecisionCallback extends LLMCallback {
         net.minecraft.server.MinecraftServer server = maidB.getServer();
         if (server != null) {
             server.submit(() -> InterMaidChatManager.handleAcceptance(maidB));
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "InterMaidChat: handleAcceptance submitted to server thread for maid {}",
+                        maidB.getUUID());
+            }
         } else {
             InterMaidChatManager.handleAcceptance(maidB);
         }

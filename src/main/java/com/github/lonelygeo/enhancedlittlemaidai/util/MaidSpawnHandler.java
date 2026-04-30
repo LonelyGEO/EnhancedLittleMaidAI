@@ -234,7 +234,15 @@ public final class MaidSpawnHandler {
     /** 由 EntityMaidMixin.tick 调用，尝试重试指定女仆 */
     public static void retryMaid(EntityMaid maid) {
         if (!PENDING_AUTOGEN.containsKey(maid.getUUID())) return;
-        if (!LLMUtil.isAvailable(maid)) return; // 仍未就绪，继续等
+        if (!LLMUtil.isAvailable(maid)) {
+            if (EnhancedConfig.debugLog() && maid.level().getGameTime() % 200 == 0) {
+                long pendingMs = System.currentTimeMillis() - PENDING_AUTOGEN.getOrDefault(maid.getUUID(), 0L);
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "MaidSpawn: Still waiting for LLM, maid {} pending {}s",
+                        maid.getUUID(), pendingMs / 1000);
+            }
+            return; // 仍未就绪，继续等
+        }
         PENDING_AUTOGEN.remove(maid.getUUID());
 
         MaidAIChatManager chatManager = maid.getAiChatManager();
@@ -248,7 +256,7 @@ public final class MaidSpawnHandler {
         LLMClient client = chatManager.getLLMSite().client();
         if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.debug(
-                    "MaidSpawn: Retry autogen for maid {}", maid.getUUID());
+                    "MaidSpawn: Autogen triggered on retry for maid {}", maid.getUUID());
         }
         genSetting(chatManager, client, maid, 0);
     }

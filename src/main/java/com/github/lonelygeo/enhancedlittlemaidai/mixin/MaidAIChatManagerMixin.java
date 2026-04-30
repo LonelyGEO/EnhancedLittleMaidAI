@@ -48,6 +48,12 @@ public abstract class MaidAIChatManagerMixin {
             if (maid.level().isRaining()
                     && !maid.level().getBiome(maid.blockPosition()).value().hasPrecipitation()) {
                 contextPart = contextPart.replace("Weather: Raining", "Weather: Clear");
+                if (EnhancedConfig.debugLog()) {
+                    EnhancedLittleMaidAI.LOGGER.debug(
+                            "EnhancedLittleMaidAI: Weather corrected: Raining→Clear in biome {}",
+                            maid.level().getBiome(maid.blockPosition()).unwrapKey()
+                                    .map(k -> k.location().toString()).orElse("?"));
+                }
             }
 
             return "[请优先回应此消息] " + userPart + "\n\n" + contextPart;
