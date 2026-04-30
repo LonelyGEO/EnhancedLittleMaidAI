@@ -89,6 +89,11 @@ public final class MaidSpawnHandler {
         List<LLMMessage> msgs = List.of(msg);
 
         long bubbleId = maid.getChatBubbleManager().addThinkingText("少女思考中...");
+        if (EnhancedConfig.debugLog()) {
+            EnhancedLittleMaidAI.LOGGER.debug(
+                    "MaidSpawn: genSetting bubble={} for maid {}, retry={}",
+                    bubbleId, maid.getUUID(), retry);
+        }
 
         client.chat(new LLMCallback(chatManager, msgs, true) {{
             needAddTools = false;
@@ -97,6 +102,11 @@ public final class MaidSpawnHandler {
             public void onSuccess(ResponseChat responseChat) {
                 String result = responseChat.getChatText();
                 if (StringUtils.isBlank(result)) {
+                    if (EnhancedConfig.debugLog()) {
+                        EnhancedLittleMaidAI.LOGGER.debug(
+                                "MaidSpawn: genSetting empty result, removing bubble {} for maid {}",
+                                bubbleId, maid.getUUID());
+                    }
                     maid.getChatBubbleManager().removeChatBubble(bubbleId);
                     if (retry < 1) genSetting(chatManager, client, maid, retry + 1);
                     return;
@@ -116,8 +126,14 @@ public final class MaidSpawnHandler {
             @Override
             public void onFailure(HttpRequest request, Throwable throwable, int errorCode) {
                 EnhancedLittleMaidAI.LOGGER.warn(
-                        "MaidSpawn: Failed to gen setting for maid {}", maid.getUUID());
+                        "MaidSpawn: Failed to gen setting for maid {} (code={})",
+                        maid.getUUID(), errorCode);
                 maid.getChatBubbleManager().removeChatBubble(bubbleId);
+                if (EnhancedConfig.debugLog()) {
+                    EnhancedLittleMaidAI.LOGGER.debug(
+                            "MaidSpawn: removed bubble {} on failure for maid {}",
+                            bubbleId, maid.getUUID());
+                }
             }
         });
     }
