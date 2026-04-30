@@ -11,6 +11,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -20,24 +21,35 @@ public final class MindPalaceCommand {
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("mindpalace")
             .then(Commands.literal("list")
-                .then(Commands.argument("maid", EntityArgument.entity())
-                    .executes(ctx -> listMemories(ctx.getSource(), EntityArgument.getEntity(ctx, "maid")))))
+                .then(Commands.argument("maid", EntityArgument.entities())
+                    .executes(ctx -> listMemories(ctx.getSource(),
+                            EntityArgument.getEntities(ctx, "maid")))))
             .then(Commands.literal("clear")
-                .then(Commands.argument("maid", EntityArgument.entity())
-                    .executes(ctx -> clearMemories(ctx.getSource(), EntityArgument.getEntity(ctx, "maid")))))
+                .then(Commands.argument("maid", EntityArgument.entities())
+                    .executes(ctx -> clearMemories(ctx.getSource(),
+                            EntityArgument.getEntities(ctx, "maid")))))
             .then(Commands.literal("stats")
-                .then(Commands.argument("maid", EntityArgument.entity())
-                    .executes(ctx -> showStats(ctx.getSource(), EntityArgument.getEntity(ctx, "maid")))))
+                .then(Commands.argument("maid", EntityArgument.entities())
+                    .executes(ctx -> showStats(ctx.getSource(),
+                            EntityArgument.getEntities(ctx, "maid")))))
             .then(Commands.literal("search")
-                .then(Commands.argument("maid", EntityArgument.entity())
+                .then(Commands.argument("maid", EntityArgument.entities())
                     .then(Commands.argument("keyword", StringArgumentType.word())
                         .executes(ctx -> searchMemories(ctx.getSource(),
-                                EntityArgument.getEntity(ctx, "maid"),
+                                EntityArgument.getEntities(ctx, "maid"),
                                 StringArgumentType.getString(ctx, "keyword"))))));
     }
 
-    private static int listMemories(CommandSourceStack src, net.minecraft.world.entity.Entity entity) {
-        if (!(entity instanceof EntityMaid maid)) {
+    private static EntityMaid getFirstMaid(CommandSourceStack src, Collection<? extends net.minecraft.world.entity.Entity> entities) {
+        for (var e : entities) {
+            if (e instanceof EntityMaid maid) return maid;
+        }
+        return null;
+    }
+
+    private static int listMemories(CommandSourceStack src, Collection<? extends net.minecraft.world.entity.Entity> entities) {
+        EntityMaid maid = getFirstMaid(src, entities);
+        if (maid == null) {
             src.sendFailure(Component.literal("目标不是女仆"));
             return 0;
         }
@@ -83,9 +95,11 @@ public final class MindPalaceCommand {
         return 1;
     }
 
-    private static int searchMemories(CommandSourceStack src, net.minecraft.world.entity.Entity entity,
+    private static int searchMemories(CommandSourceStack src,
+                                        Collection<? extends net.minecraft.world.entity.Entity> entities,
                                         String keyword) {
-        if (!(entity instanceof EntityMaid maid)) {
+        EntityMaid maid = getFirstMaid(src, entities);
+        if (maid == null) {
             src.sendFailure(Component.literal("目标不是女仆"));
             return 0;
         }
@@ -121,8 +135,9 @@ public final class MindPalaceCommand {
         return 1;
     }
 
-    private static int clearMemories(CommandSourceStack src, net.minecraft.world.entity.Entity entity) {
-        if (!(entity instanceof EntityMaid maid)) {
+    private static int clearMemories(CommandSourceStack src, Collection<? extends net.minecraft.world.entity.Entity> entities) {
+        EntityMaid maid = getFirstMaid(src, entities);
+        if (maid == null) {
             src.sendFailure(Component.literal("目标不是女仆"));
             return 0;
         }
@@ -136,8 +151,9 @@ public final class MindPalaceCommand {
         return 1;
     }
 
-    private static int showStats(CommandSourceStack src, net.minecraft.world.entity.Entity entity) {
-        if (!(entity instanceof EntityMaid maid)) {
+    private static int showStats(CommandSourceStack src, Collection<? extends net.minecraft.world.entity.Entity> entities) {
+        EntityMaid maid = getFirstMaid(src, entities);
+        if (maid == null) {
             src.sendFailure(Component.literal("目标不是女仆"));
             return 0;
         }

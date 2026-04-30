@@ -20,13 +20,18 @@ public final class ElmaStatusCommand {
 
     public static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("status")
-                .then(Commands.argument("maid", EntityArgument.entity())
+                .then(Commands.argument("maid", EntityArgument.entities())
                         .executes(ctx -> showStatus(ctx.getSource(),
-                                EntityArgument.getEntity(ctx, "maid"))));
+                                EntityArgument.getEntities(ctx, "maid"))));
     }
 
-    private static int showStatus(CommandSourceStack src, net.minecraft.world.entity.Entity entity) {
-        if (!(entity instanceof EntityMaid maid)) {
+    private static int showStatus(CommandSourceStack src,
+                                   java.util.Collection<? extends net.minecraft.world.entity.Entity> entities) {
+        EntityMaid maid = null;
+        for (var e : entities) {
+            if (e instanceof EntityMaid m) { maid = m; break; }
+        }
+        if (maid == null) {
             src.sendFailure(Component.literal("目标不是女仆"));
             return 0;
         }
