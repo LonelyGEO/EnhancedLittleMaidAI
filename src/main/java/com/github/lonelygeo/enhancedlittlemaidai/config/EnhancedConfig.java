@@ -143,7 +143,7 @@ public class EnhancedConfig {
 
         EVENT_RANGE_BLOCKS = builder
                 .comment("环境事件范围冷却半径（格）。范围内有女仆刚触发过事件则其他女仆不重复触发，防止同一场雨/日出多女仆同时说话")
-                .defineInRange("eventRangeBlocks", 64, 16, 128);
+                .defineInRange("eventRangeBlocks", 32, 16, 128);
 
         PROACTIVE_PROMPT_MODE = builder
                 .comment("主动聊天角色设定长度: FULL(完整) SUMMARY(前200字) MINIMAL(仅名字)")

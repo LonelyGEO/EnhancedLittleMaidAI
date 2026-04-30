@@ -256,7 +256,7 @@ public final class ClothConfigHandler {
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.proactive.eventRangeBlocks"),
                         EnhancedConfig.EVENT_RANGE_BLOCKS.get(), 16, 128)
-                .setDefaultValue(64)
+                .setDefaultValue(32)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.proactive.eventRangeBlocks.tooltip"))
                 .setSaveConsumer(EnhancedConfig.EVENT_RANGE_BLOCKS::set)
                 .build());
