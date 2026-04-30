@@ -2,12 +2,10 @@ package com.github.lonelygeo.enhancedlittlemaidai.compat;
 
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
-import com.mojang.logging.LogUtils;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.fml.ModList;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -25,7 +23,6 @@ import java.util.Map;
  * }</pre>
  */
 public final class StorageCompat {
-    private static final Logger LOGGER = LogUtils.getLogger();
     private static final boolean LOADED = ModList.get().isLoaded("maid_storage_manager");
 
     private StorageCompat() {
@@ -54,7 +51,7 @@ public final class StorageCompat {
             }
             return result;
         } catch (Exception e) {
-            LOGGER.warn("StorageCompat getFlattenedInventory failed: {}", e.getMessage());
+            EnhancedLittleMaidAI.LOGGER.warn("StorageCompat getFlattenedInventory failed: {}", e.getMessage());
             return null;
         }
     }
@@ -78,7 +75,7 @@ public final class StorageCompat {
             }
             return result;
         } catch (Exception e) {
-            LOGGER.warn("StorageCompat getPositionFlattened failed: {}", e.getMessage());
+            EnhancedLittleMaidAI.LOGGER.warn("StorageCompat getPositionFlattened failed: {}", e.getMessage());
             return null;
         }
     }
@@ -107,7 +104,7 @@ public final class StorageCompat {
             }
             return count;
         } catch (Exception e) {
-            LOGGER.warn("StorageCompat getItemCount failed: {}", e.getMessage());
+            EnhancedLittleMaidAI.LOGGER.warn("StorageCompat getItemCount failed: {}", e.getMessage());
             return -1;
         }
     }

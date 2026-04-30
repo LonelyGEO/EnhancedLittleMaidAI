@@ -1,16 +1,14 @@
 package com.github.lonelygeo.enhancedlittlemaidai.compat;
 
-import com.mojang.logging.LogUtils;
+import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.fml.ModList;
-import org.slf4j.Logger;
 
 /**
  * MiningLittleMaid 运行时兼容层。
  * 所有 Mining 侧 API 调用通过反射实现，确保 Mining 未安装时不会触发 NoClassDefFoundError。
  */
 public final class MiningCompat {
-    private static final Logger LOGGER = LogUtils.getLogger();
     private static final boolean LOADED = ModList.get().isLoaded("mininglittlemaid");
 
     private MiningCompat() {}
@@ -46,7 +44,7 @@ public final class MiningCompat {
             }
             return (T) clazz.getMethod(methodName, paramTypes).invoke(null, args);
         } catch (Exception e) {
-            LOGGER.warn("Failed to invoke {}.{}: {}", className, methodName, e.getMessage());
+            EnhancedLittleMaidAI.LOGGER.warn("Failed to invoke {}.{}: {}", className, methodName, e.getMessage());
             return defaultValue;
         }
     }

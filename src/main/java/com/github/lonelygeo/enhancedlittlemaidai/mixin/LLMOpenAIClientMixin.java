@@ -16,6 +16,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -74,6 +75,30 @@ public abstract class LLMOpenAIClientMixin {
         }
     }
 
+    /**
+     * 抑制父模组请求 JSON dump（TouhouLittleMaid.LOGGER.info）。
+     * 由 TouhouLittleMaid.DEBUG 门控的重型日志，替换为 ELMAI 自己的截断版。
+     */
+    @Redirect(method = "chat",
+            at = @At(value = "INVOKE",
+                    target = "Lorg/apache/logging/log4j/Logger;info(Ljava/lang/String;)V"),
+            remap = false, require = 0)
+    private void enhanced$suppressRequestDump(Logger logger, String msg) {
+        // swallowed — ELMAI 自己在 interceptJson 中记录截断版
+    }
+
+    /**
+     * 抑制父模组响应 JSON dump（lambda$handle$1 中的 Logger.info）。
+     * require = 0：编译器生成方法名，父模组版本升级可能失效，静默跳过。
+     */
+    @Redirect(method = "lambda$handle$1",
+            at = @At(value = "INVOKE",
+                    target = "Lorg/apache/logging/log4j/Logger;info(Ljava/lang/String;)V"),
+            remap = false, require = 0)
+    private void enhanced$suppressResponseDump(Logger logger, String msg) {
+        // swallowed
+    }
+
     @Redirect(
             method = "chat",
             at = @At(value = "INVOKE", target = "Lcom/google/gson/Gson;toJson(Ljava/lang/Object;)Ljava/lang/String;"),
@@ -93,6 +118,8 @@ public abstract class LLMOpenAIClientMixin {
             if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: ReasoningContent injected into JSON, {} chars",
                         json.length());
+                EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM REQUEST: {}",
+                        json.length() <= 1000 ? json : json.substring(0, 997) + "...");
             }
             }
             return json;
@@ -106,6 +133,11 @@ public abstract class LLMOpenAIClientMixin {
         if (EnhancedConfig.debugLog()) {
             String role = firstChoice.getRole() != null ? firstChoice.getRole() : "unknown";
             EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM response RECEIVED, role={}", role);
+            String content = firstChoice.getContent();
+            if (content != null) {
+                EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM RESPONSE: {}",
+                        content.length() <= 1000 ? content : content.substring(0, 997) + "...");
+            }
         }
     }
 
@@ -158,6 +190,9 @@ public abstract class LLMOpenAIClientMixin {
 
             return new Gson().toJson(root);
         } catch (Exception e) {
+            EnhancedLittleMaidAI.LOGGER.warn(
+                    "EnhancedLittleMaidAI: ReasoningContent injection failed for {} chars json: {}",
+                    json.length(), e.getMessage());
             return json;
         }
     }
