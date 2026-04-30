@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.1-blue.svg)](https://www.minecraft.net/)
 [![NeoForge](https://img.shields.io/badge/NeoForge-21.1-orange.svg)](https://neoforged.net/)
-![Version](https://img.shields.io/badge/Version-0.8.0--neoforge%2Bmc1.21.1-brightgreen)
+![Version](https://img.shields.io/badge/Version-0.11.0--neoforge%2Bmc1.21.1-brightgreen)
 
 **Enhanced Little Maid AI** 是 [Touhou Little Maid](https://github.com/TartaricAcid/TouhouLittleMaid) 的 NeoForge 附属模组，通过 Mixin 注入为女仆 AI 提供增强功能。
 
@@ -31,6 +31,10 @@
 - 双模式决策：LLM 判断（AI 基于记忆）或 纯概率权重
 - 聊天气泡 + 聊天栏推送附近玩家
 - 独立冷却、每日上限、可配置触发距离和概率
+- **密度感知**：附近女仆越多，单个触发概率越低，避免 10 人群聊泛滥
+- **随机说话顺序**：A→B→C→A 机械轮询改为随机跳转（不连续自说自话）
+- **完整对话历史**：每轮说话者能感知全部历史对话，不会丢失上下文
+- **思考气泡差异化**：概率触发 `少女思考中...` / 环境感知 `少女感知中...` / 采矿分析 `少女分析中...` / 女仆社交 `少女们商量中...`
 
 ### 主动聊天 (Proactive Chat)
 
@@ -69,6 +73,12 @@
 - **实体感知**：附近生物详情（血量、职业、敌对状态）
 - **扩展上下文**：饥饿值、主手工具耐久、附近玩家列表
 
+### LLM 技能指南 (Skill Guides)
+
+- 通过 TLM 内置 `use_skill` 机制为 LLM 提供知识指南
+- `elmai`：ELMAI 自身能力指南（7 类世界感知 + 记忆系统用法）
+- `enhanced_storage`：MSM 仓储管理完整工作流（查询库存、取物给主人、搜索物品）
+
 ---
 
 ## 命令
@@ -95,10 +105,10 @@
 ├── ▸ 主动聊天             (6 项)
 ├── ▸ 女仆社交             (17 项)
 ├── ▸ 仓储感知             (4 项)     ← 仅 MSM 加载时显示
-└── ▸ 调试                 (1 项)
+└── ▸ 调试                 (2 项)
 ```
 
-### 配置项一览（共 38 项）
+### 配置项一览（共 47 项）
 
 #### 上下文感知
 
@@ -146,6 +156,10 @@
 | `maxGlobalPerDay` | 10 | 全局每日上限 |
 | `cooldownTicks` | 6000 | 同对冷却 (~300s) |
 | `decisionMode` | LLM | 接受决策方式 (LLM/WEIGHT) |
+| `crossOwner` | true | 允许不同主人女仆间对话 |
+| `maxGroupSize` | 3 | 最大群聊人数 (2-5) |
+| `roundDelayMin` | 3 | 每轮间隔下限 秒 (1-10) |
+| `roundDelayMax` | 5 | 每轮间隔上限 秒 (1-10) |
 | `socialMemoryInjectChance` | 0.3 | 社交记忆注入概率 |
 | `socialMemoryTopK` | 2 | 每次注入条数 (1-5) |
 | `socialStoreMaxSize` | 50 | 社交记忆存储上限 |
