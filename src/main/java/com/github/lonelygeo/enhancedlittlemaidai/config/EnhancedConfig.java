@@ -65,6 +65,7 @@ public class EnhancedConfig {
     public static ModConfigSpec.BooleanValue ENABLE_MINING_CHAT;
     public static ModConfigSpec.BooleanValue ENABLE_MAID_GREETING;
     public static ModConfigSpec.BooleanValue OVERRIDE_TTS_DISABLED;
+    public static ModConfigSpec.DoubleValue CHAT_MAID_DISTANCE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -292,6 +293,10 @@ public class EnhancedConfig {
         OVERRIDE_TTS_DISABLED = builder
                 .comment("全局禁用女仆 TTS 语音输出（即使父模组配置了站点也不播放）")
                 .define("overrideTTSDisabled", false);
+
+        CHAT_MAID_DISTANCE = builder
+                .comment("/maid 命令匹配女仆的距离范围（格）")
+                .defineInRange("chatMaidDistance", 16.0, 1.0, 64.0);
 
         builder.pop();
 

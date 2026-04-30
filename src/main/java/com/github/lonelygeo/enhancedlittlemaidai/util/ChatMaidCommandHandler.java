@@ -21,9 +21,6 @@ import java.util.List;
  */
 public final class ChatMaidCommandHandler {
 
-    private static final double MAID_CHAT_RANGE = 16.0;
-    private static final double MAID_CHAT_RANGE_SQ = MAID_CHAT_RANGE * MAID_CHAT_RANGE;
-
     private ChatMaidCommandHandler() {
     }
 
@@ -110,9 +107,10 @@ public final class ChatMaidCommandHandler {
      * 如果提供了名字，优先精确匹配，其次前缀匹配，最后模糊包含。
      */
     private static EntityMaid findNearestMaid(ServerPlayer player, String nameHint) {
+        double range = EnhancedConfig.CHAT_MAID_DISTANCE.get();
         List<EntityMaid> maids = player.level().getEntitiesOfClass(
                 EntityMaid.class,
-                player.getBoundingBox().inflate(MAID_CHAT_RANGE),
+                player.getBoundingBox().inflate(range),
                 m -> m.isAlive() && !m.isRemoved()
                         && m.isTame()
                         && m.getOwnerUUID() != null
