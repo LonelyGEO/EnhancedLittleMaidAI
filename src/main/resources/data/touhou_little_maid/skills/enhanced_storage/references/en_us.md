@@ -1,177 +1,98 @@
-# Maid Storage Management Complete Guide
+# Maid Storage Management Guide
 
-This guide covers all storage-related capabilities that the maid can perform
-through AI conversation. Divided into two sections: tools available directly
-and tools requiring the storage manager task.
+This guide covers how a maid manages warehouse items. Split into two parts: directly available
+abilities, and operations requiring the storage manager task.
+
+See the quick reference skill for exact technical syntax.
 
 ---
 
-## 1. Directly Available (no task switch required)
+## 1. Directly Available
 
-### 1.1 Query Storage Contents
+### View Inventory
 
-Tool: query_game_context
-Parameter: categories=["inventory"]
-Returns two sub-contexts:
+The maid can check what items are stored in nearby containers. Results show items per container
+with counts, plus a global summary of all known storage.
 
-- nearby_storage: Per-container item listing
-  Example: "(2,64,-3) [minecraft:chest]: diamondx5, iron_ingotx64, redstonex128"
+Prerequisite: The maid must have walked near containers and looked inside them first. Unscanned
+containers have no data yet.
 
-- storage_summary: Global totals
-  Example: "Total: 8 kinds, 225 items. iron_ingotx64, redstonex128..."
-
-Use for: "What's in storage?", "How many diamonds?", "Where are the iron ingots?"
-
-Note: The maid must have scanned containers first (View behavior, automatic).
-       If it returns "No storage data recorded", the maid hasn't viewed containers yet.
+Use for: "What's in storage?", "How much wood?", "Which chest has iron?"
 
 ---
 
 ## 2. Requires Storage Manager Task
 
-**Important**: All MSM tools below require the maid to be in the "Storage Manager" task.
-**Switch method**: switch_work_task(task_id="maid_storage_manager:storage_manager")
+The following operations require the maid to first switch to the "Storage Manager" task.
+After switching, the maid automatically begins storage behavior.
 
-### 2.1 Search Items
+### Search Items
 
-Tool: get_storage
-Parameter: filter (string, fuzzy match on item name)
-Example: get_storage(filter="diamond")
-Returns: JSON array of matched items with id, name, count, and craftability.
+The maid can search known inventory for specific items. Both Chinese and English names work for
+matching. Results include item ID, name, count, and craftability.
 
-### 2.2 Fetch Items to Player
+Item IDs don't need to be memorized — use fuzzy search to find the correct ID.
 
-Tool: storage_fetch
-Parameter: list (array of {"itemId":"...","count":N})
-Example: storage_fetch([{"itemId":"minecraft:diamond","count":5}])
+### Fetch Items to Owner
 
-Flow: Maid walks to container → retrieves items → walks to owner → throws items.
-Items land at the player's feet and must be picked up.
+The maid can retrieve specific items from containers and deliver them to the owner.
 
-Multiple items at once:
-storage_fetch([{"itemId":"minecraft:diamond","count":5},{"itemId":"minecraft:iron_ingot","count":32}])
+Flow: Maid walks to container → extracts items → walks to owner → throws items.
+Items land at the owner's feet and must be picked up.
 
-### 2.3 Locate Items
+Multiple item types can be requested at once. It's best to search first to confirm quantities.
 
-Tool: find_mark_storage
-Parameter: item (string array of item IDs)
-Example: find_mark_storage(item=["minecraft:diamond"])
-Returns: Location and count of items in each container.
+### Locate Items
 
-### 2.4 Simulate Crafting
+The maid can pinpoint which specific container holds a particular item.
 
-Tool: simulate_crafting
-Parameter: itemId (full item ID), count (number)
-Example: simulate_crafting(itemId="minecraft:furnace", count=1)
-Returns: {"success":true,"steps":2,"consumes":[...]} or missing materials info.
+### Simulate Crafting
+
+The maid can calculate offline whether an item can be crafted, what materials are needed,
+and how many steps. No actual materials are consumed. Requires holding a portable crafting
+calculator bauble.
 
 ---
 
-## 3. Complete Fetch Workflow (recommended sequence)
+## 3. Fetch Workflow
 
-When the owner says "get me X of Y":
+When the owner says "get me some of ___":
 
-**Step 1: Confirm existence**
-  Call query_game_context(categories=["inventory"])
-  Check if the item exists in nearby storage.
-
-**Step 2: Report**
-  If not found → tell owner "Y is not available in any nearby container"
-  If insufficient → tell owner "only Z of Y available, not enough for X"
-  If enough → proceed
-
-**Step 3: Switch task**
-  Call switch_work_task(task_id="maid_storage_manager:storage_manager")
-
-**Step 4: Confirm location and count**
-  Call get_storage(filter="item name")
-
-**Step 5: Execute fetch**
-  Call storage_fetch([{"itemId":"item ID","count":N}])
-
-**Step 6: Notify**
-  Reply "Alright, fetching X of Y, please wait"
-  Items will be thrown at the owner's feet when done
+1. Confirm existence: Check inventory for the target item.
+2. Report: If not found, tell owner. If insufficient, state the shortage. If enough, continue.
+3. Switch task: Change to storage manager.
+4. Confirm details: Search for the item to get its exact ID and count.
+5. Execute fetch: Fetch by ID and quantity.
+6. Notify: Say "Alright, fetching for you." Items land at the owner's feet when done.
 
 ---
 
-## 4. Complete Query Workflow
+## 4. Query Workflow
 
-When the owner asks "where is X" or "how much Y":
+When the owner asks "where is ___" or "how much ___":
 
-**Step 1: Query inventory**
-  Call query_game_context(categories=["inventory"])
-
-**Step 2: Format response**
-  Extract item location from nearby_storage
-  Extract total count from storage_summary
-  Tell owner: "oak chest at (2,64,-3) has 5 diamonds" or "total: 5 diamonds"
+Directly check inventory, extract position and count from results, tell the owner.
 
 ---
 
-## 5. Item ID Lookup
+## 5. Important Notes
 
-Format: "minecraft:item_name" (lowercase, underscores).
-
-**Do not hardcode item IDs.** When you don't know an item's ID:
-1. Call get_storage(filter="item name") before fetching — it matches names and returns the correct ID
-2. Or call query_game_context(inventory) first — extract the ID from returned item descriptions
-
-Common examples: Diamond=minecraft:diamond, Iron Ingot=minecraft:iron_ingot, Crafting Table=minecraft:crafting_table
+- The maid must have scanned containers first to have inventory data.
+- Fetched items land at the owner's feet, not in inventory — must be picked up.
+- Search and fetch operations fail if not in the storage manager task.
+- After fetching completes, the maid automatically returns to previous work or idle.
+- Search and fetch require the player to be online for item name matching.
 
 ---
 
-## 6. Tool Role Reference
+## 6. Example Dialogues
 
-| Tool | Source | Needs Task Switch | Purpose |
-|------|--------|-------------------|---------|
-| query_game_context(inventory) | TLM built-in | No | Query inventory contents |
-| switch_work_task | TLM built-in | No | Switch to storage task |
-| get_storage | MSM | Yes | Search items |
-| storage_fetch | MSM | Yes | Fetch items to owner |
-| find_mark_storage | MSM | Yes | Locate items |
-| simulate_crafting | MSM | Yes | Check crafting feasibility |
+Q: "What's in storage?"
+A: Check inventory → "Master, the chest has diamonds and iron. The barrel has apples and bread."
 
----
-
-## 7. Important Notes
-
-- The maid must have scanned containers first (View behavior, automatic) to have inventory data
-- MSM search/fetch/locate tools require the player to be online for JEI/EMI item name matching
-- storage_fetch throws items at the owner's feet, not directly into inventory — must be picked up
-- Attempting MSM tools while NOT in the storage manager task will fail
-- After fetch completes, the maid automatically returns to previous work mode or idle
-
----
-
-## 8. Error Handling
-
-| Situation | Suggested Response |
-|-----------|-------------------|
-| Inventory empty | "I haven't scanned any containers yet. Let me wander around the chests first." |
-| Item not found | "{item} is not available in any nearby container" |
-| Insufficient quantity | "I only have {available} of {item}, not enough for {requested}" |
-| Task switch failed | "I ran into an issue switching to the storage manager task" |
-| Fetch failed | "There was a problem retrieving the items. Please try again later." |
-
----
-
-## 9. Example Dialogues
-
-Q: "What's in the storage?"
-A: Call query_game_context(inventory)
-   → "Master, the oak chest has 5 diamonds, 64 iron ingots and 128 redstone. The barrel has 12 apples and 5 bread."
-
-Q: "Get me 3 diamonds"
-A: ① query_game_context(inventory) → diamonds found, enough count
-   ② switch_work_task("maid_storage_manager:storage_manager")
-   ③ storage_fetch([{"itemId":"minecraft:diamond","count":3}])
-   → "Alright master, I'll fetch 3 diamonds and throw them to you."
-
-Q: "Do we have iron? Where?"
-A: Call query_game_context(inventory)
-   → "Yes master! The oak chest at (2,64,-3) has 64 iron ingots."
+Q: "Get me the diamonds."
+A: Confirm diamonds exist and count is enough → switch to storage task → search to confirm → execute fetch
+   → "Alright master, I'll get the diamonds."
 
 Q: "How many chests can we make?"
-A: Call simulate_crafting("minecraft:chest",1)
-   → "Master, we have enough wood planks to make 4 chests."
+A: Simulate crafting → "Master, we have materials for four chests."
