@@ -107,14 +107,6 @@ public abstract class LLMOpenAIClientMixin {
             String role = firstChoice.getRole() != null ? firstChoice.getRole() : "unknown";
             EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM response RECEIVED, role={}", role);
         }
-        if (callback instanceof LLMCallback llmCallback && llmCallback.needAddTools) {
-            String rawContent = StringUtils.defaultString(firstChoice.getContent());
-            String reasoningContent = StringUtils.defaultString(firstChoice.getReasoningContent());
-            llmCallback.getChatManager().addAssistantHistory(rawContent, StringUtils.isNotBlank(reasoningContent) ? reasoningContent : null);
-            if (EnhancedConfig.debugLog() && StringUtils.isNotBlank(reasoningContent)) {
-                EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: Extracted reasoningContent from LLM response");
-            }
-        }
     }
 
     @Inject(method = "onTextCall", at = @At("TAIL"), remap = false)

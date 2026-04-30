@@ -33,6 +33,7 @@ docs/WorkingPlan.md
 /net/
 # temporary decompile artifacts
 .temp_decompile/
+temp_decompile/
 # extracted JAR files (not part of source)
 /data/
 temp_extract/
