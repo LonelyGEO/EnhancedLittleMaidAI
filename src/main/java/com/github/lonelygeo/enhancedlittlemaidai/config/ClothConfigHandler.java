@@ -147,12 +147,48 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.TARGET_SUMMARIES::set)
                 .build());
 
+        memorySub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.memory.spatialRecallRadius"),
+                        EnhancedConfig.SPATIAL_RECALL_RADIUS.get(), 1, 64)
+                .setDefaultValue(16)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.memory.spatialRecallRadius.tooltip"))
+                .setSaveConsumer(EnhancedConfig.SPATIAL_RECALL_RADIUS::set)
+                .build());
+
+        memorySub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.memory.semanticRetrieveTopK"),
+                        EnhancedConfig.SEMANTIC_RETRIEVE_TOP_K.get(), 1, 10)
+                .setDefaultValue(3)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.memory.semanticRetrieveTopK.tooltip"))
+                .setSaveConsumer(EnhancedConfig.SEMANTIC_RETRIEVE_TOP_K::set)
+                .build());
+
+        memorySub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.memory.maxAgeHours"),
+                        EnhancedConfig.MAX_AGE_TICKS.get() / 72000, 1, 100)
+                .setDefaultValue(10)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.memory.maxAgeHours.tooltip"))
+                .setSaveConsumer(val -> EnhancedConfig.MAX_AGE_TICKS.set(val * 72000))
+                .build());
+
         category.addEntry(memorySub.build());
 
         // ========== 主动聊天 ==========
         SubCategoryBuilder proactiveSub = entryBuilder.startSubCategory(
                 Component.translatable("config.enhancedlittlemaidai.sub.proactive"));
         proactiveSub.setExpanded(true);
+
+        proactiveSub.add(entryBuilder
+                .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.proactive.enabled"),
+                        EnhancedConfig.PROACTIVE_CHAT_ENABLED.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.proactive.enabled.tooltip"))
+                .setSaveConsumer(EnhancedConfig.PROACTIVE_CHAT_ENABLED::set)
+                .build());
 
         proactiveSub.add(entryBuilder
                 .startIntSlider(
