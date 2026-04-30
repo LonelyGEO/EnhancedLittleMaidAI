@@ -42,7 +42,7 @@ public final class MaidSpawnHandler {
         if (maid.level().isClientSide()) return;
         if (maid.isRemoved()) return;
 
-        if (!isLLMConfigured(maid)) {
+        if (!LLMUtil.isAvailable(maid)) {
             if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.debug(
                         "MaidSpawn: LLM site not configured for maid {}", maid.getUUID());
@@ -72,15 +72,6 @@ public final class MaidSpawnHandler {
                     "MaidSpawn: Maid {} has no setting, auto-generating + greeting", maid.getUUID());
         }
         genSetting(chatManager, client, maid, 0);
-    }
-
-    private static boolean isLLMConfigured(EntityMaid maid) {
-        try {
-            var site = maid.getAiChatManager().getLLMSite();
-            return site != null && site.enabled();
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     // ==================== 设定生成 ====================
