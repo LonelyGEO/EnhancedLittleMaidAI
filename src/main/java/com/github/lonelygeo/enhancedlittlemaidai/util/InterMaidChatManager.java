@@ -164,6 +164,18 @@ public final class InterMaidChatManager {
             cleanupGroup(initiator);
             InterMaidChatCallback.startConversation(participants,
                     EnhancedConfig.INTER_MAID_MAX_ROUNDS.get());
+        } else if (memberUuids.size() >= 2) {
+            long gameTime = level.getGameTime();
+            for (int i = 0; i < memberUuids.size(); i++) {
+                for (int j = i + 1; j < memberUuids.size(); j++) {
+                    PAIR_COOLDOWNS.put(pairKey(memberUuids.get(i), memberUuids.get(j)), gameTime);
+                }
+            }
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "InterMaidChat: tryStartConversation set pair cooldowns for {} members, {} entities found (likely out of range)",
+                        memberUuids.size(), participants.size());
+            }
         }
     }
 
@@ -213,6 +225,17 @@ public final class InterMaidChatManager {
         } else if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.debug(
                     "InterMaidChat: finalizeAcceptance group too small: {} members", all.size());
+        }
+        // group too small or tryStartConversation didn't start — set pair cooldowns to prevent re-proposal
+        if (all.size() >= 2) {
+            long gameTime = b.level().getGameTime();
+            for (int i = 0; i < all.size(); i++) {
+                for (int j = i + 1; j < all.size(); j++) {
+                    if (!PAIR_COOLDOWNS.containsKey(pairKey(all.get(i), all.get(j)))) {
+                        PAIR_COOLDOWNS.put(pairKey(all.get(i), all.get(j)), gameTime);
+                    }
+                }
+            }
         }
     }
 
