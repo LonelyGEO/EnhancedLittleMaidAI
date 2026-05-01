@@ -155,7 +155,7 @@ public final class InterMaidChatManager {
             UUID initiator = participants.get(0).getUUID();
             cleanupGroup(initiator);
             InterMaidChatCallback.startConversation(participants,
-                    EnhancedConfig.INTER_MAID_MAX_ROUNDS.get());
+                    randomRounds(participants.size()));
         } else {
             long gameTime = participants.isEmpty() ? 0 : participants.get(0).level().getGameTime();
             if (gameTime > 0) {
@@ -171,6 +171,14 @@ public final class InterMaidChatManager {
                         participants.size());
             }
         }
+    }
+
+    /** 随机取 min~max 之间轮数，每多 1 位参与者最低轮数+1 */
+    private static int randomRounds(int participantCount) {
+        int min = EnhancedConfig.INTER_MAID_MIN_ROUNDS.get() + Math.max(0, participantCount - 2);
+        int max = EnhancedConfig.INTER_MAID_MAX_ROUNDS.get();
+        min = Math.min(min, max);
+        return min + (min < max ? new java.util.Random().nextInt(max - min + 1) : 0);
     }
 
     /** 标记多名女仆忙碌 */

@@ -35,6 +35,7 @@ public class EnhancedConfig {
     // === [inter_maid] 女仆社交 ===
     public static ModConfigSpec.BooleanValue INTER_MAID_ENABLED;
     public static ModConfigSpec.ConfigValue<String> INTER_MAID_PROMPT_MODE;
+    public static ModConfigSpec.IntValue INTER_MAID_MIN_ROUNDS;
     public static ModConfigSpec.IntValue INTER_MAID_MAX_ROUNDS;
     public static ModConfigSpec.DoubleValue INTER_MAID_WORKING_DISTANCE;
     public static ModConfigSpec.DoubleValue INTER_MAID_IDLE_DISTANCE;
@@ -181,9 +182,13 @@ public class EnhancedConfig {
                 .comment("角色设定长度模式: FULL(完整) SUMMARY(摘要) MINIMAL(最小)")
                 .define("promptMode", "FULL");
 
+        INTER_MAID_MIN_ROUNDS = builder
+                .comment("最少对话轮数（参与女仆每多1人+1轮）")
+                .defineInRange("minRounds", 2, 2, 4);
+
         INTER_MAID_MAX_ROUNDS = builder
                 .comment("最多对话轮数")
-                .defineInRange("maxRounds", 2, 2, 4);
+                .defineInRange("maxRounds", 4, 2, 8);
 
         INTER_MAID_WORKING_DISTANCE = builder
                 .comment("工作中的女仆触发对话的距离（格）")
@@ -206,7 +211,7 @@ public class EnhancedConfig {
                 .defineInRange("scanInterval", 120, 10, 200);
 
         INTER_MAID_PLAYER_DISTANCE = builder
-                .comment("玩家感知范围，玩家在此范围内才能触发对话")
+                .comment("感知玩家范围，玩家在此范围内才能触发对话")
                 .defineInRange("playerDistance", 18.0, 1.0, 64.0);
 
         INTER_MAID_MAX_PER_DAY = builder
@@ -215,7 +220,7 @@ public class EnhancedConfig {
 
         INTER_MAID_MAX_GLOBAL_PER_DAY = builder
                 .comment("全局每日对话上限（日出清零）")
-                .defineInRange("maxGlobalPerDay", 10, 1, 50);
+                .defineInRange("maxGlobalPerDay", 15, 1, 50);
 
         INTER_MAID_COOLDOWN_TICKS = builder
                 .comment("同对女仆对话冷却时间（tick）")
@@ -231,7 +236,7 @@ public class EnhancedConfig {
 
         INTER_MAID_MAX_GROUP_SIZE = builder
                 .comment("一次对话最多几个女仆参与")
-                .defineInRange("maxGroupSize", 3, 2, 5);
+                .defineInRange("maxGroupSize", 3, 2, 8);
 
         INTER_MAID_ROUND_DELAY_MIN = builder
                 .comment("女仆社交每轮对话间隔最小秒数")

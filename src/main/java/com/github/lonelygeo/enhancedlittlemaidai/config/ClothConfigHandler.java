@@ -322,9 +322,18 @@ public final class ClothConfigHandler {
 
         interMaidSub.add(entryBuilder
                 .startIntSlider(
-                        Component.translatable("config.enhancedlittlemaidai.interMaid.maxRounds"),
-                        EnhancedConfig.INTER_MAID_MAX_ROUNDS.get(), 2, 4)
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.minRounds"),
+                        EnhancedConfig.INTER_MAID_MIN_ROUNDS.get(), 2, 4)
                 .setDefaultValue(2)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.minRounds.tooltip"))
+                .setSaveConsumer(EnhancedConfig.INTER_MAID_MIN_ROUNDS::set)
+                .build());
+
+        interMaidSub.add(entryBuilder
+                .startIntSlider(
+                        Component.translatable("config.enhancedlittlemaidai.interMaid.maxRounds"),
+                        EnhancedConfig.INTER_MAID_MAX_ROUNDS.get(), 2, 8)
+                .setDefaultValue(4)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.maxRounds.tooltip"))
                 .setSaveConsumer(EnhancedConfig.INTER_MAID_MAX_ROUNDS::set)
                 .build());
@@ -396,7 +405,7 @@ public final class ClothConfigHandler {
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.maxGlobalPerDay"),
                         EnhancedConfig.INTER_MAID_MAX_GLOBAL_PER_DAY.get(), 1, 50)
-                .setDefaultValue(10)
+                .setDefaultValue(15)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.maxGlobalPerDay.tooltip"))
                 .setSaveConsumer(EnhancedConfig.INTER_MAID_MAX_GLOBAL_PER_DAY::set)
                 .build());
@@ -431,7 +440,7 @@ public final class ClothConfigHandler {
         interMaidSub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.maxGroupSize"),
-                        EnhancedConfig.INTER_MAID_MAX_GROUP_SIZE.get(), 2, 5)
+                        EnhancedConfig.INTER_MAID_MAX_GROUP_SIZE.get(), 2, 8)
                 .setDefaultValue(3)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.maxGroupSize.tooltip"))
                 .setSaveConsumer(EnhancedConfig.INTER_MAID_MAX_GROUP_SIZE::set)
