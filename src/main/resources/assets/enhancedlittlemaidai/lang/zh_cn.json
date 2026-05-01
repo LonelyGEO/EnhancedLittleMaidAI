@@ -116,6 +116,9 @@
     "config.enhancedlittlemaidai.debug.suppressParentJsonDump": "抑制父模组 JSON dump",
     "config.enhancedlittlemaidai.debug.suppressParentJsonDump.tooltip": "抑制 TouhouLittleMaid 父模组的 LLM 请求/响应 JSON 日志输出（洗屏数据）。关闭可看到原始控制台日志",
 
+    "config.enhancedlittlemaidai.debug.stripReasoningContent": "剥离 reasoningContent",
+    "config.enhancedlittlemaidai.debug.stripReasoningContent.tooltip": "NBT 保存时剥离 assistant 消息的推理过程文本。开启可减小魂符大小，但 DeepSeek thinking 模式会因缺少该字段报 400 错误。仅在 NBT 过大时开启",
+
     "config.enhancedlittlemaidai.debug.enableMaidGreeting": "女仆放置问候",
     "config.enhancedlittlemaidai.debug.enableMaidGreeting.tooltip": "女仆放置时自动生成角色设定并发出见面问候",
 

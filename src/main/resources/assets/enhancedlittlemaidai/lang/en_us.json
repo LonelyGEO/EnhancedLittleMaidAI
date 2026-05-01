@@ -114,6 +114,9 @@
     "config.enhancedlittlemaidai.debug.suppressParentJsonDump": "Suppress Parent JSON Dump",
     "config.enhancedlittlemaidai.debug.suppressParentJsonDump.tooltip": "Suppress TouhouLittleMaid parent mod's LLM request/response JSON dump logs. Disable to see raw console output",
 
+    "config.enhancedlittlemaidai.debug.stripReasoningContent": "Strip Reasoning Content",
+    "config.enhancedlittlemaidai.debug.stripReasoningContent.tooltip": "Strip reasoning_content from assistant messages on NBT save. Enabling reduces item NBT size but causes DeepSeek thinking mode 400 errors. Only enable if NBT is too large",
+
     "config.enhancedlittlemaidai.debug.enableMaidGreeting": "Maid Spawn Greeting",
     "config.enhancedlittlemaidai.debug.enableMaidGreeting.tooltip": "Auto-generate character setting and greet upon maid placement",
 

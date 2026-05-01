@@ -70,6 +70,15 @@ public final class ClothConfigHandler {
                 .setSaveConsumer(EnhancedConfig.SUPPRESS_PARENT_JSON_DUMP::set)
                 .build());
 
+        category.addEntry(entryBuilder
+                .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.debug.stripReasoningContent"),
+                        EnhancedConfig.STRIP_REASONING_CONTENT.get())
+                .setDefaultValue(false)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.debug.stripReasoningContent.tooltip"))
+                .setSaveConsumer(EnhancedConfig.STRIP_REASONING_CONTENT::set)
+                .build());
+
         // ========== 上下文感知 ==========
         SubCategoryBuilder contextSub = entryBuilder.startSubCategory(
                 Component.translatable("config.enhancedlittlemaidai.sub.context"));

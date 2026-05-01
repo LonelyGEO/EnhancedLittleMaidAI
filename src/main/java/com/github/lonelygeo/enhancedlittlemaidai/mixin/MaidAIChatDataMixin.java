@@ -1,5 +1,6 @@
 package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
+import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatData;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
@@ -50,7 +51,7 @@ public abstract class MaidAIChatDataMixin {
             require = 0
     )
     private LinkedBlockingDeque<LLMMessage> enhanced$stripForSave(CappedQueue<LLMMessage> history) {
-        if (!enhanced$inSave.get()) {
+        if (!enhanced$inSave.get() || !EnhancedConfig.STRIP_REASONING_CONTENT.get()) {
             return history.getDeque();
         }
 
