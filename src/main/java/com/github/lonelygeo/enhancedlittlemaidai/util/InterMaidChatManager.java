@@ -63,11 +63,12 @@ public final class InterMaidChatManager {
     }
 
     /**
-     * 扫描附近已驯服的同主人女仆（排除自己、忙碌的）。
+     * 扫描附近已驯服的同主人女仆（排除自己、忙碌的、冷却期内的）。
      * 返回按距离排序的列表。内部方法，已返回 List 便于未来 N 人扩展。
      */
     private static List<EntityMaid> scanNearbyMaids(EntityMaid self, double range) {
         UUID ownerUuid = self.getOwnerUUID();
+        long gameTime = self.level().getGameTime();
 
         AABB box = self.getBoundingBox().inflate(range);
         List<EntityMaid> list = self.level().getEntitiesOfClass(
@@ -78,6 +79,7 @@ public final class InterMaidChatManager {
                         && (EnhancedConfig.INTER_MAID_CROSS_OWNER.get()
                             || (ownerUuid != null && ownerUuid.equals(e.getOwnerUUID())))
                         && !BUSY.contains(e.getUUID())
+                        && !hasActivePairCooldown(self.getUUID(), e.getUUID(), gameTime)
         );
         list.sort(Comparator.comparingDouble(e -> e.distanceToSqr(self)));
         return list;
@@ -370,6 +372,11 @@ public final class InterMaidChatManager {
 
     static String pairKey(UUID a, UUID b) {
         return a.compareTo(b) < 0 ? a + "|" + b : b + "|" + a;
+    }
+
+    private static boolean hasActivePairCooldown(UUID a, UUID b, long gameTime) {
+        Long last = PAIR_COOLDOWNS.get(pairKey(a, b));
+        return last != null && (gameTime - last) < EnhancedConfig.INTER_MAID_COOLDOWN_TICKS.get();
     }
 
     public static void resetDayCounts(UUID uuid) {

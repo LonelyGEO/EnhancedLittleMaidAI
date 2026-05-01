@@ -121,6 +121,7 @@ public final class MaidSpawnHandler {
                 if (result.length() > 4000) result = result.substring(0, 4000);
                 chatManager.customSetting = result;
 
+                maid.getChatBubbleManager().removeChatBubble(bubbleId);
                 sendGreeting(chatManager, client, maid);
                 if (EnhancedConfig.debugLog()) {
                     EnhancedLittleMaidAI.LOGGER.info(
