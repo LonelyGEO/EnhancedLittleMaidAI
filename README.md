@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.1-blue.svg)](https://www.minecraft.net/)
 [![NeoForge](https://img.shields.io/badge/NeoForge-21.1-orange.svg)](https://neoforged.net/)
-![Version](https://img.shields.io/badge/Version-0.12.0--neoforge%2Bmc1.21.1-brightgreen)
+![Version](https://img.shields.io/badge/Version-1.0.0--neoforge%2Bmc1.21.1-brightgreen)
 
 **Enhanced Little Maid AI** 是 [Touhou Little Maid](https://github.com/TartaricAcid/TouhouLittleMaid) 的 NeoForge 附属模组，通过 Mixin 注入为女仆 AI 提供增强功能。
 
@@ -12,6 +12,16 @@
 ---
 
 ## 功能
+
+### 多女仆协同对话 (Inter-Maid Chat)
+
+- 附近的女仆自动发起 2-4 轮 LLM 对话，角色设定驱动的自然闲聊
+- **WEIGHT 默认决策**：基于社交记忆的纯概率接受，零 LLM API 消耗
+- **群聊支持**：2-8 人参与，随机说话顺序，轮间随机延迟
+- **随机轮数**：minRounds ~ maxRounds 随机取值，参与女仆每多 1 人最低轮数 +1
+- 聊天气泡 + 聊天栏全玩家可见（TLM 原生机制）
+- 独立冷却、每日上限、可配置触发距离和概率
+- 密度感知：附近女仆越多，单个触发概率越低
 
 ### 思维宫殿 (MindPalace) — 长期记忆 + 社交记忆
 
@@ -22,62 +32,40 @@
 - **自动去重 + 智能淘汰**：BM25 相似度去重，多维评分淘汰
 - **LLM 压缩**：记忆达到阈值后异步 LLM 合并旧记忆
 - **关键词触发**：对话中提及"记住""别忘了"时立即记录
-- **NBT 持久化**：跨重启不丢失
-
-### 多女仆协调对话 (Inter-Maid Chat)
-
-- 同主人、附近的两位女仆自动发起 2-4 轮 LLM 对话
-- 两阶段匹配：A 扫描 B → B 基于社交记忆决定接受或拒绝
-- 双模式决策：LLM 判断（AI 基于记忆）或 纯概率权重
-- 聊天气泡 + 聊天栏推送附近玩家
-- 独立冷却、每日上限、可配置触发距离和概率
-- **密度感知**：附近女仆越多，单个触发概率越低，避免 10 人群聊泛滥
-- **随机说话顺序**：A→B→C→A 机械轮询改为随机跳转（不连续自说自话）
-- **完整对话历史**：每轮说话者能感知全部历史对话，不会丢失上下文
-- **思考气泡差异化**：概率触发 `少女思考中...` / 环境感知 `少女感知中...` / 采矿分析 `少女分析中...` / 女仆社交 `少女们商量中...`
+- **NBT 持久化**：磁盘独立存储，不参与网络同步
 
 ### 主动聊天 (Proactive Chat)
 
 - 女仆空闲时概率发起对话，基于环境 + 记忆上下文
 - 环境事件触发：日出/日落/雨/雷暴/进入新群系时主动评论
 - 每日上限（日出清零），冷却时间、触发概率完全可配置
+- LLM 返回空内容时自动回退到 reasoning_content
 
 ### 采矿 LLM 对话 (Mining Chat)
 
 - 与 [MiningLittleMaid](https://github.com/LonelyGEO/MiningLittleMaid) 联动
-- MLM 采矿事件（发现矿石/背包满/缺火把）由 LLM 接管，基于女仆角色设定生成个性化对话
-- 替代原模组硬编码文本
+- MLM 采矿事件由 LLM 接管，基于女仆角色设定生成个性化对话
 
 ### 仓储感知 (Storage Awareness)
 
 - 与 [MaidStorageManager](https://github.com/LonelyGEO/MaidStorageManager) 联动
-- **库存上下文**：让 LLM 感知附近容器内容物（哪个箱子有什么、各有多少），作为 `inventory` 上下文按需注入
-- **储物记忆**：取物/存物操作完成后自动写入 MindPalace 记忆，关联空间位置，后续可召回
-- **自然语言取物**：LLM 可通过多步调用（`switch_work_task` → `get_storage` → `storage_fetch`）实现「帮我把钻石拿出来」的完整流程
-- 可选模组，未安装 MSM 时自动跳过
+- 库存上下文：让 LLM 感知附近容器内容物
+- 储物记忆：取物/存物操作自动写入 MindPalace 记忆
+- 自然语言取物：LLM 多步调用实现完整取物流程
 
 ### 推理内容支持 (Reasoning Content)
 
-- 支持 DeepSeek 等模型的 `reasoning_content`（思考链）
-- 自动注入 JSON 请求、回传对话历史、NBT 持久化
+- DeepSeek 等推理模型的思考链自动注入和回传
+- 空 content 自动回退到 reasoning_content
 
 ### LLM 响应缓存
 
 - LRU 缓存 20 条，SHA-256 键，主动聊天 60s TTL / 常规 30s TTL
-- 自动排除工具调用、记忆提取、采矿对话
 
 ### 世界上下文感知
 
-- **方块采样**：BFS 扫描周围方块，Top-15 统计
-- **环境详情**：光照、室内/室外、红石信号
-- **实体感知**：附近生物详情（血量、职业、敌对状态）
-- **扩展上下文**：饥饿值、主手工具耐久、附近玩家列表
-
-### LLM 技能指南 (Skill Guides)
-
-- 通过 TLM 内置 `use_skill` 机制为 LLM 提供知识指南
-- `elmai`：ELMAI 自身能力指南（7 类世界感知 + 记忆系统用法）
-- `enhanced_storage`：MSM 仓储管理完整工作流（查询库存、取物给主人、搜索物品）
+- 方块采样 (BFS)、环境详情 (光照/红石)、实体感知 (血量/职业)
+- 扩展上下文：饥饿值、工具耐久、附近玩家列表
 
 ---
 
@@ -85,101 +73,109 @@
 
 | 命令 | 权限 | 说明 |
 |---|---|---|
-| `/mindpalace list <女仆>` | 2 (管理员) | 列出女仆的所有记忆 |
-| `/mindpalace clear <女仆>` | 2 (管理员) | 清除女仆的所有记忆 |
-| `/mindpalace stats <女仆>` | 2 (管理员) | 查看记忆统计 |
+| `/elmai mindpalace list <女仆>` | 2 (管理员) | 列出女仆的记忆 |
+| `/elmai mindpalace search <女仆> <关键词>` | 2 (管理员) | BM25 搜索记忆 |
+| `/elmai mindpalace clear <女仆>` | 2 (管理员) | 清除女仆的记忆 |
+| `/elmai mindpalace stats <女仆>` | 2 (管理员) | 查看记忆统计 |
+| `/elmai status <女仆>` | 任意 | 女仆运行状态速查 |
+| `/elmai config` | 任意 | Config 当前值速查 |
+| `/maid <女仆名> <消息>` | 任意 | 打字与女仆 LLM 对话 |
 
 ---
 
 ## 配置
 
-所有配置通过 **Cloth Config** 集成到 TLM 设置菜单中（`Mods → Touhou Little Maid → 配置 → 强化AI`）。无需 Cloth Config 时可通过 `config/enhancedlittlemaidai-common.toml` 手动编辑。
+所有配置通过 **Cloth Config** 集成到 TLM 设置菜单中（`Mods → Touhou Little Maid → 配置 → 强化AI`）。
+
+配置文件：`config/enhancedlittlemaidai-common.toml`  
+覆盖文件：`config/elmai-overrides.toml`（开发环境，不受 NeoForge 重置）
 
 ### GUI 结构
 
 ```
 强化AI
-├── LLM 采矿对话           [开关]     ← 仅 MLM 加载时显示
+├── 女仆问候              [开关]  default:true
+├── 调试日志              [开关]  default:false
+├── 抑制父模组日志        [开关]  default:true
 ├── ▸ 上下文感知           (3 项)
-├── ▸ 记忆系统             (5 项)
-├── ▸ 主动聊天             (6 项)
-├── ▸ 女仆社交             (17 项)
-├── ▸ 仓储感知             (4 项)     ← 仅 MSM 加载时显示
-└── ▸ 调试                 (2 项)
+├── ▸ 记忆系统             (8 项)
+├── ▸ 主动聊天             (10 项，含采矿对话)
+├── ▸ 女仆社交             (20 项)
+└── ▸ 仓储感知             (4 项，仅 MSM 加载)
 ```
 
-### 配置项一览（共 47 项）
+### 配置项一览
 
 #### 上下文感知
 
 | 参数 | 默认值 | 说明 |
 |---|---|---|
-| `bfsMaxDepth` | 5 | BFS 方块采样深度 (1-10) |
-| `entityRadius` | 16 | 实体扫描半径 (4-64) |
-| `maxEntities` | 30 | 实体最大返回数 (5-100) |
+| `bfsMaxDepth` | 5 | BFS 方块采样深度 |
+| `entityRadius` | 16 | 实体扫描半径（格） |
+| `maxEntities` | 30 | 实体最大返回数 |
 
 #### 记忆系统
 
 | 参数 | 默认值 | 说明 |
 |---|---|---|
-| `maxMemories` | 100 | 每女仆最大记忆数 (20-500) |
-| `compressTrigger` | 80 | 触发 LLM 压缩阈值 (20-500) |
-| `dedupScoreThreshold` | 0.85 | 去重相似度阈值 (0.5-1.0) |
-| `compressBatchSize` | 20 | 压缩批次大小 (5-100) |
-| `targetSummaries` | 5 | 压缩摘要上限 (1-30) |
+| `maxMemories` | 100 | 每女仆最大记忆数 |
+| `compressTrigger` | 80 | LLM 压缩触发阈值 |
+| `compressBatchSize` | 20 | 压缩批次大小 |
+| `targetSummaries` | 5 | 压缩摘要上限 |
+| `spatialRecallRadius` | 16 | 空间召回半径（格） |
+| `semanticRetrieveTopK` | 3 | 语义检索 Top-K |
+| `dedupScoreThreshold` | 0.85 | 去重相似度阈值 |
+| `maxFreshAgeHours` | 10 | 记忆新鲜度（小时） |
 
 #### 主动聊天
 
 | 参数 | 默认值 | 说明 |
 |---|---|---|
-| `cooldownTicks` | 12000 | 冷却时间 (~600s) |
-| `triggerChancePerTick` | 0.002 | 每 tick 触发概率 |
+| `enableMiningChat` | true | LLM 采矿对话（仅 MLM 加载） |
+| `enabled` | true | 主动聊天总开关 |
+| `cooldownTicks` | 12000 | 冷却时间 (10 分钟) |
+| `triggerChance` | 0.002 | 每 tick 触发概率 |
 | `maxChatsPerDay` | 8 | 每日主动聊天上限 |
-| `minPlayerDistance` | 10.0 | 主人最小距离 (格) |
-| `eventCooldownTicks` | 6000 | 环境事件冷却 (~300s) |
+| `minPlayerDistance` | 10 | 主人最小距离（格） |
+| `eventCooldownTicks` | 6000 | 环境事件冷却 (5 分钟) |
 | `eventMaxPerDay` | 5 | 每日环境事件上限 |
+| `eventRangeBlocks` | 32 | 事件感知范围（格） |
+| `promptMode` | FULL | 提示词模式 (FULL/SUMMARY/MINIMAL) |
 
 #### 女仆社交
 
 | 参数 | 默认值 | 说明 |
 |---|---|---|
-| `enabled` | true | 启用多女仆对话 |
-| `promptMode` | FULL | 角色设定长度 (FULL/SUMMARY/MINIMAL) |
-| `maxRounds` | 2 | 最大对话轮数 (2-4) |
-| `workingDistance` | 5.0 | 工作中触发距离 (格) |
-| `idleDistance` | 16.0 | 空闲触发距离 (格) |
-| `workingChance` | 0.0002 | 工作中触发概率/tick |
-| `idleChance` | 0.0005 | 空闲触发概率/tick |
-| `scanInterval` | 40 | 扫描间隔 (tick, 40=2s) |
-| `playerDistance` | 18.0 | 玩家感知范围 (格) |
+| `enabled` | true | 女仆社交总开关 |
+| `minRounds` | 2 | 最少对话轮数 (多人 +1/人) |
+| `maxRounds` | 4 | 最大对话轮数 (随机取值) |
+| `workingDistance` | 5.0 | 工作中触发距离（格） |
+| `idleDistance` | 16.0 | 空闲触发距离（格） |
+| `workingChance` | 0.10 | 工作中扫描触发概率 |
+| `idleChance` | 0.20 | 空闲中扫描触发概率 |
+| `scanInterval` | 120 | 扫描间隔 (tick, 6秒) |
+| `playerDistance` | 18.0 | 感知玩家范围（格） |
 | `maxPerDay` | 3 | 每女仆每日上限 |
-| `maxGlobalPerDay` | 10 | 全局每日上限 |
-| `cooldownTicks` | 6000 | 同对冷却 (~300s) |
-| `decisionMode` | LLM | 接受决策方式 (LLM/WEIGHT) |
-| `crossOwner` | true | 允许不同主人女仆间对话 |
-| `maxGroupSize` | 3 | 最大群聊人数 (2-5) |
-| `roundDelayMin` | 3 | 每轮间隔下限 秒 (1-10) |
-| `roundDelayMax` | 5 | 每轮间隔上限 秒 (1-10) |
-| `socialMemoryInjectChance` | 0.3 | 社交记忆注入概率 |
-| `socialMemoryTopK` | 2 | 每次注入条数 (1-5) |
-| `socialStoreMaxSize` | 50 | 社交记忆存储上限 |
-| `socialMemoryCompressTrigger` | 40 | 社交记忆压缩阈值 |
+| `maxGlobalPerDay` | 15 | 全局每日上限 |
+| `cooldownTicks` | 1200 | 同对冷却 (1 分钟) |
+| `decisionMode` | WEIGHT | 接受决策 (LLM/WEIGHT) |
+| `crossOwner` | true | 跨主人对话 |
+| `maxGroupSize` | 3 | 最大群聊人数 (2-8) |
+| `roundDelayMin` | 3 | 轮间延迟下限 (秒) |
+| `roundDelayMax` | 5 | 轮间延迟上限 (秒) |
+| `socialInjectChance` | 0.3 | 社交记忆注入概率 |
+| `socialTopK` | 2 | 社交记忆注入条数 |
+| `socialMaxSize` | 50 | 社交记忆存储上限 |
+| `socialCompressTrigger` | 40 | 社交记忆压缩阈值 |
 
 #### 仓储感知
 
 | 参数 | 默认值 | 说明 |
 |---|---|---|
-| `enableStorageMemory` | true | 储物操作自动写入 MindPalace |
-| `maxStoragePositions` | 10 | 附近存储最多显示位置数 (3-30) |
-| `maxItemsPerStorage` | 8 | 每个位置最多显示物品数 (3-20) |
-| `maxItemsSummary` | 15 | 库存摘要最多显示物品数 (5-50) |
-
-#### 调试
-
-| 参数 | 默认值 | 说明 |
-|---|---|---|
-| `debugLog` | false | 启用调试日志 |
-| `enableMiningChat` | true | LLM 采矿对话开关 |
+| `enableStorageMemory` | true | 储物记忆自动写入 |
+| `maxStoragePositions` | 10 | 最多显示存储位置数 |
+| `maxItemsPerStorage` | 8 | 每位置最多显示物品数 |
+| `maxItemsSummary` | 15 | 摘要最多显示物品数 |
 
 ---
 
@@ -188,38 +184,23 @@
 1. 确保已安装 **NeoForge 1.21.1**
 2. 安装父模组 **[Touhou Little Maid](https://github.com/TartaricAcid/TouhouLittleMaid)** 1.5.2+
 3. 将 `enhancedlittlemaidai-<version>.jar` 放入 `mods/` 文件夹
-4. （可选）安装 [MiningLittleMaid](https://github.com/LonelyGEO/MiningLittleMaid) 以启用采矿联动和采矿对话
-5. （可选）安装 [MaidStorageManager](https://github.com/LonelyGEO/MaidStorageManager) 以启用仓储感知、储物记忆和自然语言取物
-6. （可选）安装 Cloth Config 以获得游戏内配置界面
+4. （可选）[MiningLittleMaid](https://github.com/LonelyGEO/MiningLittleMaid) — 采矿联动
+5. （可选）[MaidStorageManager](https://github.com/LonelyGEO/MaidStorageManager) — 仓储感知
+6. （可选）Cloth Config — 游戏内配置界面
 
 ---
 
 ## 构建
 
 ```bash
-# 克隆仓库
 git clone https://github.com/LonelyGEO/EnhancedLittleMaidAI.git
 cd EnhancedLittleMaidAI
-
-# 构建
-./gradlew.bat build    # Windows
-./gradlew build        # macOS / Linux
-
-# 运行测试
-./gradlew.bat test
-
-# 启动开发客户端
+./gradlew.bat build
 ./gradlew.bat runClient
 ```
 
-### 开发环境要求
-
-- **JDK 21**
-- 父模组 JAR 需放入 `libs/` 目录：
-  - `touhoulittlemaid-1.5.2-neoforge+mc1.21.1.jar`（必需）
-  - `mininglittlemaid-0.9.0-neoforge+mc1.21.1.jar`（可选，compileOnly）
-  - `maid_storage_manager-1.15.6-neoforge+mc1.21.1.jar`（可选，compileOnly）
-  - `cloth-config-neoforge-15.0.140.jar`（可选，compileOnly）
+**要求**：JDK 21  
+**依赖**：`libs/` 目录需放入父模组及联动模组 JAR
 
 ---
 
