@@ -5,6 +5,7 @@ import com.github.lonelygeo.enhancedlittlemaidai.command.ElmaStatusCommand;
 import com.github.lonelygeo.enhancedlittlemaidai.command.ElmaConfigCommand;
 import com.github.lonelygeo.enhancedlittlemaidai.compat.MiningCompat;
 import com.github.lonelygeo.enhancedlittlemaidai.config.ClothConfigIntegration;
+import com.github.lonelygeo.enhancedlittlemaidai.config.ConfigOverrides;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.lonelygeo.enhancedlittlemaidai.util.ChatMaidCommandHandler;
 import com.github.lonelygeo.enhancedlittlemaidai.util.MaidSpawnHandler;
@@ -27,6 +28,7 @@ public class EnhancedLittleMaidAI {
     public EnhancedLittleMaidAI(IEventBus modEventBus, ModContainer modContainer) {
         LOGGER.info("Enhanced Little Maid AI addon loaded.");
         modContainer.registerConfig(ModConfig.Type.COMMON, EnhancedConfig.SPEC);
+        ConfigOverrides.apply();
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
         NeoForge.EVENT_BUS.register(MaidSpawnHandler.class);
         ClothConfigIntegration.registerIfAvailable();
