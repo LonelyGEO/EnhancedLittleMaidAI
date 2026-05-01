@@ -41,19 +41,6 @@ public final class ClothConfigHandler {
                 "config.enhancedlittlemaidai.title", "ELMAI");
         ConfigCategory category = builder.getOrCreateCategory(title);
 
-        // ========== 采矿对话（父分类根层级独立条目，置顶，仅 MLM 加载时显示） ==========
-        if (MiningCompat.isLoaded()) {
-            category.addEntry(entryBuilder
-                    .startBooleanToggle(
-                            Component.translatable("config.enhancedlittlemaidai.mining.enableMiningChat"),
-                            EnhancedConfig.ENABLE_MINING_CHAT.get())
-                    .setDefaultValue(true)
-                    .setTooltip(Component.translatable(
-                            "config.enhancedlittlemaidai.mining.enableMiningChat.tooltip"))
-                    .setSaveConsumer(EnhancedConfig.ENABLE_MINING_CHAT::set)
-                    .build());
-        }
-
         // ========== 调试项（父分类根层级独立条目） ==========
         category.addEntry(entryBuilder
                 .startBooleanToggle(
@@ -146,14 +133,13 @@ public final class ClothConfigHandler {
                 .build());
 
         memorySub.add(entryBuilder
-                .startDoubleField(
+                .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.memory.dedupThreshold"),
-                        EnhancedConfig.DEDUP_SCORE_THRESHOLD.get())
-                .setDefaultValue(0.85)
-                .setMin(0.5).setMax(1.0)
+                        (int) (EnhancedConfig.DEDUP_SCORE_THRESHOLD.get() * 100), 50, 100)
+                .setDefaultValue(85)
                 .setTooltip(Component.translatable(
                         "config.enhancedlittlemaidai.memory.dedupThreshold.tooltip"))
-                .setSaveConsumer(EnhancedConfig.DEDUP_SCORE_THRESHOLD::set)
+                .setSaveConsumer(val -> EnhancedConfig.DEDUP_SCORE_THRESHOLD.set(val / 100.0))
                 .build());
 
         memorySub.add(entryBuilder
@@ -210,6 +196,18 @@ public final class ClothConfigHandler {
                 Component.translatable("config.enhancedlittlemaidai.sub.proactive"));
         proactiveSub.setExpanded(true);
 
+        if (MiningCompat.isLoaded()) {
+            proactiveSub.add(entryBuilder
+                    .startBooleanToggle(
+                            Component.translatable("config.enhancedlittlemaidai.mining.enableMiningChat"),
+                            EnhancedConfig.ENABLE_MINING_CHAT.get())
+                    .setDefaultValue(true)
+                    .setTooltip(Component.translatable(
+                            "config.enhancedlittlemaidai.mining.enableMiningChat.tooltip"))
+                    .setSaveConsumer(EnhancedConfig.ENABLE_MINING_CHAT::set)
+                    .build());
+        }
+
         proactiveSub.add(entryBuilder
                 .startBooleanToggle(
                         Component.translatable("config.enhancedlittlemaidai.proactive.enabled"),
@@ -230,14 +228,13 @@ public final class ClothConfigHandler {
                 .build());
 
         proactiveSub.add(entryBuilder
-                .startDoubleField(
+                .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.proactive.triggerChance"),
-                        EnhancedConfig.TRIGGER_CHANCE_PER_TICK.get())
-                .setDefaultValue(0.002)
-                .setMin(0.0001).setMax(1.0)
+                        (int) (EnhancedConfig.TRIGGER_CHANCE_PER_TICK.get() * 10000), 1, 10000)
+                .setDefaultValue(20)
                 .setTooltip(Component.translatable(
                         "config.enhancedlittlemaidai.proactive.triggerChance.tooltip"))
-                .setSaveConsumer(EnhancedConfig.TRIGGER_CHANCE_PER_TICK::set)
+                .setSaveConsumer(val -> EnhancedConfig.TRIGGER_CHANCE_PER_TICK.set(val / 10000.0))
                 .build());
 
         proactiveSub.add(entryBuilder
@@ -251,14 +248,13 @@ public final class ClothConfigHandler {
                 .build());
 
         proactiveSub.add(entryBuilder
-                .startDoubleField(
+                .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.proactive.minDistance"),
-                        EnhancedConfig.MIN_PLAYER_DISTANCE.get())
-                .setDefaultValue(10.0)
-                .setMin(1.0).setMax(64.0)
+                        EnhancedConfig.MIN_PLAYER_DISTANCE.get().intValue(), 1, 64)
+                .setDefaultValue(10)
                 .setTooltip(Component.translatable(
                         "config.enhancedlittlemaidai.proactive.minDistance.tooltip"))
-                .setSaveConsumer(EnhancedConfig.MIN_PLAYER_DISTANCE::set)
+                .setSaveConsumer(val -> EnhancedConfig.MIN_PLAYER_DISTANCE.set((double) val))
                 .build());
 
         proactiveSub.add(entryBuilder
@@ -334,43 +330,39 @@ public final class ClothConfigHandler {
                 .build());
 
         interMaidSub.add(entryBuilder
-                .startDoubleField(
+                .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.workingDistance"),
-                        EnhancedConfig.INTER_MAID_WORKING_DISTANCE.get())
-                .setDefaultValue(5.0)
-                .setMin(1.0).setMax(32.0)
+                        EnhancedConfig.INTER_MAID_WORKING_DISTANCE.get().intValue(), 1, 32)
+                .setDefaultValue(5)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.workingDistance.tooltip"))
-                .setSaveConsumer(EnhancedConfig.INTER_MAID_WORKING_DISTANCE::set)
+                .setSaveConsumer(val -> EnhancedConfig.INTER_MAID_WORKING_DISTANCE.set((double) val))
                 .build());
 
         interMaidSub.add(entryBuilder
-                .startDoubleField(
+                .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.idleDistance"),
-                        EnhancedConfig.INTER_MAID_IDLE_DISTANCE.get())
-                .setDefaultValue(16.0)
-                .setMin(1.0).setMax(64.0)
+                        EnhancedConfig.INTER_MAID_IDLE_DISTANCE.get().intValue(), 1, 64)
+                .setDefaultValue(16)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.idleDistance.tooltip"))
-                .setSaveConsumer(EnhancedConfig.INTER_MAID_IDLE_DISTANCE::set)
+                .setSaveConsumer(val -> EnhancedConfig.INTER_MAID_IDLE_DISTANCE.set((double) val))
                 .build());
 
         interMaidSub.add(entryBuilder
-                .startDoubleField(
+                .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.workingChance"),
-                        EnhancedConfig.INTER_MAID_WORKING_CHANCE.get())
-                .setDefaultValue(0.0002)
-                .setMin(0.0001).setMax(1.0)
+                        (int) (EnhancedConfig.INTER_MAID_WORKING_CHANCE.get() * 10000), 1, 10000)
+                .setDefaultValue(2)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.workingChance.tooltip"))
-                .setSaveConsumer(EnhancedConfig.INTER_MAID_WORKING_CHANCE::set)
+                .setSaveConsumer(val -> EnhancedConfig.INTER_MAID_WORKING_CHANCE.set(val / 10000.0))
                 .build());
 
         interMaidSub.add(entryBuilder
-                .startDoubleField(
+                .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.idleChance"),
-                        EnhancedConfig.INTER_MAID_IDLE_CHANCE.get())
-                .setDefaultValue(0.0005)
-                .setMin(0.0001).setMax(1.0)
+                        (int) (EnhancedConfig.INTER_MAID_IDLE_CHANCE.get() * 10000), 1, 10000)
+                .setDefaultValue(5)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.idleChance.tooltip"))
-                .setSaveConsumer(EnhancedConfig.INTER_MAID_IDLE_CHANCE::set)
+                .setSaveConsumer(val -> EnhancedConfig.INTER_MAID_IDLE_CHANCE.set(val / 10000.0))
                 .build());
 
         interMaidSub.add(entryBuilder
@@ -383,13 +375,12 @@ public final class ClothConfigHandler {
                 .build());
 
         interMaidSub.add(entryBuilder
-                .startDoubleField(
+                .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.playerDistance"),
-                        EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.get())
-                .setDefaultValue(18.0)
-                .setMin(1.0).setMax(64.0)
+                        EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.get().intValue(), 1, 64)
+                .setDefaultValue(18)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.playerDistance.tooltip"))
-                .setSaveConsumer(EnhancedConfig.INTER_MAID_PLAYER_DISTANCE::set)
+                .setSaveConsumer(val -> EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.set((double) val))
                 .build());
 
         interMaidSub.add(entryBuilder
@@ -423,7 +414,7 @@ public final class ClothConfigHandler {
                 .startStrField(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.decisionMode"),
                         EnhancedConfig.INTER_MAID_DECISION_MODE.get())
-                .setDefaultValue("LLM")
+                .setDefaultValue("WEIGHT")
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.decisionMode.tooltip"))
                 .setSaveConsumer(EnhancedConfig.INTER_MAID_DECISION_MODE::set)
                 .build());
@@ -465,13 +456,12 @@ public final class ClothConfigHandler {
                 .build());
 
         interMaidSub.add(entryBuilder
-                .startDoubleField(
+                .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.socialInjectChance"),
-                        EnhancedConfig.SOCIAL_MEMORY_INJECT_CHANCE.get())
-                .setDefaultValue(0.3)
-                .setMin(0.0).setMax(1.0)
+                        (int) (EnhancedConfig.SOCIAL_MEMORY_INJECT_CHANCE.get() * 100), 0, 100)
+                .setDefaultValue(30)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.socialInjectChance.tooltip"))
-                .setSaveConsumer(EnhancedConfig.SOCIAL_MEMORY_INJECT_CHANCE::set)
+                .setSaveConsumer(val -> EnhancedConfig.SOCIAL_MEMORY_INJECT_CHANCE.set(val / 100.0))
                 .build());
 
         interMaidSub.add(entryBuilder
