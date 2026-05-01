@@ -73,11 +73,11 @@
 
 | 命令 | 权限 | 说明 |
 |---|---|---|
-| `/elmai mindpalace list <女仆>` | 2 (管理员) | 列出女仆的记忆 |
-| `/elmai mindpalace search <女仆> <关键词>` | 2 (管理员) | BM25 搜索记忆 |
-| `/elmai mindpalace clear <女仆>` | 2 (管理员) | 清除女仆的记忆 |
-| `/elmai mindpalace stats <女仆>` | 2 (管理员) | 查看记忆统计 |
-| `/elmai status <女仆>` | 任意 | 女仆运行状态速查 |
+| `/elmai mindpalace list <名称>` | 2 | 搜索名为"名称"的女仆，列出其记忆 |
+| `/elmai mindpalace search <名称> <关键词>` | 2 | BM25 搜索指定女仆的记忆 |
+| `/elmai mindpalace clear <名称>` | 2 | 清除指定女仆的记忆 |
+| `/elmai mindpalace stats <名称>` | 2 | 查看指定女仆的记忆统计 |
+| `/elmai status <名称>` | 任意 | 女仆运行状态速查（冷却、计数、LLM） |
 | `/elmai config` | 任意 | Config 当前值速查 |
 | `/maid <女仆名> <消息>` | 任意 | 打字与女仆 LLM 对话 |
 
