@@ -219,7 +219,7 @@ public class EnhancedConfig {
 
         INTER_MAID_COOLDOWN_TICKS = builder
                 .comment("同对女仆对话冷却时间（tick）")
-                .defineInRange("cooldownTicks", 6000, 600, 72000);
+                .defineInRange("cooldownTicks", 1200, 600, 72000);
 
         INTER_MAID_DECISION_MODE = builder
                 .comment("B接受提案的决策方式: LLM(基于社交记忆AI判断) WEIGHT(纯概率权重)")
