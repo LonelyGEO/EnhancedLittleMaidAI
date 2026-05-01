@@ -186,6 +186,28 @@ public abstract class LLMOpenAIClientMixin {
         return content;
     }
 
+    /**
+     * 拦截 onTextCall 中用于写历史的 getRawContent() 调用。
+     * 父模组步骤1 用 getRawContent() 写 CappedQueue，步骤2 才用 getContent() 检查空值。
+     * 此 Redirect 确保 CappedQueue 不会收到空 content（在 reasoning_content 可用时回退）。
+     */
+    @Redirect(method = "onTextCall", at = @At(value = "INVOKE",
+            target = "Lcom/github/tartaricacid/touhoulittlemaid/ai/service/llm/openai/response/Message;"
+                    + "getRawContent()Ljava/lang/String;"),
+            remap = false, require = 0)
+    private String enhanced$patchRawContentForSave(Message msg) {
+        String raw = msg.getRawContent();
+        if (StringUtils.isNotBlank(raw)) return raw;
+        try {
+            String rc = msg.getReasoningContent();
+            if (StringUtils.isNotBlank(rc)) {
+                return rc;
+            }
+        } catch (Throwable ignored) {
+        }
+        return raw;
+    }
+
     @Inject(method = "onTextCall", at = @At("TAIL"), remap = false)
     private void enhanced$cacheOnTextCall(ResponseCallback<ResponseChat> callback, Message firstChoice,
                                            CallbackInfo ci) {
@@ -200,6 +222,24 @@ public abstract class LLMOpenAIClientMixin {
             }
         } finally {
             enhanced$cacheKey.remove();
+        }
+    }
+
+    /**
+     * 拦截 onTextCall 中的 addAssistantHistory(String, String) 调用。
+     * 当 content 和 reasoningContent 均为空白时，跳过 CappedQueue 写入，
+     * 防止空消息污染对话历史导致后续 LLM 请求无法正常返回。
+     * 仅影响 onTextCall 路径，不影响 onFunctionCall 中的工具调用消息。
+     */
+    @Redirect(method = "onTextCall", at = @At(value = "INVOKE",
+            target = "Lcom/github/tartaricacid/touhoulittlemaid/ai/manager/entity/MaidAIChatData;"
+                    + "addAssistantHistory(Ljava/lang/String;Ljava/lang/String;)V"),
+            remap = false, require = 0)
+    private void enhanced$skipEmptyAddAssistantHistory(
+            com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatData self,
+            String content, String reasoningContent) {
+        if (StringUtils.isNotBlank(content) || StringUtils.isNotBlank(reasoningContent)) {
+            self.addAssistantHistory(content, reasoningContent);
         }
     }
 
