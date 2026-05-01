@@ -56,6 +56,10 @@ public class InterMaidChatCallback extends LLMCallback {
         try {
             String chatText = responseChat.getChatText();
             if (StringUtils.isBlank(chatText)) {
+                if (waitingBubbleId >= 0) {
+                    EntityMaid speaker = currentSpeaker();
+                    if (speaker != null) speaker.getChatBubbleManager().removeChatBubble(waitingBubbleId);
+                }
                 finishConversation();
                 return;
             }

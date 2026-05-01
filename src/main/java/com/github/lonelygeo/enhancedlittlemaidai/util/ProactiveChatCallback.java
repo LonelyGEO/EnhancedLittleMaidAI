@@ -59,6 +59,8 @@ public class ProactiveChatCallback extends LLMCallback {
                 EnhancedLittleMaidAI.LOGGER.warn(
                         "EnhancedLittleMaidAI: Failed to display proactive chat bubble", e);
             }
+        } else if (maid != null && waitingBubbleId >= 0) {
+            maid.getChatBubbleManager().removeChatBubble(waitingBubbleId);
         }
 
         if (EnhancedConfig.debugLog()) {
