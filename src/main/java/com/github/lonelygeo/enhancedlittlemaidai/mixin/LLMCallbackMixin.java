@@ -67,7 +67,8 @@ public abstract class LLMCallbackMixin {
             Message choice, LLMClient client
     ) {
         String rawContent = StringUtils.defaultString(choice.getContent());
-        String reasoningContent = StringUtils.defaultString(choice.getReasoningContent());
+        String reasoningContent = null;
+        try { reasoningContent = choice.getReasoningContent(); } catch (Throwable ignored) {}
         target.addAssistantHistory(rawContent, toolCalls,
                 StringUtils.isNotBlank(reasoningContent) ? reasoningContent : null);
     }
@@ -88,10 +89,11 @@ public abstract class LLMCallbackMixin {
             EntityMaid maid, String msg, List<ToolCall> toolCalls,
             Message choice, LLMClient client
     ) {
-        String rawContent = StringUtils.defaultString(choice.getContent());
-        String reasoningContent = StringUtils.defaultString(choice.getReasoningContent());
-        return LLMMessage.assistantChat(maid, rawContent, toolCalls,
-                StringUtils.isNotBlank(reasoningContent) ? reasoningContent : null);
+        String rawContent2 = StringUtils.defaultString(choice.getContent());
+        String reasoningContent2 = null;
+        try { reasoningContent2 = choice.getReasoningContent(); } catch (Throwable ignored) {}
+        return LLMMessage.assistantChat(maid, rawContent2, toolCalls,
+                StringUtils.isNotBlank(reasoningContent2) ? reasoningContent2 : null);
     }
 
     // ==================== 记忆提取 ====================

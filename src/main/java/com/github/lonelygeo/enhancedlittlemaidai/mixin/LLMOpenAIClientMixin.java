@@ -104,7 +104,7 @@ public abstract class LLMOpenAIClientMixin {
     @Redirect(
             method = "chat",
             at = @At(value = "INVOKE", target = "Lcom/google/gson/Gson;toJson(Ljava/lang/Object;)Ljava/lang/String;"),
-            remap = false
+            remap = false, require = 0
     )
     private String enhanced$patchAndToJson(Gson gson, Object src) {
         if (enhanced$inRedirect.get()) {
@@ -140,9 +140,9 @@ public abstract class LLMOpenAIClientMixin {
                 EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM RESPONSE: {}",
                         content.length() <= 1000 ? content : content.substring(0, 997) + "...");
             } else {
-                String rc = firstChoice.getReasoningContent();
-                EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM RESPONSE empty, reasoningContent={} chars",
-                        rc != null ? rc.length() : 0);
+                try { EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM RESPONSE empty, reasoningContent={} chars",
+                        firstChoice.getReasoningContent() != null ? firstChoice.getReasoningContent().length() : 0);
+                } catch (Throwable ignored) {}
             }
         }
     }
@@ -158,14 +158,17 @@ public abstract class LLMOpenAIClientMixin {
     private String enhanced$patchEmptyContent(Message msg) {
         String content = msg.getContent();
         if (StringUtils.isNotBlank(content)) return content;
-        String rc = msg.getReasoningContent();
-        if (StringUtils.isNotBlank(rc)) {
-            if (EnhancedConfig.debugLog()) {
-                EnhancedLittleMaidAI.LOGGER.debug(
-                        "EnhancedLittleMaidAI: Content empty, falling back to reasoning_content ({} chars)",
-                        rc.length());
+        try {
+            String rc = msg.getReasoningContent();
+            if (StringUtils.isNotBlank(rc)) {
+                if (EnhancedConfig.debugLog()) {
+                    EnhancedLittleMaidAI.LOGGER.debug(
+                            "EnhancedLittleMaidAI: Content empty, falling back to reasoning_content ({} chars)",
+                            rc.length());
+                }
+                return rc;
             }
-            return rc;
+        } catch (Throwable ignored) {
         }
         return content;
     }
@@ -209,9 +212,13 @@ public abstract class LLMOpenAIClientMixin {
                 String role = msgObj.has("role") ? msgObj.get("role").getAsString() : "";
 
                 if (llmMsg.role() == Role.ASSISTANT && "assistant".equals(role)) {
-                    String rc = llmMsg.reasoningContent();
-                    if (StringUtils.isNotBlank(rc)) {
-                        msgObj.addProperty("reasoning_content", rc);
+                    try {
+                        String rc = llmMsg.reasoningContent();
+                        if (StringUtils.isNotBlank(rc)) {
+                            msgObj.addProperty("reasoning_content", rc);
+                        }
+                    } catch (Throwable ignored) {
+                        // LLMMessage.reasoningContent() 在 TLM 1.5.2 中不存在，跳过注入
                     }
                 }
                 msgIdx++;
