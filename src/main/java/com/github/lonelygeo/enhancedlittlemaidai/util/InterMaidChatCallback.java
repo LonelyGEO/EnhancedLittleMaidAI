@@ -9,6 +9,7 @@ import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
@@ -74,6 +75,7 @@ public class InterMaidChatCallback extends LLMCallback {
                     } else {
                         speaker.getChatBubbleManager().addTextChatBubble(chatText);
                     }
+                    broadcastToNearbyPlayers(speaker, chatText);
                 });
             } else if (waitingBubbleId >= 0) {
                 speaker.getChatBubbleManager().addLLMChatText(chatText, waitingBubbleId);
@@ -350,5 +352,18 @@ public class InterMaidChatCallback extends LLMCallback {
         AABB box = maid.getBoundingBox().inflate(dist);
         return maid.level().getEntitiesOfClass(ServerPlayer.class, box, Player::isAlive)
                 .stream().mapToDouble(p -> p.distanceToSqr(maid)).min().orElse(Double.MAX_VALUE);
+    }
+
+    private static void broadcastToNearbyPlayers(EntityMaid speaker, String chatText) {
+        if (StringUtils.isBlank(chatText)) return;
+        double dist = EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.get();
+        String speakerName = speaker.getDisplayName().getString();
+        Component msg = Component.literal("<" + speakerName + "> " + chatText);
+        AABB box = speaker.getBoundingBox().inflate(dist);
+        List<ServerPlayer> players = speaker.level().getEntitiesOfClass(
+                ServerPlayer.class, box, Player::isAlive);
+        for (ServerPlayer p : players) {
+            p.sendSystemMessage(msg);
+        }
     }
 }
