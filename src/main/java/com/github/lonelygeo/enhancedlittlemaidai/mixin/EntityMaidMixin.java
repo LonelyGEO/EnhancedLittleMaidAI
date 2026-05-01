@@ -357,9 +357,9 @@ public abstract class EntityMaidMixin {
         }
     }
 
-    /** B 接受提案 → 加入群组 → 足够人时启动对话 */
+    /** B 接受提案 → 通过 finalizeAcceptance 统一路径启动对话 */
     private static void acceptAndTryStart(EntityMaid b, EntityMaid a) {
-        InterMaidChatManager.handleAcceptance(b);
+        InterMaidChatManager.finalizeAcceptance(b, a.getUUID());
     }
 
     @Nullable

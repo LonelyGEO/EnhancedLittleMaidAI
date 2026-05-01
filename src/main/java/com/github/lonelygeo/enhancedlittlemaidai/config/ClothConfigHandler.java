@@ -404,10 +404,10 @@ public final class ClothConfigHandler {
         interMaidSub.add(entryBuilder
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.cooldownTicks"),
-                        EnhancedConfig.INTER_MAID_COOLDOWN_TICKS.get() / 20, 30, 3600)
-                .setDefaultValue(60)
+                        EnhancedConfig.INTER_MAID_COOLDOWN_TICKS.get() / 1200, 1, 60)
+                .setDefaultValue(1)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.cooldownTicks.tooltip"))
-                .setSaveConsumer(val -> EnhancedConfig.INTER_MAID_COOLDOWN_TICKS.set(val * 20))
+                .setSaveConsumer(val -> EnhancedConfig.INTER_MAID_COOLDOWN_TICKS.set(val * 1200))
                 .build());
 
         interMaidSub.add(entryBuilder
