@@ -223,7 +223,7 @@ public class EnhancedConfig {
 
         INTER_MAID_DECISION_MODE = builder
                 .comment("B接受提案的决策方式: LLM(基于社交记忆AI判断) WEIGHT(纯概率权重)")
-                .define("decisionMode", "LLM");
+                .define("decisionMode", "WEIGHT");
 
         INTER_MAID_CROSS_OWNER = builder
                 .comment("是否允许不同主人的女仆之间也触发对话")

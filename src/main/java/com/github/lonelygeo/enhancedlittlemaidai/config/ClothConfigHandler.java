@@ -54,6 +54,35 @@ public final class ClothConfigHandler {
                     .build());
         }
 
+        // ========== 调试项（父分类根层级独立条目） ==========
+        category.addEntry(entryBuilder
+                .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.debug.enableMaidGreeting"),
+                        EnhancedConfig.ENABLE_MAID_GREETING.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.debug.enableMaidGreeting.tooltip"))
+                .setSaveConsumer(EnhancedConfig.ENABLE_MAID_GREETING::set)
+                .build());
+
+        category.addEntry(entryBuilder
+                .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.debug.debugLog"),
+                        EnhancedConfig.DEBUG_LOG.get())
+                .setDefaultValue(false)
+                .setTooltip(Component.translatable(
+                        "config.enhancedlittlemaidai.debug.debugLog.tooltip"))
+                .setSaveConsumer(EnhancedConfig.DEBUG_LOG::set)
+                .build());
+
+        category.addEntry(entryBuilder
+                .startBooleanToggle(
+                        Component.translatable("config.enhancedlittlemaidai.debug.suppressParentJsonDump"),
+                        EnhancedConfig.SUPPRESS_PARENT_JSON_DUMP.get())
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("config.enhancedlittlemaidai.debug.suppressParentJsonDump.tooltip"))
+                .setSaveConsumer(EnhancedConfig.SUPPRESS_PARENT_JSON_DUMP::set)
+                .build());
+
         // ========== 上下文感知 ==========
         SubCategoryBuilder contextSub = entryBuilder.startSubCategory(
                 Component.translatable("config.enhancedlittlemaidai.sub.context"));
@@ -522,40 +551,5 @@ public final class ClothConfigHandler {
 
             category.addEntry(storageSub.build());
         }
-
-        // ========== 调试 ==========
-        SubCategoryBuilder debugSub = entryBuilder.startSubCategory(
-                Component.translatable("config.enhancedlittlemaidai.sub.debug"));
-        debugSub.setExpanded(false);
-
-        debugSub.add(entryBuilder
-                .startBooleanToggle(
-                        Component.translatable("config.enhancedlittlemaidai.debug.enableMaidGreeting"),
-                        EnhancedConfig.ENABLE_MAID_GREETING.get())
-                .setDefaultValue(true)
-                .setTooltip(Component.translatable("config.enhancedlittlemaidai.debug.enableMaidGreeting.tooltip"))
-                .setSaveConsumer(EnhancedConfig.ENABLE_MAID_GREETING::set)
-                .build());
-
-        debugSub.add(entryBuilder
-                .startBooleanToggle(
-                        Component.translatable("config.enhancedlittlemaidai.debug.debugLog"),
-                        EnhancedConfig.DEBUG_LOG.get())
-                .setDefaultValue(false)
-                .setTooltip(Component.translatable(
-                        "config.enhancedlittlemaidai.debug.debugLog.tooltip"))
-                .setSaveConsumer(EnhancedConfig.DEBUG_LOG::set)
-                .build());
-
-        debugSub.add(entryBuilder
-                .startBooleanToggle(
-                        Component.translatable("config.enhancedlittlemaidai.debug.suppressParentJsonDump"),
-                        EnhancedConfig.SUPPRESS_PARENT_JSON_DUMP.get())
-                .setDefaultValue(true)
-                .setTooltip(Component.translatable("config.enhancedlittlemaidai.debug.suppressParentJsonDump.tooltip"))
-                .setSaveConsumer(EnhancedConfig.SUPPRESS_PARENT_JSON_DUMP::set)
-                .build());
-
-        category.addEntry(debugSub.build());
     }
 }
