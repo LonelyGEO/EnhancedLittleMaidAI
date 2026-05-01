@@ -5,8 +5,11 @@ import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.LLMCallback;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.entity.MaidAIChatManager;
 import com.github.tartaricacid.touhoulittlemaid.ai.manager.response.ResponseChat;
+import com.github.tartaricacid.touhoulittlemaid.ai.manager.site.AvailableSites;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMClient;
 import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMMessage;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.LLMSite;
+import com.github.tartaricacid.touhoulittlemaid.ai.service.llm.openai.LLMOpenAISite;
 import com.github.tartaricacid.touhoulittlemaid.entity.passive.EntityMaid;
 import net.minecraft.world.entity.Entity;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -46,6 +49,9 @@ public final class MaidSpawnHandler {
         if (maid.level().isClientSide()) return;
         if (maid.isRemoved()) return;
 
+        if (!LLMUtil.isAvailable(maid)) {
+            tryAutoAssignLLMSite(maid);
+        }
         if (!LLMUtil.isAvailable(maid)) {
             PENDING_AUTOGEN.put(maid.getUUID(), maid.level().getGameTime());
             if (EnhancedConfig.debugLog()) {
@@ -226,6 +232,34 @@ public final class MaidSpawnHandler {
                 + "只输出对话文本，严禁输出任何括号内的动作描述、旁白、心理活动。";
     }
 
+    // ==================== 自动分配 LLM 站点 ====================
+
+    /**
+     * 新女仆的 llmSite 默认为空，导致 getLLMSite() 返回 PLAYER2（API key 空白）。
+     * 此方法从全局 AvailableSites 中查找第一个启用的有效站点，自动填入。
+     */
+    private static void tryAutoAssignLLMSite(EntityMaid maid) {
+        MaidAIChatManager chatManager = maid.getAiChatManager();
+        if (chatManager == null) return;
+        if (StringUtils.isNotBlank(chatManager.llmSite)) return;
+
+        for (Map.Entry<String, LLMSite> entry : AvailableSites.LLM_SITES.entrySet()) {
+            LLMSite site = entry.getValue();
+            if (!site.enabled()) continue;
+            if (StringUtils.isBlank(site.url())) continue;
+            if (site instanceof LLMOpenAISite openAiSite) {
+                if (StringUtils.isBlank(openAiSite.secretKey())) continue;
+            }
+            chatManager.llmSite = entry.getKey();
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.info(
+                        "MaidSpawn: Auto-assigned LLM site '{}' to maid {}",
+                        entry.getKey(), maid.getUUID());
+            }
+            return;
+        }
+    }
+
     // ==================== 延迟重试 ====================
 
     /**
@@ -250,6 +284,9 @@ public final class MaidSpawnHandler {
     /** 由 EntityMaidMixin.tick 调用，尝试重试指定女仆 */
     public static void retryMaid(EntityMaid maid) {
         if (!PENDING_AUTOGEN.containsKey(maid.getUUID())) return;
+        if (!LLMUtil.isAvailable(maid)) {
+            tryAutoAssignLLMSite(maid);
+        }
         if (!LLMUtil.isAvailable(maid)) {
             if (EnhancedConfig.debugLog() && maid.level().getGameTime() % 200 == 0) {
                 long pendingMs = System.currentTimeMillis() - PENDING_AUTOGEN.getOrDefault(maid.getUUID(), 0L);
