@@ -1,6 +1,7 @@
 package com.github.lonelygeo.enhancedlittlemaidai.util;
 
 import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -29,14 +30,23 @@ public final class LLMLogWriter {
                 Path logsDir = FMLPaths.GAMEDIR.get().resolve("logs");
                 Files.createDirectories(logsDir);
                 path = logsDir.resolve("LLM.log");
-            } catch (IOException e) {
+            } catch (Exception e) {
                 path = Path.of("LLM.log");
             }
         }
         return path;
     }
 
+    private static boolean shouldWrite() {
+        try {
+            return ServerLifecycleHooks.getCurrentServer() != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static void logRequest(String cbType, String model, String url, int msgCount, String json) {
+        if (!shouldWrite()) return;
         synchronized (LOCK) {
             try (BufferedWriter w = Files.newBufferedWriter(getPath(), StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
@@ -67,6 +77,7 @@ public final class LLMLogWriter {
     }
 
     public static void logResponse(String role, String content, String reasoningContent) {
+        if (!shouldWrite()) return;
         synchronized (LOCK) {
             try (BufferedWriter w = Files.newBufferedWriter(getPath(), StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {

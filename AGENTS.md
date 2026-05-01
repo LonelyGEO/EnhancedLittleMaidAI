@@ -231,7 +231,7 @@ For Mixin changes under `mixin.*`:
 
 ## 13) Versioning
 
-- 当前版本: `1.0.3-neoforge+mc1.21.1`
+- 当前版本: `1.0.4-neoforge+mc1.21.1`
 - 后缀 `-neoforge+mc1.21.1` 为平台标识，保持不变
 
 | 版本位 | 触发条件 |
