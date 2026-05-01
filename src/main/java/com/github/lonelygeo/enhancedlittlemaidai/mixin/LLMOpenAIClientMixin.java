@@ -1,5 +1,6 @@
 package com.github.lonelygeo.enhancedlittlemaidai.mixin;
 
+import com.github.lonelygeo.enhancedlittlemaidai.util.LLMLogWriter;
 import com.github.lonelygeo.enhancedlittlemaidai.util.LLMResponseCache;
 import com.github.lonelygeo.enhancedlittlemaidai.EnhancedLittleMaidAI;
 import com.github.lonelygeo.enhancedlittlemaidai.config.EnhancedConfig;
@@ -117,12 +118,19 @@ public abstract class LLMOpenAIClientMixin {
             if (callback != null) {
                 json = injectReasoningContent(json, callback.getMessages());
                 enhanced$currentCallback.remove();
-            if (EnhancedConfig.debugLog()) {
-                EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: ReasoningContent injected into JSON, {} chars",
-                        json.length());
-                EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM REQUEST: {}",
-                        json.length() <= 1000 ? json : json.substring(0, 997) + "...");
-            }
+                try {
+                    String model = callback.getChatManager().getLLMModel();
+                    String url = callback.getChatManager().getLLMSite().url();
+                    LLMLogWriter.logRequest(callback.getClass().getSimpleName(), model, url,
+                            callback.getMessages().size(), json);
+                } catch (Throwable ignored) {
+                }
+                if (EnhancedConfig.debugLog()) {
+                    EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: ReasoningContent injected into JSON, {} chars",
+                            json.length());
+                    EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM REQUEST: {}",
+                            json.length() <= 1000 ? json : json.substring(0, 997) + "...");
+                }
             }
             return json;
         } finally {
@@ -132,10 +140,15 @@ public abstract class LLMOpenAIClientMixin {
 
     @Inject(method = "onTextCall", at = @At("HEAD"), remap = false)
     private void enhanced$onTextCall(ResponseCallback<ResponseChat> callback, Message firstChoice, CallbackInfo ci) {
+        String role = firstChoice.getRole() != null ? firstChoice.getRole() : "unknown";
+        String content = firstChoice.getContent();
+        try {
+            LLMLogWriter.logResponse(role, content,
+                    firstChoice.getReasoningContent() != null ? firstChoice.getReasoningContent() : "");
+        } catch (Throwable ignored) {
+        }
         if (EnhancedConfig.debugLog()) {
-            String role = firstChoice.getRole() != null ? firstChoice.getRole() : "unknown";
             EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM response RECEIVED, role={}", role);
-            String content = firstChoice.getContent();
             if (content != null && !content.isEmpty()) {
                 EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM RESPONSE: {}",
                         content.length() <= 1000 ? content : content.substring(0, 997) + "...");
