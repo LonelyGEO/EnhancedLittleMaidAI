@@ -56,11 +56,15 @@ public abstract class MaidAIChatDataMixin {
 
         LinkedBlockingDeque<LLMMessage> stripped = new LinkedBlockingDeque<>();
         for (LLMMessage msg : history.getDeque()) {
-            if (msg.reasoningContent() != null && !msg.reasoningContent().isEmpty()) {
-                stripped.add(new LLMMessage(
-                        msg.role(), msg.message(), msg.gameTime(),
-                        msg.toolCalls(), msg.toolCallId(), null));
-            } else {
+            try {
+                if (msg.reasoningContent() != null && !msg.reasoningContent().isEmpty()) {
+                    stripped.add(new LLMMessage(
+                            msg.role(), msg.message(), msg.gameTime(),
+                            msg.toolCalls(), msg.toolCallId(), null));
+                } else {
+                    stripped.add(msg);
+                }
+            } catch (Throwable e) {
                 stripped.add(msg);
             }
         }
