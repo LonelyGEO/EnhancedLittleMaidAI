@@ -331,7 +331,10 @@ public class InterMaidChatCallback extends LLMCallback {
             if (i > 0) sb.append("、");
             sb.append(others.get(i).getDisplayName().getString());
         }
-        sb.append("在一起。请主动和她们聊几句。说一句简短自然的话。"
+        sb.append("在一起聊天。你的听众是");
+        sb.append(others.size() == 1 ? "她" : "她们");
+        sb.append("，不是主人。你可以说关于主人的事，但不能直接对主人说话。"
+                + "说一句简短自然的话开启闲聊。"
                 + " " + PromptConstants.NO_ACTION_DESCRIPTION + "");
         return sb.toString();
     }

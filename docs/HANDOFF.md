@@ -1,6 +1,6 @@
 # EnhancedLittleMaidAI 交接文档
 
-> 版本: v0.12.0 | 平台: NeoForge 1.21.1 | 更新: 2026-05-01
+> 版本: v1.0.0 | 平台: NeoForge 1.21.1 | 更新: 2026-05-01
 
 ---
 
@@ -329,4 +329,5 @@ gh release create v0.x.x build/libs/enhancedlittlemaidai-0.x.x-*.jar \
 | v0.10.x | 女仆放置问候 + 多女仆群聊 + 跨主人对话 + LLMUtil 统一校验 |
 | v0.11.0 | MSM联动 (StorageCompat + 上下文) + Skills (elmai/enhanced_storage) + 思考气泡差异化 + 女仆社交修复 (密度感知+随机说话者) |
 | v0.11.1 | Skill 重写高密度百科 + elma_quick 快查 + token 优化 (XML→纯文本+PromptConstants) + Config GUI 补全 |
-| v0.12.0 | /elmai 命令树 + reasoningContent NBT 剥离 + 日志系统优化 (抑制父模组dump+自主截断) + 天气修复 + 环境事件范围冷却 + 女仆社交全链修复 (决策Prompt重构+线程安全+请求洪泛+claimProposal竞态) + 魂符2MB崩溃修复 + acceptIntoGroup竞态修复 |
+| v0.12.0 | /elmai 命令树 + reasoningContent NBT 剥离 + 日志系统优化 + 天气修复 + 环境事件范围冷却 + 女仆社交全链修复 + 魂符2MB崩溃修复 + acceptIntoGroup竞态修复 |
+| v1.0.0 | 性能重构 (Proposal存EntityMaid消除findMaidByUuid + GROUP_PROPOSALS清理 + PAIR_COOLDOWNS过期清理); ConfigOverrides系统; randomRounds随机轮数; maxGroupSize 2-8; WEIGHT默认; Config GUI重整; tryStartConversation直传EntityMaid; 气泡泄漏修复; DeepSeek空content回退reasoning_content; 女仆间对话prompt听众修复 |
