@@ -135,22 +135,14 @@ public final class InterMaidChatManager {
         GROUP_PROPOSALS.remove(initiator);
     }
 
-    /** 尝试启动群组对话 — 收集参与者实体并按距玩家排序后启动 */
-    public static void tryStartConversation(List<UUID> memberUuids, net.minecraft.world.level.Level level) {
-        List<EntityMaid> participants = new ArrayList<>();
-        for (UUID uid : memberUuids) {
-            double playerDist = EnhancedConfig.INTER_MAID_PLAYER_DISTANCE.get();
-            for (EntityMaid m : level.getEntitiesOfClass(
-                    EntityMaid.class, new AABB(0, -64, 0, 30000000, 320, 30000000),
-                    e -> e.getUUID().equals(uid))) {
-                participants.add(m);
-                break;
-            }
-        }
+    /** 尝试启动群组对话 — 按距玩家排序后启动 */
+    public static void tryStartConversation(List<EntityMaid> participants) {
+        participants = new ArrayList<>(participants);
+        participants.removeIf(m -> m == null || m.isRemoved() || !m.isAlive());
         if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.debug(
-                    "InterMaidChat: tryStartConversation found {}/{} entities",
-                    participants.size(), memberUuids.size());
+                    "InterMaidChat: tryStartConversation with {} participants",
+                    participants.size());
         }
         if (participants.size() >= 2) {
             participants.sort(Comparator.comparingDouble(m -> {
@@ -164,17 +156,19 @@ public final class InterMaidChatManager {
             cleanupGroup(initiator);
             InterMaidChatCallback.startConversation(participants,
                     EnhancedConfig.INTER_MAID_MAX_ROUNDS.get());
-        } else if (memberUuids.size() >= 2) {
-            long gameTime = level.getGameTime();
-            for (int i = 0; i < memberUuids.size(); i++) {
-                for (int j = i + 1; j < memberUuids.size(); j++) {
-                    PAIR_COOLDOWNS.put(pairKey(memberUuids.get(i), memberUuids.get(j)), gameTime);
+        } else {
+            long gameTime = participants.isEmpty() ? 0 : participants.get(0).level().getGameTime();
+            if (gameTime > 0) {
+                for (int i = 0; i < participants.size(); i++) {
+                    for (int j = i + 1; j < participants.size(); j++) {
+                        PAIR_COOLDOWNS.put(pairKey(participants.get(i).getUUID(), participants.get(j).getUUID()), gameTime);
+                    }
                 }
             }
             if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.debug(
-                        "InterMaidChat: tryStartConversation set pair cooldowns for {} members, {} entities found (likely out of range)",
-                        memberUuids.size(), participants.size());
+                        "InterMaidChat: tryStartConversation insufficient participants ({}), cooldowns set",
+                        participants.size());
             }
         }
     }
@@ -186,10 +180,20 @@ public final class InterMaidChatManager {
 
     /** B 接受提案 → 加入群组，人数够时启动对话 */
     public static void handleAcceptance(EntityMaid b) {
-        List<UUID> members = acceptIntoGroup(b.getUUID());
-        if (members != null && members.size() >= 2) {
-            tryStartConversation(members, b.level());
+        List<UUID> memberUuids = acceptIntoGroup(b.getUUID());
+        if (memberUuids == null || memberUuids.size() < 2) return;
+        List<EntityMaid> participants = new ArrayList<>();
+        participants.add(b);
+        for (UUID uid : memberUuids) {
+            if (uid.equals(b.getUUID())) continue;
+            for (EntityMaid m : b.level().getEntitiesOfClass(
+                    EntityMaid.class, b.getBoundingBox().inflate(64),
+                    e -> e.getUUID().equals(uid))) {
+                participants.add(m);
+                break;
+            }
         }
+        tryStartConversation(participants);
     }
 
     /** 原子抢出 proposal（forkJoin 线程安全），返回 proposer UUID 或 null */
@@ -201,7 +205,8 @@ public final class InterMaidChatManager {
     }
 
     /** 在 server thread 上完成接受：加入群组 → 人数够时启动对话 */
-    public static void finalizeAcceptance(EntityMaid b, UUID proposerUuid) {
+    public static void finalizeAcceptance(EntityMaid b, EntityMaid a) {
+        UUID proposerUuid = a.getUUID();
         GroupProposal gp = GROUP_PROPOSALS.get(proposerUuid);
         if (gp == null) {
             if (EnhancedConfig.debugLog()) {
@@ -213,29 +218,29 @@ public final class InterMaidChatManager {
         gp.accepted.add(b.getUUID());
         gp.targets.remove(b.getUUID());
 
-        List<UUID> all = new ArrayList<>();
-        all.add(proposerUuid);
-        all.addAll(gp.accepted);
-        if (all.size() >= 2) {
+        List<EntityMaid> participants = new ArrayList<>();
+        participants.add(a);
+        participants.add(b);
+        // 添加其他已接受的 B
+        for (UUID uid : gp.accepted) {
+            if (uid.equals(b.getUUID())) continue; // b already in list
+            // search for this participant near a or b
+            for (EntityMaid m : a.level().getEntitiesOfClass(
+                    EntityMaid.class, a.getBoundingBox().inflate(64),
+                    e -> e.getUUID().equals(uid))) {
+                participants.add(m);
+                break;
+            }
+        }
+        if (participants.size() >= 2) {
             if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.debug(
-                        "InterMaidChat: finalizeAcceptance starting, group: {} members", all.size());
+                        "InterMaidChat: finalizeAcceptance starting, group: {} members", participants.size());
             }
-            tryStartConversation(List.copyOf(all), b.level());
+            tryStartConversation(participants);
         } else if (EnhancedConfig.debugLog()) {
             EnhancedLittleMaidAI.LOGGER.debug(
-                    "InterMaidChat: finalizeAcceptance group too small: {} members", all.size());
-        }
-        // group too small or tryStartConversation didn't start — set pair cooldowns to prevent re-proposal
-        if (all.size() >= 2) {
-            long gameTime = b.level().getGameTime();
-            for (int i = 0; i < all.size(); i++) {
-                for (int j = i + 1; j < all.size(); j++) {
-                    if (!PAIR_COOLDOWNS.containsKey(pairKey(all.get(i), all.get(j)))) {
-                        PAIR_COOLDOWNS.put(pairKey(all.get(i), all.get(j)), gameTime);
-                    }
-                }
-            }
+                    "InterMaidChat: finalizeAcceptance group too small: {} members", participants.size());
         }
     }
 

@@ -85,9 +85,9 @@ public class InterMaidDecisionCallback extends LLMCallback {
         // finalizeAcceptance 需要 Level.getEntitiesOfClass —— 必须在 server thread
         net.minecraft.server.MinecraftServer server = maidB.getServer();
         if (server != null) {
-            server.submit(() -> InterMaidChatManager.finalizeAcceptance(maidB, proposerUuid));
+            server.submit(() -> InterMaidChatManager.finalizeAcceptance(maidB, maidA));
         } else {
-            InterMaidChatManager.finalizeAcceptance(maidB, proposerUuid);
+            InterMaidChatManager.finalizeAcceptance(maidB, maidA);
         }
         InterMaidChatManager.finishDeciding(maidB.getUUID());
         if (EnhancedConfig.debugLog()) {

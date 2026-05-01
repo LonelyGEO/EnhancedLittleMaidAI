@@ -359,7 +359,7 @@ public abstract class EntityMaidMixin {
 
     /** B 接受提案 → 通过 finalizeAcceptance 统一路径启动对话 */
     private static void acceptAndTryStart(EntityMaid b, EntityMaid a) {
-        InterMaidChatManager.finalizeAcceptance(b, a.getUUID());
+        InterMaidChatManager.finalizeAcceptance(b, a);
     }
 
     @Nullable
