@@ -136,11 +136,38 @@ public abstract class LLMOpenAIClientMixin {
             String role = firstChoice.getRole() != null ? firstChoice.getRole() : "unknown";
             EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM response RECEIVED, role={}", role);
             String content = firstChoice.getContent();
-            if (content != null) {
+            if (content != null && !content.isEmpty()) {
                 EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM RESPONSE: {}",
                         content.length() <= 1000 ? content : content.substring(0, 997) + "...");
+            } else {
+                String rc = firstChoice.getReasoningContent();
+                EnhancedLittleMaidAI.LOGGER.debug("EnhancedLittleMaidAI: LLM RESPONSE empty, reasoningContent={} chars",
+                        rc != null ? rc.length() : 0);
             }
         }
+    }
+
+    /**
+     * 拦截 Message.getContent()：当 content 为空但 reasoning_content 非空时，
+     * 返回 reasoning_content 作为应答文本。修复 DeepSeek 推理模型偶发的空返回问题。
+     */
+    @Redirect(method = "onTextCall", at = @At(value = "INVOKE",
+            target = "Lcom/github/tartaricacid/touhoulittlemaid/ai/service/llm/openai/response/Message;"
+                    + "getContent()Ljava/lang/String;"),
+            remap = false, require = 0)
+    private String enhanced$patchEmptyContent(Message msg) {
+        String content = msg.getContent();
+        if (StringUtils.isNotBlank(content)) return content;
+        String rc = msg.getReasoningContent();
+        if (StringUtils.isNotBlank(rc)) {
+            if (EnhancedConfig.debugLog()) {
+                EnhancedLittleMaidAI.LOGGER.debug(
+                        "EnhancedLittleMaidAI: Content empty, falling back to reasoning_content ({} chars)",
+                        rc.length());
+            }
+            return rc;
+        }
+        return content;
     }
 
     @Inject(method = "onTextCall", at = @At("TAIL"), remap = false)
