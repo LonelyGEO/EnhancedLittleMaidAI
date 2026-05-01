@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.1-blue.svg)](https://www.minecraft.net/)
 [![NeoForge](https://img.shields.io/badge/NeoForge-21.1-orange.svg)](https://neoforged.net/)
-![Version](https://img.shields.io/badge/Version-1.0.0--neoforge%2Bmc1.21.1-brightgreen)
+![Version](https://img.shields.io/badge/Version-1.0.3--neoforge%2Bmc1.21.1-brightgreen)
 
 **Enhanced Little Maid AI** 是 [Touhou Little Maid](https://github.com/TartaricAcid/TouhouLittleMaid) 的 NeoForge 附属模组，通过 Mixin 注入为女仆 AI 提供增强功能。
 
@@ -57,6 +57,8 @@
 
 - DeepSeek 等推理模型的思考链自动注入和回传
 - 空 content 自动回退到 reasoning_content
+- `stripReasoningContent` 配置项默认关闭（不剥离），避免 DeepSeek thinking 模式 400 错误
+- LLM 对话日志（请求/响应 JSON + Token 统计）独立写入 `logs/LLM.log`
 
 ### LLM 响应缓存
 
@@ -97,6 +99,7 @@
 ├── 女仆问候              [开关]  default:true
 ├── 调试日志              [开关]  default:false
 ├── 抑制父模组日志        [开关]  default:true
+├── 剥离 ReasoningContent [开关]  default:false
 ├── ▸ 上下文感知           (3 项)
 ├── ▸ 记忆系统             (8 项)
 ├── ▸ 主动聊天             (10 项，含采矿对话)
