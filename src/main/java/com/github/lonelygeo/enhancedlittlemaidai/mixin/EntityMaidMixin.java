@@ -218,7 +218,8 @@ public abstract class EntityMaidMixin {
                     // 密度感知: 附近女仆越多，单个女仆触发概率越低
                     // partners=1 → scale=1.0  partners=4 → 0.4  partners=9 → 0.2
                     double densityScale = 2.0 / (partners.size() + 1);
-                    if (Math.random() <= densityScale) {
+                    double triggerChance = InterMaidChatManager.getTriggerChance(maid);
+                    if (Math.random() <= densityScale && Math.random() < triggerChance) {
                         List<UUID> targets = partners.stream()
                                 .map(EntityMaid::getUUID).toList();
                         InterMaidChatManager.proposeGroup(uuid, targets, gameTime);

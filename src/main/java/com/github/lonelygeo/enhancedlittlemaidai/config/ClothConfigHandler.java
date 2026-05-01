@@ -351,7 +351,7 @@ public final class ClothConfigHandler {
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.workingChance"),
                         (int) (EnhancedConfig.INTER_MAID_WORKING_CHANCE.get() * 10000), 1, 10000)
-                .setDefaultValue(2)
+                .setDefaultValue(1000)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.workingChance.tooltip"))
                 .setSaveConsumer(val -> EnhancedConfig.INTER_MAID_WORKING_CHANCE.set(val / 10000.0))
                 .build());
@@ -360,7 +360,7 @@ public final class ClothConfigHandler {
                 .startIntSlider(
                         Component.translatable("config.enhancedlittlemaidai.interMaid.idleChance"),
                         (int) (EnhancedConfig.INTER_MAID_IDLE_CHANCE.get() * 10000), 1, 10000)
-                .setDefaultValue(5)
+                .setDefaultValue(2000)
                 .setTooltip(Component.translatable("config.enhancedlittlemaidai.interMaid.idleChance.tooltip"))
                 .setSaveConsumer(val -> EnhancedConfig.INTER_MAID_IDLE_CHANCE.set(val / 10000.0))
                 .build());

@@ -194,12 +194,12 @@ public class EnhancedConfig {
                 .defineInRange("idleDistance", 16.0, 1.0, 64.0);
 
         INTER_MAID_WORKING_CHANCE = builder
-                .comment("工作中的女仆每次 tick 触发扫描的概率")
-                .defineInRange("workingChance", 0.0002, 0.0001, 1.0);
+                .comment("工作中女仆每次扫描触发的概率（配合 scanInterval 使用）")
+                .defineInRange("workingChance", 0.10, 0.0001, 1.0);
 
         INTER_MAID_IDLE_CHANCE = builder
-                .comment("空闲中的女仆每次 tick 触发扫描的概率")
-                .defineInRange("idleChance", 0.0005, 0.0001, 1.0);
+                .comment("空闲中女仆每次扫描触发的概率（配合 scanInterval 使用）")
+                .defineInRange("idleChance", 0.20, 0.0001, 1.0);
 
         INTER_MAID_SCAN_INTERVAL = builder
                 .comment("女仆扫描附近同伴的间隔（tick），120=6秒")
