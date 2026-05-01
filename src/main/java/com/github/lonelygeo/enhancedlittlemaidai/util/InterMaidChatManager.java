@@ -87,17 +87,17 @@ public final class InterMaidChatManager {
 
     // ==================== 提案系统 ====================
 
-    public static void propose(UUID from, UUID to, long gameTime) {
+    public static void propose(EntityMaid from, UUID to, long gameTime) {
         PENDING_PROPOSALS.put(to, new Proposal(from, gameTime));
         if (EnhancedConfig.debugLog()) {
-            EnhancedLittleMaidAI.LOGGER.info("InterMaidChat: Proposal {} → {}", from, to);
+            EnhancedLittleMaidAI.LOGGER.info("InterMaidChat: Proposal {} → {}", from.getUUID(), to);
         }
     }
 
     /** 创建群组提案：A 向多个 B 发起邀请 */
-    public static void proposeGroup(UUID from, List<UUID> targets, long gameTime) {
-        GROUP_PROPOSALS.put(from,
-                new GroupProposal(from, new LinkedHashSet<>(targets), gameTime));
+    public static void proposeGroup(EntityMaid from, List<UUID> targets, long gameTime) {
+        GROUP_PROPOSALS.put(from.getUUID(),
+                new GroupProposal(from.getUUID(), new LinkedHashSet<>(targets), gameTime));
         for (UUID to : targets) {
             PENDING_PROPOSALS.put(to, new Proposal(from, gameTime));
         }
@@ -108,13 +108,14 @@ public final class InterMaidChatManager {
     public static List<UUID> acceptIntoGroup(UUID acceptor) {
         Proposal p = PENDING_PROPOSALS.remove(acceptor);
         if (p == null) return null;
-        GroupProposal gp = GROUP_PROPOSALS.get(p.from);
+        UUID proposerUuid = p.proposer().getUUID();
+        GroupProposal gp = GROUP_PROPOSALS.get(proposerUuid);
         if (gp == null) return null;
         gp.accepted.add(acceptor);
         gp.targets.remove(acceptor);
 
         List<UUID> all = new ArrayList<>();
-        all.add(p.from); // A
+        all.add(proposerUuid); // A
         all.addAll(gp.accepted); // all B's that accepted
         return all.size() >= 2 ? List.copyOf(all) : null;
     }
@@ -123,11 +124,12 @@ public final class InterMaidChatManager {
     public static void rejectFromGroup(UUID rejected) {
         Proposal p = PENDING_PROPOSALS.remove(rejected);
         if (p == null) return;
-        GroupProposal gp = GROUP_PROPOSALS.get(p.from);
+        UUID proposerUuid = p.proposer().getUUID();
+        GroupProposal gp = GROUP_PROPOSALS.get(proposerUuid);
         if (gp == null) return;
         gp.targets.remove(rejected);
         if (gp.targets.isEmpty() && gp.accepted.isEmpty()) {
-            GROUP_PROPOSALS.remove(p.from);
+            GROUP_PROPOSALS.remove(proposerUuid);
         }
     }
 
@@ -204,12 +206,13 @@ public final class InterMaidChatManager {
         tryStartConversation(participants);
     }
 
-    /** 原子抢出 proposal（forkJoin 线程安全），返回 proposer UUID 或 null */
+    /** 原子抢出 proposal（forkJoin 线程安全），返回 proposer EntityMaid 或 null */
     @Nullable
-    public static UUID claimProposal(UUID acceptor) {
+    public static EntityMaid claimProposal(UUID acceptor) {
         Proposal p = PENDING_PROPOSALS.remove(acceptor);
         if (p == null) return null;
-        return p.from;
+        EntityMaid m = p.proposer();
+        return (m != null && !m.isRemoved() && m.isAlive()) ? m : null;
     }
 
     /** 在 server thread 上完成接受：加入群组 → 人数够时启动对话 */
@@ -253,10 +256,11 @@ public final class InterMaidChatManager {
     }
 
     @Nullable
-    public static UUID getProposer(UUID maid) {
+    public static EntityMaid getProposer(UUID maid) {
         Proposal p = PENDING_PROPOSALS.get(maid);
         if (p == null) return null;
-        return p.from;
+        EntityMaid m = p.proposer();
+        return (m != null && !m.isRemoved() && m.isAlive()) ? m : null;
     }
 
     /** 检查是否超时，超时则清理 */
@@ -297,6 +301,7 @@ public final class InterMaidChatManager {
      * 综合检查 A 是否满足扫描条件。
      */
     public static boolean canScan(EntityMaid maid, long gameTime) {
+        expireCooldownsIfNeeded(gameTime);
         if (maid.level().isClientSide()) return false;
         if (maid.isRemoved()) return false;
         if (!LLMUtil.isAvailable(maid)) return false;
@@ -410,9 +415,26 @@ public final class InterMaidChatManager {
         return a.compareTo(b) < 0 ? a + "|" + b : b + "|" + a;
     }
 
+    /** 高能配对键，比字符串拼接少 GC */
+    static long pairKeyLong(UUID a, UUID b) {
+        return a.compareTo(b) < 0
+                ? a.getMostSignificantBits() ^ b.getMostSignificantBits()
+                : b.getMostSignificantBits() ^ a.getMostSignificantBits();
+    }
+
     private static boolean hasActivePairCooldown(UUID a, UUID b, long gameTime) {
         Long last = PAIR_COOLDOWNS.get(pairKey(a, b));
         return last != null && (gameTime - last) < EnhancedConfig.INTER_MAID_COOLDOWN_TICKS.get();
+    }
+
+    private static final long COOLDOWN_CLEANUP_INTERVAL = 6000;
+    private static long lastCooldownCleanup;
+
+    static void expireCooldownsIfNeeded(long gameTime) {
+        if (gameTime - lastCooldownCleanup < COOLDOWN_CLEANUP_INTERVAL) return;
+        lastCooldownCleanup = gameTime;
+        long threshold = EnhancedConfig.INTER_MAID_COOLDOWN_TICKS.get();
+        PAIR_COOLDOWNS.values().removeIf(last -> gameTime - last > threshold * 2);
     }
 
     public static void resetDayCounts(UUID uuid) {
@@ -428,6 +450,10 @@ public final class InterMaidChatManager {
             String[] parts = e.getKey().split("\\|");
             String id = uuid.toString();
             return parts.length == 2 && (parts[0].equals(id) || parts[1].equals(id));
+        });
+        GROUP_PROPOSALS.entrySet().removeIf(e -> {
+            GroupProposal gp = e.getValue();
+            return gp.initiator.equals(uuid) || gp.targets.contains(uuid) || gp.accepted.contains(uuid);
         });
         DAY_COUNTS.remove(uuid);
         INITIAL_SCAN_DELAYS.remove(uuid);
@@ -482,7 +508,7 @@ public final class InterMaidChatManager {
 
     // ==================== 内部类型 ====================
 
-    private record Proposal(UUID from, long time) {
+    private record Proposal(EntityMaid proposer, long time) {
     }
 
     private static final class GroupProposal {
@@ -499,7 +525,7 @@ public final class InterMaidChatManager {
     }
 
     /** 未来 N 人扩展接口 */
-    public static void proposeBatch(UUID from, List<UUID> toList, long gameTime) {
+    public static void proposeBatch(EntityMaid from, List<UUID> toList, long gameTime) {
         for (UUID to : toList) {
             propose(from, to, gameTime);
         }

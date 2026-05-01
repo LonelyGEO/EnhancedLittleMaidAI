@@ -71,15 +71,15 @@ public class InterMaidDecisionCallback extends LLMCallback {
     private void accept() {
         InterMaidChatManager.releaseDecisionSlot();
 
-        // 在异步提交前原子抢出 proposal，防止被 A 侧扫描覆盖
-        UUID proposerUuid = InterMaidChatManager.claimProposal(maidB.getUUID());
-        if (proposerUuid == null) {
+        // 原子抢出 proposal，防止被 A 侧扫描覆盖
+        EntityMaid claimed = InterMaidChatManager.claimProposal(maidB.getUUID());
+        if (claimed == null) {
             InterMaidChatManager.finishDeciding(maidB.getUUID());
             if (EnhancedConfig.debugLog()) {
                 EnhancedLittleMaidAI.LOGGER.debug(
                         "InterMaidChat: claimProposal returned null for {}, proposal expired", maidB.getUUID());
             }
-            return; // proposal 已过期或被覆盖，静默放弃
+            return;
         }
 
         // finalizeAcceptance 需要 Level.getEntitiesOfClass —— 必须在 server thread

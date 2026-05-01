@@ -190,14 +190,15 @@ public abstract class EntityMaidMixin {
             UUID uuid = maid.getUUID();
             long gameTime = maid.level().getGameTime();
 
-            if (!LLMUtil.isAvailable(maid)) return;
+            boolean llmAvailable = LLMUtil.isAvailable(maid);
+            if (!llmAvailable) return;
 
             // B 侧：检查 pending proposal
-            UUID proposerUuid = InterMaidChatManager.getProposer(uuid);
-            if (proposerUuid != null) {
+            EntityMaid proposer = InterMaidChatManager.getProposer(uuid);
+            if (proposer != null) {
                 if (EnhancedConfig.debugLog()) {
                     EnhancedLittleMaidAI.LOGGER.debug(
-                            "InterMaidChat: B {} has pending proposal from {}", uuid, proposerUuid);
+                            "InterMaidChat: B {} has pending proposal from {}", uuid, proposer.getUUID());
                 }
                 if (InterMaidChatManager.isProposalExpired(uuid, gameTime)) {
                     if (EnhancedConfig.debugLog()) {
@@ -205,7 +206,7 @@ public abstract class EntityMaidMixin {
                                 "InterMaidChat: B {} proposal expired, cleaning up", uuid);
                     }
                 } else {
-                    handleProposal(maid, proposerUuid, gameTime);
+                    handleProposal(maid, proposer, gameTime);
                 }
             }
 
@@ -222,10 +223,10 @@ public abstract class EntityMaidMixin {
                     if (Math.random() <= densityScale && Math.random() < triggerChance) {
                         List<UUID> targets = partners.stream()
                                 .map(EntityMaid::getUUID).toList();
-                        InterMaidChatManager.proposeGroup(uuid, targets, gameTime);
+                        InterMaidChatManager.proposeGroup(maid, targets, gameTime);
                         if (EnhancedConfig.debugLog()) {
                             EnhancedLittleMaidAI.LOGGER.info(
-                                    "InterMaidChat: Maid {} proposed to {} targets", uuid, targets.size());
+                                    "InterMaidChat: Maid {} proposed to {} targets", maid.getUUID(), targets.size());
                             long scanBubbleId = maid.getChatBubbleManager()
                                     .addTextChatBubble("**少女寻友中...**");
                             new Thread(() -> {
@@ -290,9 +291,8 @@ public abstract class EntityMaidMixin {
     /**
      * 处理 B 收到的对话提案。决策后触发或拒绝。
      */
-    private static void handleProposal(EntityMaid b, UUID proposerUuid, long gameTime) {
-        EntityMaid a = findMaidByUuid(b, proposerUuid);
-        if (a == null || a.isRemoved()) {
+    private static void handleProposal(EntityMaid b, EntityMaid a, long gameTime) {
+        if (a.isRemoved()) {
             InterMaidChatManager.rejectFromGroup(b.getUUID());
             return;
         }
@@ -360,16 +360,6 @@ public abstract class EntityMaidMixin {
     /** B 接受提案 → 通过 finalizeAcceptance 统一路径启动对话 */
     private static void acceptAndTryStart(EntityMaid b, EntityMaid a) {
         InterMaidChatManager.finalizeAcceptance(b, a);
-    }
-
-    @Nullable
-    private static EntityMaid findMaidByUuid(EntityMaid maid, UUID uuid) {
-        for (EntityMaid e : maid.level().getEntitiesOfClass(
-                EntityMaid.class, maid.getBoundingBox().inflate(64),
-                e -> e.getUUID().equals(uuid))) {
-            return e;
-        }
-        return null;
     }
 
     // === import for Nullable ===
